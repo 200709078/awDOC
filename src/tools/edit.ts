@@ -1,4 +1,5 @@
 import { HEADING_LEVELS } from '../editor/editor'
+import { DEFAULT_LINE_HEIGHT, LINE_HEIGHTS } from '../editor/paragraph-format'
 import { ICONS } from './icons'
 import type { Tool, ToolContext, ToolGroup } from './tool'
 
@@ -95,11 +96,53 @@ const alignTools: Tool[] = ALIGNMENTS.map(({ value, label, icon, keys }) => ({
   run: context => { focused(context).setTextAlign(value).run() },
 }))
 
+const blockAttributes = ({ editor }: ToolContext): { lineHeight?: string | null; indent?: number } =>
+  editor.getAttributes(editor.isActive('heading') ? 'heading' : 'paragraph')
+
+const indentTools: Tool[] = [
+  {
+    id: 'outdent',
+    label: 'Girintiyi Azalt',
+    icon: ICONS.outdent,
+    keys: 'Shift+Tab',
+    iconOnly: true,
+    isAvailable: context => context.editor.isActive('listItem') || Number(blockAttributes(context).indent ?? 0) > 0,
+    run: context => { focused(context).outdent().run() },
+  },
+  {
+    id: 'indent',
+    label: 'Girintiyi Artır',
+    icon: ICONS.indent,
+    keys: 'Tab',
+    iconOnly: true,
+    isAvailable: context => context.editor.can().indent(),
+    run: context => { focused(context).indent().run() },
+  },
+]
+
+const lineHeightTools: Tool[] = LINE_HEIGHTS.map(value => ({
+  id: `lineHeight-${value.replace('.', '_')}`,
+  label: value === DEFAULT_LINE_HEIGHT ? `${value.replace('.', ',')} (varsayılan)` : Number(value).toFixed(value.length > 3 ? 2 : 1).replace('.', ','),
+  icon: ICONS.lineHeight,
+  isActive: context => (blockAttributes(context).lineHeight ?? DEFAULT_LINE_HEIGHT) === value,
+  run: context => {
+    if (value === DEFAULT_LINE_HEIGHT) focused(context).unsetLineHeight().run()
+    else focused(context).setLineHeight(value).run()
+  },
+}))
+
+/** How the paragraph lies: alignment, indent, line spacing (Word keeps these side by side too). */
 export const alignGroup: ToolGroup = {
   kind: 'group',
   id: 'align',
   label: 'Hizalama',
   icon: ICONS.alignLeft,
-  tools: alignTools,
+  tools: [...alignTools, ...indentTools, ...lineHeightTools],
+  sections: [
+    { tools: alignTools },
+    { title: 'Girinti', tools: indentTools },
+    { title: 'Satır aralığı', tools: lineHeightTools },
+  ],
   iconOf: context => alignTools.find(tool => tool.isActive!(context))?.icon ?? ICONS.alignLeft,
+  isMarked: context => Number(blockAttributes(context).indent ?? 0) > 0 || Boolean(blockAttributes(context).lineHeight),
 }

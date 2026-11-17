@@ -137,7 +137,13 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
      Sans MS, Courier New. Adlar kendi yazı tipleriyle yazılır. Linux'ta karşılıkları kullanılır (Carlito,
      Liberation).
    - Başlıkta boyut başlığın kendi boyutundan başlar.
-2. Satır aralığı ve girinti
+2. **Satır aralığı ve girinti: uygulandı (2026-11-17).**
+   - Hizalama ▾ üç bölümlü oldu: hizalama, girinti (Azalt/Artır), satır aralığı (1,0 / 1,15 varsayılan /
+     1,5 / 2,0).
+   - Tab girintiyi artırır, listede maddeyi bir öncekinin altına alır; Shift+Tab geri alır. Tab artık odağı
+     belgeden çıkarmaz.
+   - Bir girinti 1,27 cm, en çok 8. Belgenin varsayılan satır aralığı Word'deki gibi 1,15 oldu (önce 1,5'ti).
+   - Girinti ve satır aralığı paragrafla birlikte `.awd`'ye kaydedilir.
 3. Bağlantı, bul-değiştir, kelime sayısı
 4. Tablo
 5. Resim

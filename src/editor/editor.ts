@@ -5,6 +5,7 @@ import { Color, FontFamily, FontSize, TextStyle } from '@tiptap/extension-text-s
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { EditorState, TextSelection } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
+import { ParagraphFormat } from './paragraph-format'
 
 export const HEADING_LEVELS = [1, 2, 3] as const
 
@@ -31,6 +32,7 @@ export function createEditor(element: HTMLElement): Editor {
       FontSize,
       Color,
       Highlight.configure({ multicolor: true }),
+      ParagraphFormat,
     ],
     content: EMPTY_DOCUMENT,
     autofocus: 'start',
