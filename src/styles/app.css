@@ -1260,6 +1260,12 @@ body {
 .crop-dialog__box [data-handle="s"] { top: 100%; left: 50%; cursor: ns-resize; }
 .crop-dialog__box [data-handle="se"] { top: 100%; left: 100%; cursor: nwse-resize; }
 
+.dialog .booklet-dialog__note {
+	margin: 4px 0 20px;
+	font-size: 14px;
+	opacity: 0.8;
+}
+
 .dialog__error {
 	color: #dc2626;
 	font-weight: 600;

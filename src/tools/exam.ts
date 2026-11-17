@@ -2,6 +2,7 @@ import { currentQuestion, DEFAULT_CHOICES, totalPoints, type ChoicesLayout } fro
 import { showPointsDialog } from '../ui/points-dialog'
 import { answersShown, setAnswersShown } from '../ui/answers'
 import { showExamDialog } from '../ui/exam-dialog'
+import { showBookletDialog } from '../ui/booklet-dialog'
 import { ICONS } from './icons'
 import type { Tool, ToolContext, ToolGroup } from './tool'
 
@@ -150,8 +151,15 @@ const unpairTool: Tool = {
   run: ({ editor }) => { editor.chain().focus().unpairQuestions().run() },
 }
 
+const bookletTool: Tool = {
+  id: 'booklet',
+  label: 'B kitapçığı…',
+  icon: ICONS.booklet,
+  run: ({ editor, session }) => showBookletDialog(editor, session),
+}
+
 const insertTools = [examPaperTool, multipleChoiceTool, openQuestionTool, questionRowTool]
-const answerTools = [correctChoiceTool, showAnswersTool, answerKeyTool]
+const answerTools = [correctChoiceTool, showAnswersTool, answerKeyTool, bookletTool]
 const choiceTools = [
   addChoiceTool,
   removeChoiceTool,

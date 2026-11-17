@@ -66,6 +66,7 @@ export const ICONS = {
   correctChoice: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5.5-5.5"/>',
   showAnswers: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   answerKey: '<circle cx="8" cy="8" r="4"/><path d="M11 11l9 9"/><path d="M16 16l2-2"/><path d="M18.5 18.5l2-2"/>',
+  booklet: '<rect x="3" y="4" width="11" height="15" rx="1.5"/><path d="M17 7h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-1"/><path d="M6.5 13l2-6 2 6"/><path d="M7.2 11h2.6"/>',
   points: '<circle cx="12" cy="12" r="9"/><path d="M9 9.5a3 3 0 0 1 6 0c0 2-3 2.5-3 4.5"/><path d="M12 17.5v.01"/>',
   moveUp: '<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>',
   moveDown: '<path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>',

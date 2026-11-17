@@ -197,6 +197,19 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="bookletDialog" class="dialog" aria-labelledby="bookletTitle">
+		<h2 id="bookletTitle">B kitapçığı</h2>
+		<p id="bookletMessage">Bu sınavın sırası karıştırılmış ikinci kâğıdı yeni bir belge olarak açılır; bu belge (A) dosyasında kalır.</p>
+		<form method="dialog">
+			<label class="dialog__check"><input id="bookletQuestions" type="checkbox" checked> Soruların sırası karışsın</label>
+			<label class="dialog__check"><input id="bookletChoices" type="checkbox" checked> Şıkların sırası karışsın</label>
+			<p class="booklet-dialog__note">Başlık, öğrenci tablosu, açıklamalar ve bölüm başlıkları yerinde kalır; cevap anahtarı B'ye göre olur. Üst bilgiye "B Kitapçığı" yazılır.</p>
+			<div class="dialog__actions">
+				<button value="make" class="primary-button">B kitapçığını aç</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
 		<h2 id="recentTitle">Son belgeler</h2>
 		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>

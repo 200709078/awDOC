@@ -92,11 +92,14 @@ export class DocumentSession {
     return choice === 'discard' || this.save()
   }
 
-  /** Yeni: an empty document, or one made from a template (a new exam paper). False when the user stayed. */
-  async newDocument(content: JSONContent = EMPTY_DOCUMENT): Promise<boolean> {
+  /**
+   * Yeni: an empty document, or one made from a template (a new exam paper, a B booklet) with the
+   * name its first save will suggest. False when the user stayed.
+   */
+  async newDocument(content: JSONContent = EMPTY_DOCUMENT, name = UNTITLED): Promise<boolean> {
     if (!await this.confirmLeave()) return false
     replaceDocument(this.editor, documentNode(this.editor, content))
-    this.set(UNTITLED, null, undefined)
+    this.set(name, null, undefined)
     this.editor.commands.focus('start')
     return true
   }

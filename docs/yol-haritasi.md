@@ -378,8 +378,20 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
       (drAW2D → awDOC uçtan uca denendi). drAW2D ve drAW3D'de commit/push kullanıcıya sorulur.
    d. Telefonda kamera: Android'de kameranın "Paylaş"ı (b) ile awDOC'a resim gönderiyor; uygulama içinden
       doğrudan kamera açmak sonraya.
-7. A/B kitapçığı (soruların ve şıkların sırası karıştırılmış ikinci kâğıt ve kendi cevap anahtarı),
-   drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası (sorular cihazda saklanır, başka sınava eklenir).
+7. **A/B kitapçığı: uygulandı (2026-11-17).** Sınav ▾ → Cevaplar → "B kitapçığı…".
+   - **Pencere:** "Soruların sırası karışsın" ve "Şıkların sırası karışsın" seçenekleri (ikisi de açık gelir).
+   - **Yeni belge:** B yeni bir belge olarak açılır ("<ad> - B"). A kendi dosyasında kalır; kaydedilmemiş
+     değişiklik varsa önce sorulur.
+   - **Ne karışır:**
+     - Yalnız arka arkaya duran sorular kendi aralarında karışır; aralarındaki boş satırlar yerinde kalır.
+     - Bölüm başlığı ya da yazı soruları ayrı parçalara böler.
+     - Başlık, öğrenci tablosu, açıklama ve cevap anahtarı yerinde kalır.
+     - Yan yana çift birlikte taşınır.
+   - **Doğru şık:** Doğru şık işareti şıkla birlikte taşınır, B'nin cevap anahtarı kendiliğinden B'ye göre olur.
+   - **Etiket:** Üst bilgiye "B Kitapçığı" eklenir (varsa var olanın yanına).
+   - **Karıştırma:** Sıra hiçbir zaman A ile aynı çıkmaz.
+   - **Yetersiz soru:** Tek açık uçlu soruda yapılmaz; nedeni söylenir.
+8. Soru bankası (sorular cihazda saklanır, başka sınava eklenir): sırada.
 
 ## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)
 
