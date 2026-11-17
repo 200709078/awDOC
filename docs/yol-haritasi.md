@@ -325,8 +325,24 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
    - **"Başlığı bu belgeye ekle":** Başlığı ve tabloyu var olan belgenin başına koyar.
    - Hepsi sıradan paragraf ve tablodur; sonradan değiştirilebilir.
    - **Öneri (sonraya):** Okul logosu, birden çok şablon (yazılı, quiz, çalışma kâğıdı).
-5. İki sütunlu kâğıt (sayfalamanın sütunlara göre de bölmesi gerekir).
-6. A/B kitapçığı, drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası.
+5. **İki sütunlu kâğıt: incelendi, kullanıcıya soruldu (2026-11-17).** Sınav kâğıdında başlık ve öğrenci
+   tablosu tam genişlikte, sorular iki sütunda olmalı; ilk sayfada sütunlar başlığın altından, kısa başlar.
+   ProseMirror belgeyi tek akış olarak tutar; sayfa sayfa iki sütuna bölmenin yolları:
+   - **(a) Tarayıcının sütunları (CSS `column-height` + `column-wrap`):** Chromium 145+ destekliyor
+     (Electron'un Chromium 152'si, testlerin Chromium 156'sı evet; Firefox hayır). Ama her sütun satırı aynı
+     yükseklikte olmak zorunda: başlığın altında kısa başlayan ilk sayfa olmaz. Yalnız "bütün belge iki
+     sütun" (başlık da sütunda) mümkün.
+   - **(b) Kendi sayfalamamızla:** Belge yarım genişlikte tek sütun dizilir, her sütun sayfası ekranda
+     yerine kaydırılarak (CSS `transform`) gösterilir; yazdırmada tarayıcının sütunları. Başlık tam
+     genişlikte kalabilir. Ama imleç, yukarı / aşağı ok ve seçim kaydırılmış metinde ara sıra garip
+     davranabilir; iki sütuna bölünen uzun paragraf bölünemez. Büyük iş (birkaç gün), riskli.
+   - **(c) Yalnız yazdırmada iki sütun:** Ekranda tek sütun (sütun genişliğinde), kâğıtta ve PDF'te iki
+     sütun. Kolay, ama ekran kâğıdı birebir göstermez.
+   - **(d) Sorular için "yan yana iki soru" bloğu:** İki soruyu yan yana koyan bir düzen (tablo gibi).
+     Kolay ve sağlam; ama sorular bir sütundan öbürüne kendiliğinden akmaz.
+   **Öneri (Claude):** önce (d) ya da (c), (b) sonraya. Karar kullanıcının.
+6. A/B kitapçığı (soruların ve şıkların sırası karıştırılmış ikinci kâğıt ve kendi cevap anahtarı),
+   drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası (sorular cihazda saklanır, başka sınava eklenir).
 
 ## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)
 
