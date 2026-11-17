@@ -22,31 +22,6 @@ export const redoTool: Tool = {
   run: context => { focused(context).redo().run() },
 }
 
-const mark = (id: 'bold' | 'italic' | 'underline' | 'strike', label: string, keys?: string): Tool => ({
-  id,
-  label,
-  icon: ICONS[id],
-  keys,
-  iconOnly: true,
-  isActive: ({ editor }) => editor.isActive(id),
-  run: context => { focused(context).toggleMark(id).run() },
-})
-
-export const textGroup: ToolGroup = {
-  kind: 'group',
-  id: 'text',
-  label: 'Yazı',
-  icon: ICONS.text,
-  staysOpen: true,
-  marksActive: true,
-  tools: [
-    mark('bold', 'Kalın', 'Ctrl+B'),
-    mark('italic', 'İtalik', 'Ctrl+I'),
-    mark('underline', 'Altı Çizili', 'Ctrl+U'),
-    mark('strike', 'Üstü Çizili'),
-  ],
-}
-
 const normalTool: Tool = {
   id: 'paragraph',
   label: 'Normal metin',
@@ -99,7 +74,7 @@ export const listGroup: ToolGroup = {
   label: 'Liste',
   icon: ICONS.bulletList,
   tools: listTools,
-  marksActive: true,
+  isMarked: context => listTools.some(tool => tool.isActive!(context)),
   iconOf: context => listTools.find(tool => tool.isActive!(context))?.icon ?? ICONS.bulletList,
 }
 

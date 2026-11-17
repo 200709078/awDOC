@@ -1,5 +1,6 @@
-import { alignGroup, listGroup, paragraphGroup, redoTool, textGroup, undoTool } from './edit'
+import { alignGroup, listGroup, paragraphGroup, redoTool, undoTool } from './edit'
 import { newDocumentTool, openTool, printTool, saveAsTool, saveTool } from './file'
+import { fontGroup, textGroup } from './text'
 import type { ToolbarItem } from './tool'
 import { aboutTool, fullscreenTool, themeTool } from './view'
 
@@ -14,6 +15,7 @@ export const TOOLBAR: readonly ToolbarItem[] = [
   undoTool,
   redoTool,
   textGroup,
+  fontGroup,
   paragraphGroup,
   listGroup,
   alignGroup,

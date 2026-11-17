@@ -1,5 +1,7 @@
 import { Editor, type JSONContent } from '@tiptap/core'
+import Highlight from '@tiptap/extension-highlight'
 import TextAlign from '@tiptap/extension-text-align'
+import { Color, FontFamily, FontSize, TextStyle } from '@tiptap/extension-text-style'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { EditorState, TextSelection } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
@@ -23,6 +25,12 @@ export function createEditor(element: HTMLElement): Editor {
         link: { openOnClick: false },
       }),
       TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] }),
+      // Font, size and colour live on one inline style; a highlight is a mark of its own colour.
+      TextStyle,
+      FontFamily,
+      FontSize,
+      Color,
+      Highlight.configure({ multicolor: true }),
     ],
     content: EMPTY_DOCUMENT,
     autofocus: 'start',

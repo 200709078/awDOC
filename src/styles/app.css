@@ -128,7 +128,7 @@ body {
 	background: var(--surface-muted);
 }
 
-/* Something inside the group is on (bold text, a list), or there is something to save: a dot. */
+/* Something inside the group is set (bold text, a list), or there is something to save: a dot. */
 .toolbar__button.is-marked::after {
 	position: absolute;
 	top: 7px;
@@ -189,20 +189,58 @@ body {
 	display: inline;
 }
 
-/* Icons everyone knows (B, I, U, alignment) stand side by side, without their names. */
-.toolbar__panel--icons {
-	flex-direction: row;
-	min-width: 0;
+/* A titled part of a group's window. */
+.toolbar__section + .toolbar__section {
+	margin-top: 4px;
+	padding-top: 4px;
+	border-top: 1px solid var(--border);
 }
 
-.toolbar__panel--icons .toolbar__button {
+.toolbar__section-title {
+	padding: 4px 10px 2px;
+	font-size: 13px;
+	opacity: 0.7;
+}
+
+.toolbar__section-items {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+/* Icons everyone knows (B, I, U, alignment) and colours stand side by side, without their names. */
+.toolbar__section--icons .toolbar__section-items {
+	flex-flow: row wrap;
+	max-width: 312px;
+}
+
+.toolbar__section--icons .toolbar__button {
 	justify-content: center;
 	width: 48px;
 	padding: 0;
 }
 
-.toolbar__panel--icons .toolbar__label {
+.toolbar__section--icons .toolbar__label {
 	display: none;
+}
+
+.toolbar__swatch {
+	width: 28px;
+	height: 28px;
+	border: 1px solid rgb(0 0 0 / 25%);
+	border-radius: 6px;
+}
+
+/* "No colour": a crossed-out square. */
+.toolbar__swatch--none {
+	background: linear-gradient(to top right, transparent calc(50% - 1.5px), #dc2626 calc(50% - 1.5px), #dc2626 calc(50% + 1.5px), transparent calc(50% + 1.5px)) !important;
+}
+
+/* A chosen colour: a ring instead of the accent fill, so the colour stays visible. */
+.toolbar__button:has(.toolbar__swatch)[aria-pressed="true"],
+.toolbar__button:has(.toolbar__swatch)[aria-pressed="true"]:hover:not(:disabled) {
+	background: none;
+	box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .toolbar__menu {
@@ -254,17 +292,13 @@ body {
 	box-shadow: none;
 }
 
-.toolbar__menu .toolbar__panel--icons {
-	flex-wrap: wrap;
-}
-
-.toolbar__menu .toolbar__panel--icons .toolbar__button {
+.toolbar__menu .toolbar__section--icons .toolbar__button {
 	justify-content: center;
 	width: 48px;
 	padding: 0;
 }
 
-.toolbar__menu .toolbar__panel--icons .toolbar__label {
+.toolbar__menu .toolbar__section--icons .toolbar__label {
 	display: none;
 }
 
@@ -382,6 +416,12 @@ body {
 
 .document a {
 	color: #1d4ed8;
+}
+
+/* A highlight keeps the text's own colour. */
+.document mark {
+	padding: 0 1px;
+	color: inherit;
 }
 
 /* Phones: the page fills the width, the margins shrink. */

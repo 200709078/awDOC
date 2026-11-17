@@ -30,6 +30,10 @@ export interface Tool {
    * alignment lines). The others keep their names there, since a touch screen shows no hints.
    */
   readonly iconOnly?: boolean
+  /** A colour square instead of an icon (a colour choice; `iconOnly` too). */
+  readonly swatch?: string
+  /** The name is written in this font (a font choice). */
+  readonly labelFont?: string
   /** Disabled while this is false; read whenever the document or the selection changes. */
   isAvailable?(context: ToolContext): boolean
   /** Makes the button an on/off switch; it shows as pressed while this is true. */
@@ -54,12 +58,22 @@ export interface ToolGroup {
   readonly label: string
   readonly icon: string
   readonly tools: readonly Tool[]
+  /** The window in parts with titles (Yazı: styles, size, colours); without it, `tools` as one part. */
+  readonly sections?: readonly ToolSection[]
   /** The group's button shows the state inside, such as the current alignment's icon. */
   iconOf?(context: ToolContext): string
   /** Choices are made one after another here (bold, then italic), so a choice does not close it. */
   readonly staysOpen?: boolean
-  /** The tools inside are switches; the group's button carries a mark while one is on. */
-  readonly marksActive?: boolean
+  /** The group's button carries a dot while this is true, such as bold text under the cursor. */
+  isMarked?(context: ToolContext): boolean
+}
+
+/** A titled part of a group's window. Icon-only tools stand side by side, the others one per line. */
+export interface ToolSection {
+  readonly title?: string
+  /** A title that shows the state, such as "Boyut: 14". */
+  titleOf?(context: ToolContext): string
+  readonly tools: readonly Tool[]
 }
 
 export type ToolbarItem = Tool | ToolGroup

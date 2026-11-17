@@ -1,4 +1,4 @@
-import { isGroup, type Tool, type ToolbarItem, type ToolContext, type ToolGroup } from '../tools/tool'
+import { isGroup, type Tool, type ToolbarItem, type ToolContext, type ToolGroup, type ToolSection } from '../tools/tool'
 
 /** Such as `ctrl+s`, `ctrl+shift+s`, `f11`. */
 export function shortcutOf(event: KeyboardEvent): string {
@@ -89,7 +89,12 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
 
   const toolControl = (tool: Tool, group?: ToolGroup): Control => {
     const element = button(`tool-${tool.id}`, tool.label, tool.icon, hintOf(tool))
-    if (tool.iconOnly) element.classList.add('toolbar__button--icon')
+    if (tool.iconOnly || tool.swatch !== undefined) element.classList.add('toolbar__button--icon')
+    if (tool.swatch !== undefined) {
+      // An empty swatch is "no colour": the square is crossed out.
+      element.querySelector('.toolbar__icon')!.outerHTML = `<span class="toolbar__swatch${tool.swatch ? '' : ' toolbar__swatch--none'}" style="background:${tool.swatch || 'transparent'}" aria-hidden="true"></span>`
+    }
+    if (tool.labelFont) element.querySelector<HTMLElement>('.toolbar__label')!.style.fontFamily = tool.labelFont
     element.addEventListener('click', () => {
       tool.run(context)
       chosen(group)
@@ -119,10 +124,31 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
     panel.setAttribute('role', 'group')
     panel.setAttribute('aria-label', group.label)
     panel.hidden = true
-    if (group.tools.every(tool => tool.iconOnly)) panel.classList.add('toolbar__panel--icons')
     header.setAttribute('aria-controls', panel.id)
-    const tools = group.tools.map(tool => toolControl(tool, group))
-    panel.append(...tools.map(tool => tool.element))
+    const sections: readonly ToolSection[] = group.sections ?? [{ tools: group.tools }]
+    const tools: Control[] = []
+    const titles: (() => void)[] = []
+    for (const section of sections) {
+      const part = document.createElement('div')
+      part.className = 'toolbar__section'
+      if (section.tools.every(tool => tool.iconOnly || tool.swatch !== undefined)) part.classList.add('toolbar__section--icons')
+      if (section.title || section.titleOf) {
+        const title = document.createElement('div')
+        title.className = 'toolbar__section-title'
+        title.textContent = section.title ?? ''
+        if (section.titleOf) titles.push(() => { title.textContent = section.titleOf!(context) })
+        part.append(title)
+      }
+      const items = document.createElement('div')
+      items.className = 'toolbar__section-items'
+      for (const tool of section.tools) {
+        const control = toolControl(tool, group)
+        tools.push(control)
+        items.append(control.element)
+      }
+      part.append(items)
+      panel.append(part)
+    }
     wrapper.append(header, panel)
 
     let open = false
@@ -142,10 +168,11 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
       },
       update: () => {
         for (const tool of tools) tool.update()
+        for (const title of titles) title()
         const icon = group.iconOf?.(context) ?? group.icon
         const current = header.querySelector('.toolbar__icon')!
         if (current.innerHTML !== icon) current.innerHTML = icon
-        header.classList.toggle('is-marked', Boolean(group.marksActive && group.tools.some(tool => tool.isActive?.(context))))
+        header.classList.toggle('is-marked', group.isMarked?.(context) ?? false)
       },
     }
     header.addEventListener('click', () => {

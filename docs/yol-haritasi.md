@@ -123,3 +123,23 @@ Kullanıcı "başla" dedi (2026-11-17). Yapılanlar:
   - madematik.com'da awDOC sayfası (Hakkında'daki indirme bağlantısı `projelerim/awdoc` oraya gider).
   - İlk sürüm (etiket) ve Play kaydı.
   - Bunların hepsi kullanıcıya sorulacak.
+
+## 2. aşama: çekirdek düzenleyici (2026-11-17'de başladı)
+
+Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her biri test edilip ayrı commit'lenir:
+
+1. **Yazı tipi, boyut, yazı rengi, vurgu: uygulandı (2026-11-17).**
+   - Yazı ▾ bölümlü bir pencere oldu: K/İ/A/S; "Boyut: 12" başlıklı Küçült/Büyüt (Word'ün 8–72 listesinde
+     adım adım); yazı rengi; vurgu.
+   - Renkler ailenin kuralına göre hazır kutucuklar. Sistemin renk seçicisi yalnız "Diğer renk…" ile açılır.
+     Seçili renk halkayla gösterilir; A simgesinin alt çizgisi yazının rengini alır.
+   - Yeni Yazı Tipi ▾ grubu: Calibri (belgenin yazı tipi), Arial, Times New Roman, Verdana, Georgia, Comic
+     Sans MS, Courier New. Adlar kendi yazı tipleriyle yazılır. Linux'ta karşılıkları kullanılır (Carlito,
+     Liberation).
+   - Başlıkta boyut başlığın kendi boyutundan başlar.
+2. Satır aralığı ve girinti
+3. Bağlantı, bul-değiştir, kelime sayısı
+4. Tablo
+5. Resim
+6. Otomatik kaydetme ve son belgeler
+7. PDF'e aktarma
