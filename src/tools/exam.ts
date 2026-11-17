@@ -1,6 +1,7 @@
 import { currentQuestion, DEFAULT_CHOICES, totalPoints, type ChoicesLayout } from '../editor/question'
 import { showPointsDialog } from '../ui/points-dialog'
 import { answersShown, setAnswersShown } from '../ui/answers'
+import { showExamDialog } from '../ui/exam-dialog'
 import { ICONS } from './icons'
 import type { Tool, ToolContext, ToolGroup } from './tool'
 
@@ -119,7 +120,14 @@ const answerKeyTool: Tool = {
   run: ({ editor }) => { editor.chain().focus().insertAnswerKey().run() },
 }
 
-const insertTools = [multipleChoiceTool, openQuestionTool]
+const examPaperTool: Tool = {
+  id: 'examPaper',
+  label: 'Sınav kâğıdı…',
+  icon: ICONS.examPaper,
+  run: ({ editor, session }) => showExamDialog(editor, session),
+}
+
+const insertTools = [examPaperTool, multipleChoiceTool, openQuestionTool]
 const answerTools = [correctChoiceTool, showAnswersTool, answerKeyTool]
 const choiceTools = [
   addChoiceTool,

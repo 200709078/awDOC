@@ -1,4 +1,4 @@
-import type { Editor } from '@tiptap/core'
+import type { Editor, JSONContent } from '@tiptap/core'
 import { documentNode, EMPTY_DOCUMENT, replaceDocument } from '../editor/editor'
 import { FormatError, type DocumentFormat } from '../formats/format'
 import { formatOfName, NATIVE_FORMAT, nameWithExtension, openableFormats } from '../formats/index'
@@ -92,11 +92,13 @@ export class DocumentSession {
     return choice === 'discard' || this.save()
   }
 
-  async newDocument(): Promise<void> {
-    if (!await this.confirmLeave()) return
-    replaceDocument(this.editor, documentNode(this.editor, EMPTY_DOCUMENT))
+  /** Yeni: an empty document, or one made from a template (a new exam paper). False when the user stayed. */
+  async newDocument(content: JSONContent = EMPTY_DOCUMENT): Promise<boolean> {
+    if (!await this.confirmLeave()) return false
+    replaceDocument(this.editor, documentNode(this.editor, content))
     this.set(UNTITLED, null, undefined)
     this.editor.commands.focus('start')
+    return true
   }
 
   /** The file is read first: one that cannot be opened never asks about the document on screen. */

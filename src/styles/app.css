@@ -1156,6 +1156,16 @@ body {
 	gap: 16px;
 }
 
+/* Two fields side by side shrink with the window instead of running out of it. */
+.dialog__pair .dialog__field {
+	min-width: 0;
+}
+
+.dialog__pair .dialog__field input {
+	width: 100%;
+	min-width: 0;
+}
+
 .dialog__check {
 	display: flex;
 	align-items: center;

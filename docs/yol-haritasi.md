@@ -312,7 +312,19 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
      (— açık uçlu soru, ? doğru şıkkı işaretlenmemiş soru). Canlıdır: soru eklenince, taşınınca ya da doğru
      şık değişince kendiliğinden güncellenir. Basılır. İkinci kez istenince yenisi eklenmez, var olana gidilir.
    - **Düz metin:** "Cevap Anahtarı: 1. C, 2. B" satırı.
-4. Sınav başlığı şablonu ("Yeni: Sınav kâğıdı").
+4. **Sınav kâğıdı şablonu: uygulandı (2026-11-17).** Sınav ▾ → "Sınav kâğıdı…".
+   - **Pencere:** Öğretim yılı (kendiliğinden; Eylül'de değişir), okul, sınıf, ders, sınav adı ve öğretmen
+     girilir. Bilgiler cihazda hatırlanır; yıl her seferinde bu öğretim yılıdır.
+   - **"Yeni sınav kâğıdı":** Kaydedilmemiş değişiklik varsa önce sorar, sonra yeni belge açar. İçinde:
+     - Ortada kalın, Türkçe büyük harfle iki satır başlık: "2026-2027 EĞİTİM-ÖĞRETİM YILI … LİSESİ" ve
+       "10. SINIF MATEMATİK DERSİ 1. DÖNEM 1. YAZILI SINAVI".
+     - Öğrenci tablosu: Adı Soyadı, Numarası, Sınıfı, Puanı.
+     - Açıklama satırı ve beş şıklı ilk soru; imleç sorunun içinde bekler.
+     - Sonda sağa yaslı "Başarılar dilerim.", öğretmen adı ve "… Öğretmeni".
+     - Kenar boşlukları 1,5 cm, altta ortada "1 / 3" biçiminde sayfa numarası.
+   - **"Başlığı bu belgeye ekle":** Başlığı ve tabloyu var olan belgenin başına koyar.
+   - Hepsi sıradan paragraf ve tablodur; sonradan değiştirilebilir.
+   - **Öneri (sonraya):** Okul logosu, birden çok şablon (yazılı, quiz, çalışma kâğıdı).
 5. İki sütunlu kâğıt (sayfalamanın sütunlara göre de bölmesi gerekir).
 6. A/B kitapçığı, drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası.
 

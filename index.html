@@ -156,6 +156,26 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="examDialog" class="dialog page-dialog" aria-labelledby="examTitle">
+		<h2 id="examTitle">Sınav kâğıdı</h2>
+		<form method="dialog">
+			<div class="dialog__pair">
+				<label class="dialog__field">Öğretim yılı<input id="examYear" type="text" autocomplete="off"></label>
+				<label class="dialog__field">Sınıf<input id="examGrade" type="text" autocomplete="off" placeholder="Ör. 10. Sınıf"></label>
+			</div>
+			<label class="dialog__field">Okul<input id="examSchool" type="text" autocomplete="off" placeholder="Ör. Atatürk Anadolu Lisesi"></label>
+			<div class="dialog__pair">
+				<label class="dialog__field">Ders<input id="examSubject" type="text" autocomplete="off" placeholder="Ör. Matematik"></label>
+				<label class="dialog__field">Sınav<input id="examName" type="text" autocomplete="off" placeholder="Ör. 1. Dönem 1. Yazılı"></label>
+			</div>
+			<label class="dialog__field">Öğretmen (kâğıdın sonunda; boş bırakılabilir)<input id="examTeacher" type="text" autocomplete="off"></label>
+			<div class="dialog__actions">
+				<button value="new" class="primary-button">Yeni sınav kâğıdı</button>
+				<button value="header" class="secondary-button">Başlığı bu belgeye ekle</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
 		<h2 id="recentTitle">Son belgeler</h2>
 		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>
