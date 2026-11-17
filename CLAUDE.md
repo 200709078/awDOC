@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 awDOC is a word processor (in the spirit of Word / Google Docs) built on TipTap (ProseMirror), TypeScript + Vite, shipped as a web app, an Electron desktop app (Linux AppImage/deb, Windows NSIS) and an Android app (Capacitor, APK). It is the sibling of awPDF and awCELL and follows the drAW family's conventions. The UI, test names, docs (README, `docs/yol-haritasi.md`) and messages are in **Turkish** — keep new user-facing strings and docs in Turkish.
 
-Status: stage 1 (skeleton) done 2026-11-17; not published yet (no release, not on madematik.com). The plan, the user's decisions and the stages are in `docs/yol-haritasi.md`; record new requests there with a date and do not implement any item until the user explicitly asks.
+Status: stage 1 (skeleton) done 2026-11-17; not published yet (no release, not on madematik.com). **The user's rule (2026-11-17): commit only — no push unless asked, and no release, tag, deploy or Play upload until every stage in the roadmap is done.** The plan, the user's decisions and the stages are in `docs/yol-haritasi.md`; record new requests there with a date and do not implement any item until the user explicitly asks.
 
 ## Decisions (2026-11-17, the user's)
 

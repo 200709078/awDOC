@@ -27,6 +27,10 @@ okuma. Dört imza secret'ı da var: `ANDROID_KEYSTORE_BASE64` ve `ANDROID_KEY_AL
   `awDOC-linux-x86_64.AppImage`, `awDOC-linux-amd64.deb`, `awDOC-win-x64.exe`, `awDOC-android.apk` ve
   `SHA256SUMS.txt`; Play için `awDOC-android.aab` (`play-Android` artifact'ı). Web sürümü `madematik.com/awDOC/`.
 - **İlk commit:** yol haritası iskeletle birlikte gönderilir (kullanıcı kararı 2026-11-17).
+- **Sürüm yok, yalnız commit (kullanıcı kararı 2026-11-17):** "Sadece commit yap. Bütün aşamalar bitmeden sürüm
+  yayınlamayalım." Aşamalar (1–6) bitene kadar sürüm etiketi, GitHub sürümü, canlıya alma ve Play yok; işler
+  yalnız yerelde commit'lenir, push kullanıcı isteyince yapılır. İskeletin ilk commit'i bu karardan hemen önce
+  `main`'e gönderilmişti (sürüm iş akışı çalışmadı).
 
 - Kardeşlerle aynı altyapı: TypeScript + Vite; Electron (Linux `.deb`/AppImage, Windows `.exe`), Capacitor
   (Android `.apk`, Play için `.aab`). `release.yml` ve `scripts/release-assets.mjs` aileyle birebir aynı; ortak
