@@ -10,9 +10,26 @@ function textOf(node: JSONContent): string {
   return (node.content ?? []).map(textOf).join('')
 }
 
-/** Each block on its own line; list items keep a mark so a list still reads as one. */
-function linesOf(node: JSONContent, prefix = ''): string[] {
+/** Questions are numbered through the whole document. */
+interface Counter {
+  questions: number
+}
+
+const LETTERS = 'ABCDEF'
+
+/** Each block on its own line; list items, questions and choices keep their marks so they still read as such. */
+function linesOf(node: JSONContent, counter: Counter, prefix = ''): string[] {
   switch (node.type) {
+    case 'question': {
+      const number = `${++counter.questions}. `
+      const lines = (node.content ?? []).flatMap(child => linesOf(child, counter, `${prefix}${' '.repeat(number.length)}`))
+      if (lines.length) lines[0] = `${prefix}${number}${lines[0].slice(prefix.length + number.length)}`
+      const points = Number(node.attrs?.points)
+      if (lines.length && points > 0) lines[0] += ` (${String(points).replace('.', ',')} puan)`
+      return lines
+    }
+    case 'choices':
+      return (node.content ?? []).map((choice, index) => `${prefix}${LETTERS[index] ?? '?'}) ${textOf(choice)}`)
     case 'paragraph':
     case 'heading':
       return [prefix + textOf(node)]
@@ -20,13 +37,13 @@ function linesOf(node: JSONContent, prefix = ''): string[] {
     case 'tableRow':
       return [prefix + (node.content ?? []).map(cell => (cell.content ?? []).map(textOf).join(' ')).join('\t')]
     case 'bulletList':
-      return (node.content ?? []).flatMap(item => (item.content ?? []).flatMap((child, index) => linesOf(child, index === 0 ? `${prefix}• ` : `${prefix}  `)))
+      return (node.content ?? []).flatMap(item => (item.content ?? []).flatMap((child, index) => linesOf(child, counter, index === 0 ? `${prefix}• ` : `${prefix}  `)))
     case 'orderedList': {
       const start = Number(node.attrs?.start ?? 1)
-      return (node.content ?? []).flatMap((item, number) => (item.content ?? []).flatMap((child, index) => linesOf(child, index === 0 ? `${prefix}${start + number}. ` : `${prefix}   `)))
+      return (node.content ?? []).flatMap((item, number) => (item.content ?? []).flatMap((child, index) => linesOf(child, counter, index === 0 ? `${prefix}${start + number}. ` : `${prefix}   `)))
     }
     default:
-      return (node.content ?? []).flatMap(child => linesOf(child, prefix))
+      return (node.content ?? []).flatMap(child => linesOf(child, counter, prefix))
   }
 }
 
@@ -47,6 +64,6 @@ export const txtFormat: DocumentFormat = {
     }
   },
   write(document) {
-    return new TextEncoder().encode(`${linesOf(document).join('\n')}\n`)
+    return new TextEncoder().encode(`${linesOf(document, { questions: 0 }).join('\n')}\n`)
   },
 }

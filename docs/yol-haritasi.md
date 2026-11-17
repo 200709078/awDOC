@@ -69,7 +69,7 @@ okuma. Dört imza secret'ı da var: `ANDROID_KEYSTORE_BASE64` ve `ANDROID_KEY_AL
    alt alta), sınav başlığı şablonu, iki sütunlu kâğıt, cevap anahtarı, A/B kitapçığı, drAW2D/drAW3D ve
    awPDF'ten görsel ekleme, soru bankası. Formül ve soru bloğu sürekli görünümde de çalışır; iki sütun ve
    "soru bölünmesin" A4 aşamasından sonra gelir. Sıra (kullanıcı kararı 2026-11-17): önce formül ve soru bloğu.
-   **Başladı (2026-11-17):** formül uygulandı. Ayrıntı aşağıda, "4. aşama".
+   **Başladı (2026-11-17):** formül ve soru bloğu uygulandı. Ayrıntı aşağıda, "4. aşama".
 5. **Dosya dönüştürme:** `.docx`, `.odt`, `.doc` bağdaştırıcıları.
 6. **İleri genel özellikler:** içindekiler, dipnot, yorumlar, izlenen değişiklikler, adres-mektup birleştirme.
 
@@ -277,7 +277,30 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
      sayfanın altına da basılıyordu (yazdırmada formül kendi kutusunun içine boyanır, `contain: paint`).
    - **Arayüz dili:** MathLive'ın arayüzü Türkçe değil. İngilizce menüsü gizlendi; klavyedeki birkaç
      açıklama İngilizce kalır.
-2. **Soru bloğu** (sırada): otomatik numara, puan, A–E şıklar (alt alta / yan yana / iki sütun); "Sınav ▾" grubu.
+2. **Soru bloğu: uygulandı (2026-11-17).**
+   - **Sınav ▾ grubu (araç çubuğunda):**
+     - Soru ekle: "Çoktan seçmeli soru" (A–E beş şık hazır gelir) ve "Açık uçlu soru".
+     - Şıklar: şık ekle / sil (en çok altı, A–F); şıklar alt alta, yan yana ya da iki sütun.
+     - Soru: puan, yukarı / aşağı taşıma, silme.
+     - Grubun başlığı toplam puanı gösterir.
+   - **Soru yapısı:**
+     - Kendi bloğudur; metni paragraf, liste, tablo, resim ve formül içerebilir.
+     - Numarası (1., 2.…) belgedeki sırasından kendiliğinden gelir, taşıyınca ve silince güncellenir.
+     - Puan sağ üstte "(10 puan)" olarak durur.
+     - Şık harfleri (A), B)…) kendiliğinden gelir.
+     - İmlecin olduğu sorunun solunda ekranda ince mavi bir çizgi var (basılmaz).
+   - **Yazarken:**
+     - Şıkta Enter sonraki boş şıkka geçer, son şıktan sonra yeni şık açar.
+     - Son boş şıkta (ya da altı şık doluyken) Enter sorudan çıkar.
+     - Tab / Shift+Tab şıklar arasında gezer.
+     - Boş şıkta Backspace şıkkı siler.
+     - Soru ekleyince altına bir paragraf konur; boş paragrafta eklenen soru onun yerini alır.
+   - **Sayfa bölünmesi:** Sayfa sonuna gelen sorunun ilk satırı numarasıyla birlikte, şık da harfiyle
+     birlikte sonraki sayfaya geçer. Yan yana / iki sütunlu şıklar bölünmez.
+   - **Yazdırma ve PDF:** Numara, harf ve puan basılır (Electron PDF'inde denendi).
+   - **Dosyalar:** Dosyada `question` (`points`), `choices` (`layout`) ve `choice` düğümleri olarak saklanır.
+     Düz metne "1. … A) …" olarak yazılır.
+   - **Sonraya:** doğru şıkkı işaretleme ve cevap anahtarı (3. adım), "soru bölünmesin" seçeneği.
 3. Sınav başlığı şablonu ("Yeni: Sınav kâğıdı"), cevap anahtarı, iki sütunlu kâğıt, "soru bölünmesin".
 4. A/B kitapçığı, drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası.
 

@@ -36,7 +36,8 @@ export interface Pagination {
 const SAFETY = 2
 
 type Unit =
-  | { readonly kind: 'text'; readonly pos: number; readonly node: ProseMirrorNode }
+  /** `wholeAt`: where the gap goes when the paragraph moves as a whole: before the block carrying its label (a question's number, a choice's letter). */
+  | { readonly kind: 'text'; readonly pos: number; readonly node: ProseMirrorNode; readonly wholeAt?: number }
   | { readonly kind: 'row'; readonly pos: number; readonly node: ProseMirrorNode }
   | { readonly kind: 'block'; readonly pos: number; readonly node: ProseMirrorNode }
   | { readonly kind: 'pageBreak'; readonly pos: number }
@@ -44,11 +45,17 @@ type Unit =
 /** The pieces that are laid out one under another: paragraphs, table rows, other blocks. */
 function unitsOf(doc: ProseMirrorNode): Unit[] {
   const units: Unit[] = []
-  doc.descendants((node, pos) => {
-    if (node.type.name === 'pageBreak') units.push({ kind: 'pageBreak', pos })
-    else if (node.isTextblock) units.push({ kind: 'text', pos, node })
-    else if (node.type.name === 'tableRow') units.push({ kind: 'row', pos, node })
-    else if (node.isBlock && node.isAtom) units.push({ kind: 'block', pos, node })
+  doc.descendants((node, pos, parent, index) => {
+    const name = node.type.name
+    if (name === 'pageBreak') units.push({ kind: 'pageBreak', pos })
+    else if (name === 'choice') units.push({ kind: 'text', pos, node, wholeAt: pos })
+    else if (node.isTextblock) {
+      // The first paragraph of a question carries the question's number: the question moves with it.
+      const first = index === 0 && parent?.type.name === 'question'
+      units.push({ kind: 'text', pos, node, ...(first ? { wholeAt: pos - 1 } : {}) })
+    } else if (name === 'tableRow') units.push({ kind: 'row', pos, node })
+    // Choices side by side are one piece.
+    else if ((name === 'choices' && node.attrs.layout !== 'list') || (node.isBlock && node.isAtom)) units.push({ kind: 'block', pos, node })
     else return true
     return false
   })
@@ -171,7 +178,11 @@ export function paginate(view: EditorView, page: PageGeometry): Pagination {
 
     const start = unit.pos + 1
     const end = unit.pos + unit.node.nodeSize - 1
-    if (forced) push('line', start, top + shift)
+    const moveWhole = (lineTop: number) => {
+      if (unit.wholeAt === undefined) push('line', start, lineTop)
+      else push('block', unit.wholeAt, lineTop)
+    }
+    if (forced) moveWhole(top + shift)
     let from = start
     // A paragraph may run over several pages: each page end it crosses is a break.
     while (bottom + shift > contentEnd(index) - SAFETY) {
@@ -184,7 +195,8 @@ export function paginate(view: EditorView, page: PageGeometry): Pagination {
       const lineTop = crossing === null ? top : charRect(crossing).top
       // A single line taller than the page stays where it is.
       if (lineTop + shift <= contentStart(index) + SAFETY) break
-      push('line', pos, lineTop + shift)
+      if (pos === start) moveWhole(lineTop + shift)
+      else push('line', pos, lineTop + shift)
       from = pos + 1
     }
   }

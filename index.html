@@ -142,6 +142,20 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="pointsDialog" class="dialog" aria-labelledby="pointsTitle">
+		<h2 id="pointsTitle">Sorunun puanı</h2>
+		<form method="dialog">
+			<label class="dialog__field">Puan
+				<input id="pointsInput" type="text" inputmode="decimal" autocomplete="off" placeholder="Ör. 10">
+			</label>
+			<p id="pointsError" class="dialog__error" role="alert" hidden></p>
+			<div class="dialog__actions">
+				<button value="save" class="primary-button">Tamam</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+				<button value="remove" class="secondary-button formula-dialog__keyboard" formnovalidate id="pointsRemove">Puanı kaldır</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
 		<h2 id="recentTitle">Son belgeler</h2>
 		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>

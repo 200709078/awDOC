@@ -622,6 +622,84 @@ body {
 	font-size: 0.9em;
 }
 
+/* Questions: numbered by their place (1., 2.…), points at the top right, choices lettered A), B)… */
+.document {
+	counter-reset: question;
+}
+
+.document .question {
+	position: relative;
+	margin: 0 0 12pt;
+	padding-left: 2em;
+	counter-increment: question;
+}
+
+.document .question::before {
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-weight: 700;
+	content: counter(question) ".";
+}
+
+.document .question[data-points] {
+	padding-right: 5.5em;
+}
+
+.document .question[data-points]::after {
+	position: absolute;
+	top: 0;
+	right: 0;
+	color: #374151;
+	font-size: 0.9em;
+	content: "(" attr(data-points) " puan)";
+}
+
+.document .question > p {
+	margin: 0 0 4pt;
+}
+
+.document .choices {
+	margin: 2pt 0 0;
+	counter-reset: choice;
+}
+
+.document .choices[data-layout="row"] {
+	display: grid;
+	grid-auto-columns: 1fr;
+	grid-auto-flow: column;
+	column-gap: 1em;
+}
+
+.document .choices[data-layout="grid"] {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 1em;
+}
+
+.document .choice {
+	position: relative;
+	min-height: 1.15em;
+	margin: 0 0 3pt;
+	padding-left: 1.6em;
+	counter-increment: choice;
+}
+
+.document .choice::before {
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-weight: 700;
+	content: counter(choice, upper-alpha) ")";
+}
+
+/* The question the cursor is in: a thin line in its margin, so one sees where it ends (not printed). */
+@media screen {
+	.document.ProseMirror-focused .question.has-cursor {
+		box-shadow: -10px 0 0 -8px var(--accent);
+	}
+}
+
 /* A page break (Ctrl+Enter): a dashed line with its name; on paper, the next page. */
 .document .page-break {
 	position: relative;
@@ -1295,6 +1373,12 @@ body {
 	   also painted them at the foot of the page before. Painting stays inside the formula's box. */
 	.document .formula {
 		contain: paint;
+	}
+
+	/* Choices side by side are laid out (and moved to a new page) as one piece. */
+	.document .choices[data-layout="row"],
+	.document .choices[data-layout="grid"] {
+		break-inside: avoid;
 	}
 
 	/* A scrolling box would not break across pages. */

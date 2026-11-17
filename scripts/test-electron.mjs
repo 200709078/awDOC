@@ -90,13 +90,23 @@ try {
   await page.keyboard.press('Enter')
   await page.locator('#document .formula .ML__latex').waitFor()
   await page.waitForFunction(() => document.fonts.check('16px KaTeX_Main') && document.fonts.check('italic 16px KaTeX_Math'))
+  // A question with its choices: the number and the letters are printed too.
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await page.evaluate(() => document.querySelector('#tool-multipleChoice').click())
+  await page.keyboard.type('Masaüstü sorusu')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.type('bir')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('iki')
+  await page.locator('#document .question .choice', { hasText: 'iki' }).waitFor()
   await page.waitForFunction(() => document.querySelectorAll('.page-sheet').length === 2 || !document.querySelector('#editorHost.is-paged'))
   // Saved with the file (and nothing left unsaved to ask about when the window closes).
   await page.keyboard.press('Control+s')
   await page.waitForFunction(() => !document.querySelector('#documentStatus').classList.contains('is-dirty'))
   const withPages = JSON.parse(readFileSync(file, 'utf8')).document
   assert.equal(withPages.attrs.page.header, 'Masaüstü üst bilgisi')
-  assert.deepEqual(withPages.content.map(node => node.type), ['paragraph', 'pageBreak', 'paragraph'])
+  assert.deepEqual(withPages.content.map(node => node.type), ['paragraph', 'pageBreak', 'paragraph', 'question', 'paragraph'])
 
   // PDF Olarak Kaydet: the save dialog is answered in the main process, then the file must be a PDF.
   const pdfPath = path.join(folder, 'Deneme.pdf')
@@ -112,7 +122,7 @@ try {
   if (process.env.AWDOC_TEST_PDF) copyFileSync(pdfPath, process.env.AWDOC_TEST_PDF)
 
   assert.deepEqual(errors, [])
-  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler, sayfa düzeni, formül ve PDF aktarımı çalışıyor.')
+  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler, sayfa düzeni, formül, soru ve PDF aktarımı çalışıyor.')
 } finally {
   await application.close()
   rmSync(folder, { recursive: true, force: true })
