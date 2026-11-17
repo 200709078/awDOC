@@ -189,7 +189,7 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
    - **Otomatik Kaydet (☰ menüsünde anahtar, varsayılan açık):** bir `.awd` dosyasından gelen ya da
      kaydedilmiş belge, yazmaya 4 saniye ara verilince kendi dosyasına sessizce yazılır. Adsız belgede ve
      düz metinde bir şey yapmaz. Yazamazsa bir kez uyarır; o belgede Kaydet ile devam edilir. Seçim cihazda
-     saklanır. **Açık soru:** varsayılan açık mı kalsın? (öneri: açık; Google Dokümanlar alışkanlığı)
+     saklanır. Varsayılan açık kalır (kullanıcı kararı 2026-11-17, "hepsine evet").
    - **Son Belgeler (☰ menüsünde):** açılan ve kaydedilen son 12 belge, tarihleriyle. Dokununca belge yeniden
      açılır (önce kaydedilmemiş değişiklik sorulur). Dosya silinmiş ya da izin kalkmışsa söylenir ve listeden
      çıkar. Yeniden bulma: tarayıcıda dosya tutamacı (Chromium), masaüstünde kabuğun verdiği kalıcı kimlik
@@ -206,3 +206,6 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
 **2. aşama bitti (2026-11-17).** Playwright testleri 80, Electron denemesi (kaynaktan) geçiyor. Gerçek tahtada,
 Windows'ta ve telefonda 2. aşama henüz denenmedi (telefon 1. aşamada denendi). Sırada 3. aşama: A4 sayfa
 görünümü.
+
+**2. aşamadan sonra (kullanıcı kararı 2026-11-17, "hepsine evet"):** Otomatik Kaydet varsayılan açık kalır;
+2. aşama GitHub'a gönderildi ve madematik.com/awDOC/'a yüklendi; 3. aşamaya geçildi.
