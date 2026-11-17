@@ -144,7 +144,19 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
      belgeden çıkarmaz.
    - Bir girinti 1,27 cm, en çok 8. Belgenin varsayılan satır aralığı Word'deki gibi 1,15 oldu (önce 1,5'ti).
    - Girinti ve satır aralığı paragrafla birlikte `.awd`'ye kaydedilir.
-3. Bağlantı, bul-değiştir, kelime sayısı
+3. **Bağlantı, bul-değiştir, kelime sayısı: uygulandı (2026-11-17).**
+   - **Bul (Ctrl+F) ve Bul ve Değiştir (Ctrl+H):** araç çubuğunun altında açılan çubuk.
+     - Türkçe harflere uyumlu: I/ı/İ/i aynı sayılır, büyük/küçük harf ayrılmaz.
+     - Bütün eşleşmeler sarı, o anki turuncu işaretlenir; "3 / 10" sayacı var. Enter sonrakine, Shift+Enter
+       öncekine gider; Esc kapatır.
+     - "Değiştir" önce eşleşmeyi seçip gösterir, ikinci basışta değiştirir. "Tümünü Değiştir" kaç yeri
+       değiştirdiğini söyler.
+   - **Bağlantı (Ctrl+K):** seçili yazıyı bağlantı yapar; seçim yoksa görünen yazıyı da sorar. Bağlantının
+     üstündeyken düzenler, açar ya da kaldırır.
+     - "madematik.com" https:// ile, e-posta adresi mailto: ile tamamlanır.
+     - Yalnız web ve e-posta adresleri kabul edilir (javascript:, file: gibi adresler reddedilir).
+   - **Kelime Sayısı (Ctrl+Shift+G, ☰ menüsünde):** kelime, boşluklu/boşluksuz karakter ve paragraf sayısını
+     gösterir; seçim varsa yalnız seçili bölümü sayar.
 4. Tablo
 5. Resim
 6. Otomatik kaydetme ve son belgeler

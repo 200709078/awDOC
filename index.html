@@ -15,6 +15,20 @@
 
 <body>
 	<div id="toolbar" class="toolbar" role="toolbar" aria-label="Araçlar"></div>
+	<div id="searchBar" class="search-bar" role="search" hidden>
+		<div class="search-bar__row">
+			<input id="searchInput" type="search" placeholder="Bul" aria-label="Bul" autocomplete="off">
+			<span id="searchStatus" class="search-bar__status" aria-live="polite"></span>
+			<button id="searchPrevious" class="secondary-button" type="button" aria-label="Önceki" title="Önceki (Shift+Enter)">↑</button>
+			<button id="searchNext" class="secondary-button" type="button" aria-label="Sonraki" title="Sonraki (Enter)">↓</button>
+			<button id="searchClose" class="secondary-button" type="button" aria-label="Kapat" title="Kapat (Esc)">✕</button>
+		</div>
+		<div id="replaceRow" class="search-bar__row" hidden>
+			<input id="replaceInput" type="text" placeholder="Yerine" aria-label="Yerine yazılacak" autocomplete="off">
+			<button id="replaceOne" class="secondary-button" type="button">Değiştir</button>
+			<button id="replaceAll" class="secondary-button" type="button">Tümünü Değiştir</button>
+		</div>
+	</div>
 	<main id="workspace" class="workspace">
 		<div id="editorHost" class="editor-host"></div>
 	</main>
@@ -26,6 +40,31 @@
 			<button value="save" class="primary-button">Kaydet</button>
 			<button value="discard" class="secondary-button danger-button">Kaydetmeden devam et</button>
 			<button value="cancel" class="secondary-button">Vazgeç</button>
+		</form>
+	</dialog>
+	<dialog id="linkDialog" class="dialog" aria-labelledby="linkTitle">
+		<h2 id="linkTitle">Bağlantı</h2>
+		<form method="dialog">
+			<label id="linkTextField" class="dialog__field">Görünen yazı
+				<input id="linkText" type="text" autocomplete="off" placeholder="Boş bırakılırsa adres yazılır">
+			</label>
+			<label class="dialog__field">Adres
+				<input id="linkUrl" type="text" inputmode="url" autocomplete="off" placeholder="ör. madematik.com">
+				<span id="linkError" class="dialog__error" role="alert" hidden></span>
+			</label>
+			<div class="dialog__actions">
+				<button value="save" class="primary-button">Tamam</button>
+				<button id="linkOpen" value="open" class="secondary-button">Aç</button>
+				<button id="linkRemove" value="remove" class="secondary-button danger-button" formnovalidate>Kaldır</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
+	<dialog id="countDialog" class="dialog" aria-labelledby="countTitle">
+		<h2 id="countTitle">Kelime sayısı</h2>
+		<dl id="countList" class="count-list"></dl>
+		<form method="dialog" class="dialog__actions">
+			<button value="close" class="primary-button">Kapat</button>
 		</form>
 	</dialog>
 	<!-- Hakkında (ailenin ortak penceresi: ad, sürüm, mADEMatik Solutions, indirme, lisans, gizlilik, iletişim) -->

@@ -1,0 +1,86 @@
+import type { Editor } from '@tiptap/core'
+import { countText } from '../core/count'
+import { normalizeLink } from '../core/links'
+import type { Platform } from '../platform/platform'
+
+/**
+ * Bağlantı: on a link it edits, opens or removes it; on selected words it makes them a link; with
+ * nothing selected it asks for the words too and puts them in.
+ */
+export function showLinkDialog(editor: Editor, platform: Platform): void {
+  const dialog = document.querySelector<HTMLDialogElement>('#linkDialog')!
+  const textField = document.querySelector<HTMLElement>('#linkTextField')!
+  const textInput = document.querySelector<HTMLInputElement>('#linkText')!
+  const urlInput = document.querySelector<HTMLInputElement>('#linkUrl')!
+  const error = document.querySelector<HTMLElement>('#linkError')!
+  const existing = editor.isActive('link')
+  if (existing) editor.chain().extendMarkRange('link').run()
+  const { empty } = editor.state.selection
+  urlInput.value = existing ? String(editor.getAttributes('link').href ?? '') : ''
+  textInput.value = ''
+  textField.hidden = !empty
+  error.hidden = true
+  for (const id of ['#linkRemove', '#linkOpen']) document.querySelector<HTMLElement>(id)!.hidden = !existing
+
+  const form = dialog.querySelector('form')!
+  // A wrong address keeps the window open with the reason under the field.
+  form.onsubmit = event => {
+    const action = (event.submitter as HTMLButtonElement | null)?.value
+    if (action !== 'save' && action !== 'open') return
+    const href = normalizeLink(urlInput.value)
+    if (!href) {
+      event.preventDefault()
+      error.textContent = 'Bu bir web ya da e-posta adresi değil (ör. madematik.com).'
+      error.hidden = false
+      urlInput.focus()
+    }
+  }
+  dialog.onclose = () => {
+    const href = normalizeLink(urlInput.value)
+    const chain = editor.chain().focus()
+    if (dialog.returnValue === 'remove') chain.extendMarkRange('link').unsetLink().run()
+    else if (dialog.returnValue === 'open' && href) platform.openExternal(href)
+    else if (dialog.returnValue === 'save' && href) {
+      if (empty) {
+        const text = textInput.value.trim() || href.replace(/^mailto:/, '')
+        chain.insertContent({ type: 'text', text, marks: [{ type: 'link', attrs: { href } }] }).run()
+      } else {
+        chain.extendMarkRange('link').setLink({ href }).run()
+      }
+    } else chain.run()
+  }
+  dialog.returnValue = ''
+  dialog.showModal()
+  ;(empty ? textInput : urlInput).focus()
+}
+
+/** Kelime sayısı, of the selection when there is one, as Word does. */
+export function showWordCount(editor: Editor): void {
+  const { state } = editor
+  const { from, to, empty } = state.selection
+  const [start, end] = empty ? [0, state.doc.content.size] : [from, to]
+  const count = countText(state.doc.textBetween(start, end, '\n', ' '))
+  let paragraphs = 0
+  state.doc.nodesBetween(start, end, node => {
+    if (node.isTextblock && node.textContent.trim()) paragraphs++
+    return !node.isTextblock
+  })
+  document.querySelector('#countTitle')!.textContent = empty ? 'Kelime sayısı' : 'Kelime sayısı (seçili bölüm)'
+  const rows: [string, number][] = [
+    ['Kelime', count.words],
+    ['Karakter (boşluksuz)', count.charactersWithoutSpaces],
+    ['Karakter (boşluklu)', count.characters],
+    ['Paragraf', paragraphs],
+  ]
+  const list = document.querySelector('#countList')!
+  list.replaceChildren(...rows.flatMap(([name, value]) => {
+    const term = document.createElement('dt')
+    term.textContent = name
+    const detail = document.createElement('dd')
+    detail.textContent = value.toLocaleString('tr-TR')
+    return [term, detail]
+  }))
+  const dialog = document.querySelector<HTMLDialogElement>('#countDialog')!
+  dialog.onclose = () => { editor.commands.focus() }
+  dialog.showModal()
+}

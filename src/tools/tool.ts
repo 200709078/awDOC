@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/core'
 import type { DocumentSession } from '../app/session'
 import type { Platform } from '../platform/platform'
+import type { SearchBar } from '../ui/search-bar'
 import type { Theme } from '../ui/theme'
 
 /** What a tool may use. Tools reach the document and the platform only through this. */
@@ -9,6 +10,7 @@ export interface ToolContext {
   readonly session: DocumentSession
   readonly platform: Platform
   readonly theme: Theme
+  readonly searchBar: SearchBar
 }
 
 /**
@@ -42,6 +44,8 @@ export interface Tool {
   isMarked?(context: ToolContext): boolean
   /** Left out altogether where the platform cannot do it. */
   isSupported?(context: ToolContext): boolean
+  /** False when only its shortcut reaches it (Ctrl+H opens the find bar's replace row). */
+  readonly inToolbar?: boolean
   /** Always in the ☰ menu, at its end (Hakkında); the menu button then shows on wide screens too. */
   readonly inMenu?: boolean
   run(context: ToolContext): void

@@ -57,3 +57,26 @@ test('dosya adından biçim bulunur; uzantı değiştirilir', () => {
   expect(nameWithExtension('Belge', awdFormat)).toBe('Belge.awd');
   expect(acceptList()).toBe('.awd,.txt');
 });
+
+test('bağlantı adresleri: yalnız web ve e-posta; eksik başlık tamamlanır', async () => {
+  const { normalizeLink } = await import('../src/core/links');
+  expect(normalizeLink('madematik.com')).toBe('https://madematik.com/');
+  expect(normalizeLink(' http://a.b/c ')).toBe('http://a.b/c');
+  expect(normalizeLink('ali@okul.k12.tr')).toBe('mailto:ali@okul.k12.tr');
+  expect(normalizeLink('javascript:alert(1)')).toBeNull();
+  expect(normalizeLink('file:///etc/passwd')).toBeNull();
+  expect(normalizeLink('kelime')).toBeNull();
+  expect(normalizeLink('iki kelime.com')).toBeNull();
+});
+
+test('kelime sayımı Word gibi: noktalama tek başına kelime değil', async () => {
+  const { countText } = await import('../src/core/count');
+  expect(countText('Bir iki — üç.\nDört')).toEqual({ words: 4, characters: 17, charactersWithoutSpaces: 14 });
+  expect(countText('')).toEqual({ words: 0, characters: 0, charactersWithoutSpaces: 0 });
+});
+
+test('arama katlaması: I/ı/İ/i aynı, uzunluk değişmez', async () => {
+  const { foldForSearch } = await import('../src/editor/search');
+  expect(foldForSearch('IŞIK İnce')).toBe('işik ince');
+  expect(foldForSearch('İİİ').length).toBe(3);
+});

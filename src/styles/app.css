@@ -327,6 +327,63 @@ body {
 	font-weight: 700;
 }
 
+/* ---- Bul ve değiştir ---- */
+
+.search-bar {
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	gap: 8px;
+	padding: 8px;
+	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+}
+
+.search-bar__row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.search-bar input {
+	flex: 0 1 320px;
+	min-width: 0;
+	min-height: 48px;
+	padding: 0 12px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface-muted);
+	color: inherit;
+	font: inherit;
+	font-size: 18px;
+}
+
+.search-bar__status {
+	flex: none;
+	min-width: 64px;
+	font-variant-numeric: tabular-nums;
+}
+
+.search-bar__status.is-missing {
+	color: #dc2626;
+}
+
+.search-bar .secondary-button {
+	flex: none;
+	padding: 0 16px;
+}
+
+/* Matches as in a browser's find: yellow, the current one orange. */
+.document .search-match {
+	background: rgb(255 204 0 / 45%);
+}
+
+.document .search-match.is-current {
+	background: rgb(255 120 0 / 60%);
+	box-shadow: 0 0 0 1.5px rgb(204 82 0);
+}
+
 /* ---- Belge: sürekli görünüm (sayfasız), A4 genişliğinde kâğıt ---- */
 
 .workspace {
@@ -492,6 +549,43 @@ body {
 .dialog p {
 	margin: 0 0 24px;
 	overflow-wrap: anywhere;
+}
+
+.dialog__field {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 24px;
+}
+
+.dialog__field input {
+	min-height: 48px;
+	padding: 0 12px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface-muted);
+	color: inherit;
+	font: inherit;
+	font-size: 18px;
+}
+
+.dialog__error {
+	color: #dc2626;
+	font-weight: 600;
+}
+
+.count-list {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px 24px;
+	margin: 16px 0 24px;
+	font-size: 18px;
+}
+
+.count-list dd {
+	margin: 0;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
 }
 
 .dialog__actions {

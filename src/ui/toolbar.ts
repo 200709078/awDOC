@@ -184,9 +184,10 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
     return control
   }
 
-  const controls = supported.map(item => (isGroup(item) ? groupControl(item) : toolControl(item)))
-  const inRow = controls.filter((_, index) => { const item = supported[index]; return isGroup(item) || !item.inMenu })
-  const menuOnly = controls.filter((_, index) => { const item = supported[index]; return !isGroup(item) && item.inMenu })
+  const shown = supported.filter(item => isGroup(item) || item.inToolbar !== false)
+  const controls = shown.map(item => (isGroup(item) ? groupControl(item) : toolControl(item)))
+  const inRow = controls.filter((_, index) => { const item = shown[index]; return isGroup(item) || !item.inMenu })
+  const menuOnly = controls.filter((_, index) => { const item = shown[index]; return !isGroup(item) && item.inMenu })
   root.append(...inRow.map(control => control.element), status, toggle, menu)
 
   // Items that always live in the menu (Hakkında) sit at its end and keep the button shown.
@@ -234,6 +235,7 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
   context.editor.on('transaction', update)
   context.session.onChange(update)
   context.theme.onChange(update)
+  context.searchBar.onChange(update)
   context.platform.onFullscreenChange(update)
   new ResizeObserver(fit).observe(root)
   update()

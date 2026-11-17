@@ -4,6 +4,7 @@ import { currentPlatform } from '../platform/platform'
 import { TOOLBAR } from '../tools/index'
 import type { ToolContext } from '../tools/tool'
 import { connectScreenKeyboard } from '../ui/screen-keyboard'
+import { SearchBar } from '../ui/search-bar'
 import { Theme } from '../ui/theme'
 import { mountToolbar } from '../ui/toolbar'
 import { DocumentSession } from './session'
@@ -14,7 +15,8 @@ export function startApp(): void {
   const theme = new Theme()
   const editor = createEditor(document.querySelector<HTMLElement>('#editorHost')!)
   const session = new DocumentSession(editor, platform)
-  const context: ToolContext = { editor, session, platform, theme }
+  const searchBar = new SearchBar(editor)
+  const context: ToolContext = { editor, session, platform, theme, searchBar }
   const toolbar = mountToolbar(document.querySelector<HTMLElement>('#toolbar')!, TOOLBAR, context)
 
   document.querySelector<HTMLInputElement>('#fileInput')!.accept = acceptList()
@@ -55,6 +57,10 @@ export function startApp(): void {
       return true
     }
     if (toolbar.close()) return true
+    if (searchBar.isOpen) {
+      searchBar.close()
+      return true
+    }
     if (platform.isFullscreen) {
       platform.toggleFullscreen()
       return true
