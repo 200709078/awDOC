@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>awDOC</title>
+  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+  <!-- Kıvrık köşeli sayfa (awPDF'inkiyle aynı) -->
+  <g stroke="#1f2937" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M96 44H336L416 124V468H96Z" fill="#f8fafc"/>
+    <path d="M336 44V124H416" fill="#dbe4f0"/>
+  </g>
+  <!-- Üstte, kıvrık köşenin solunda basık AW: A üç doğru parçası, W dört doğru parçası -->
+  <g stroke-width="17" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M128 140L163 78L198 140M140 119H186" stroke="#2563eb"/>
+    <path d="M210 78L228 140L257 96L286 140L304 78" stroke="#e11d48"/>
+  </g>
+  <!-- Altta kalın DOC, sayfada ortalı; sol kenarı AW ile hizalı (harf yerleri awPDF'teki PDF ile aynı) -->
+  <g stroke="#1f2937" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M128 220H138A48 89 0 0 1 138 398H128Z"/>
+    <ellipse cx="256" cy="309" rx="29" ry="89"/>
+    <path d="M382 241A34 89 0 1 0 382 377"/>
+  </g>
+</svg>

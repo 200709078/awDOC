@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Telefonda Play'den gelen awDOC'un yanında duran deneme kopyası böyle görünür. -->
+<resources>
+    <string name="app_name">awDOC Deneme</string>
+    <string name="title_activity_main">awDOC Deneme</string>
+</resources>

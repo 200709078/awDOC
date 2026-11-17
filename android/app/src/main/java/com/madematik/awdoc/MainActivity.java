@@ -1,0 +1,16 @@
+package com.madematik.awdoc;
+
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        // Local plugins are registered before the bridge starts.
+        registerPlugin(AwDocNativePlugin.class);
+        super.onCreate(savedInstanceState);
+        // WebView, Android'in yazı boyutu ayarını (ör. 1,5×) arayüzdeki bütün yazılara uygular ve
+        // düğme yazıları taşar.
+        getBridge().getWebView().getSettings().setTextZoom(100);
+    }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">awDOC</string>
+    <string name="title_activity_main">awDOC</string>
+    <string name="package_name">com.madematik.awdoc</string>
+    <string name="custom_url_scheme">com.madematik.awdoc</string>
+</resources>

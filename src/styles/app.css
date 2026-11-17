@@ -1,0 +1,624 @@
+/* Touch comes first: the app is used on class smart boards and phones, so targets stay large. */
+:root {
+	--toolbar-height: 56px;
+	--surface: #ffffff;
+	--surface-muted: #e5e7eb;
+	--border: #d1d5db;
+	--text: #1f2937;
+	--accent: #2563eb;
+	--toast-surface: #1f2937;
+	/* The page is paper in both themes: it is white when printed. */
+	--paper: #ffffff;
+	--paper-text: #111827;
+	--paper-width: 794px; /* A4, 21 cm at 96 DPI */
+	--paper-padding: 72px 88px;
+	color-scheme: light;
+}
+
+/* The same dark colours twice: following the system, and chosen with the theme button. */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--surface: #1f2937;
+		--surface-muted: #111827;
+		--border: #374151;
+		--text: #e5e7eb;
+		--accent: #3b82f6;
+		--toast-surface: #374151;
+		color-scheme: dark;
+	}
+}
+
+:root[data-theme="dark"] {
+	--surface: #1f2937;
+	--surface-muted: #111827;
+	--border: #374151;
+	--text: #e5e7eb;
+	--accent: #3b82f6;
+	--toast-surface: #374151;
+	color-scheme: dark;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: var(--surface-muted);
+	color: var(--text);
+	font-family: system-ui, sans-serif;
+}
+
+[hidden] {
+	display: none !important;
+}
+
+/* ---- Araç çubuğu: gruplar ▾ ve ☰ / ✕ menüsü (ailenin ortak stili, 2026-11-10) ---- */
+
+.toolbar {
+	position: relative;
+	z-index: 20;
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 4px;
+	height: var(--toolbar-height);
+	padding: 0 8px;
+	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+}
+
+.toolbar__button {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	min-width: 48px;
+	height: 48px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: inherit;
+	font: inherit;
+	touch-action: manipulation;
+	cursor: pointer;
+}
+
+.toolbar__icon {
+	flex: none;
+	width: 26px;
+	height: 26px;
+}
+
+.toolbar__caret {
+	flex: none;
+	width: 14px;
+	height: 14px;
+	margin-right: -2px;
+	opacity: 0.7;
+}
+
+.toolbar__group-button {
+	padding: 0 6px 0 8px;
+}
+
+.toolbar__button:hover:not(:disabled) {
+	background: var(--surface-muted);
+}
+
+/* Hover included: on a touch screen it stays on after the tap. */
+.toolbar__button[aria-pressed="true"],
+.toolbar__button[aria-pressed="true"]:hover:not(:disabled) {
+	background: var(--accent);
+	color: #ffffff;
+}
+
+.toolbar__group-button[aria-expanded="true"] {
+	background: var(--surface-muted);
+}
+
+/* Something inside the group is on (bold text, a list), or there is something to save: a dot. */
+.toolbar__button.is-marked::after {
+	position: absolute;
+	top: 7px;
+	right: 7px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--accent);
+	content: "";
+}
+
+.toolbar__button:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.toolbar__label {
+	display: none;
+}
+
+.toolbar__group {
+	position: relative;
+	flex: none;
+}
+
+/* A group's window under its button. */
+.toolbar__panel {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 30;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 220px;
+	padding: 6px;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	background: var(--surface);
+	box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
+}
+
+.toolbar__panel.is-right {
+	right: 0;
+	left: auto;
+}
+
+.toolbar__panel .toolbar__button {
+	justify-content: flex-start;
+	gap: 12px;
+	width: 100%;
+	padding: 0 10px;
+	font-size: 16px;
+	text-align: left;
+}
+
+.toolbar__panel .toolbar__label {
+	display: inline;
+}
+
+/* Icons everyone knows (B, I, U, alignment) stand side by side, without their names. */
+.toolbar__panel--icons {
+	flex-direction: row;
+	min-width: 0;
+}
+
+.toolbar__panel--icons .toolbar__button {
+	justify-content: center;
+	width: 48px;
+	padding: 0;
+}
+
+.toolbar__panel--icons .toolbar__label {
+	display: none;
+}
+
+.toolbar__menu {
+	position: absolute;
+	top: 100%;
+	right: 8px;
+	z-index: 30;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	width: min(280px, calc(100vw - 16px));
+	padding: 6px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	background: var(--surface);
+	box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
+}
+
+.toolbar__menu .toolbar__button {
+	justify-content: flex-start;
+	gap: 12px;
+	width: 100%;
+	padding: 0 10px;
+	font-size: 16px;
+	text-align: left;
+}
+
+.toolbar__menu .toolbar__label {
+	display: inline;
+}
+
+/* In the menu a group opens in place, like an accordion. */
+.toolbar__menu .toolbar__caret {
+	margin-left: auto;
+}
+
+.toolbar__menu .toolbar__group-button[aria-expanded="true"] .toolbar__caret {
+	transform: rotate(180deg);
+}
+
+.toolbar__menu .toolbar__panel {
+	position: static;
+	min-width: 0;
+	padding: 2px 0 6px 24px;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.toolbar__menu .toolbar__panel--icons {
+	flex-wrap: wrap;
+}
+
+.toolbar__menu .toolbar__panel--icons .toolbar__button {
+	justify-content: center;
+	width: 48px;
+	padding: 0;
+}
+
+.toolbar__menu .toolbar__panel--icons .toolbar__label {
+	display: none;
+}
+
+.toolbar__status {
+	flex: 0 1 auto;
+	min-width: 0;
+	margin-left: auto;
+	padding: 0 8px;
+	overflow: hidden;
+	font-size: 16px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* A phone has no room for the name; Kaydet's dot shows unsaved changes there. */
+@media (max-width: 520px) {
+	.toolbar__status {
+		display: none;
+	}
+}
+
+/* Unsaved changes: a dot before the name. */
+.toolbar__status.is-dirty::before {
+	content: "• ";
+	color: var(--accent);
+	font-weight: 700;
+}
+
+/* ---- Belge: sürekli görünüm (sayfasız), A4 genişliğinde kâğıt ---- */
+
+.workspace {
+	position: relative;
+	flex: 1;
+	min-height: 0;
+	padding: 24px 16px 48px;
+	overflow: auto;
+	overscroll-behavior: contain;
+}
+
+/* A file held over the window. */
+.is-dropping .workspace::after {
+	position: fixed;
+	inset: calc(var(--toolbar-height) + 8px) 8px 8px;
+	z-index: 5;
+	border: 3px dashed var(--accent);
+	border-radius: 12px;
+	content: "";
+	pointer-events: none;
+}
+
+.editor-host {
+	max-width: var(--paper-width);
+	margin: 0 auto;
+}
+
+.document {
+	min-height: calc(100vh - var(--toolbar-height) - 72px);
+	padding: var(--paper-padding);
+	border: 1px solid var(--border);
+	border-radius: 2px;
+	background: var(--paper);
+	color: var(--paper-text);
+	font-family: Calibri, Carlito, "Liberation Sans", Arial, sans-serif;
+	font-size: 12pt;
+	line-height: 1.5;
+	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+	outline: none;
+	overflow-wrap: break-word;
+	caret-color: var(--paper-text);
+}
+
+.document > :first-child {
+	margin-top: 0;
+}
+
+.document p {
+	margin: 0 0 8pt;
+}
+
+.document h1,
+.document h2,
+.document h3 {
+	margin: 16pt 0 8pt;
+	line-height: 1.25;
+}
+
+.document h1 {
+	font-size: 20pt;
+}
+
+.document h2 {
+	font-size: 16pt;
+}
+
+.document h3 {
+	font-size: 13pt;
+}
+
+.document ul,
+.document ol {
+	margin: 0 0 8pt;
+	padding-left: 24pt;
+}
+
+.document li p {
+	margin: 0 0 2pt;
+}
+
+.document blockquote {
+	margin: 0 0 8pt;
+	padding-left: 12pt;
+	border-left: 3px solid #d1d5db;
+	color: #4b5563;
+}
+
+.document a {
+	color: #1d4ed8;
+}
+
+/* Phones: the page fills the width, the margins shrink. */
+@media (max-width: 700px) {
+	:root {
+		--paper-padding: 24px 20px;
+	}
+
+	.workspace {
+		padding: 0;
+	}
+
+	.document {
+		min-height: calc(100vh - var(--toolbar-height));
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+}
+
+/* ---- Düğmeler, pencereler, bildirim ---- */
+
+.primary-button,
+.secondary-button {
+	min-height: 48px;
+	padding: 0 24px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	font: inherit;
+	font-size: 18px;
+	touch-action: manipulation;
+	cursor: pointer;
+}
+
+.primary-button {
+	background: var(--accent);
+	color: #ffffff;
+}
+
+.secondary-button {
+	border-color: var(--border);
+	background: var(--surface);
+	color: inherit;
+}
+
+.danger-button.primary-button {
+	background: #dc2626;
+}
+
+.danger-button.secondary-button {
+	color: #dc2626;
+}
+
+.dialog {
+	width: min(440px, calc(100vw - 32px));
+	padding: 24px;
+	border: 0;
+	border-radius: 12px;
+	background: var(--surface);
+	color: inherit;
+}
+
+.dialog h2 {
+	margin: 0 0 8px;
+}
+
+.dialog p {
+	margin: 0 0 24px;
+	overflow-wrap: anywhere;
+}
+
+.dialog__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+/* The answer comes first in the page, so that Enter chooses it; the eye still gets it last. */
+.dialog__actions .secondary-button {
+	order: -1;
+}
+
+.toast {
+	position: fixed;
+	/* As a popover it would be centred on the screen by the browser's own `inset: 0`. */
+	top: auto;
+	right: 16px;
+	bottom: 16px;
+	left: 16px;
+	z-index: 100;
+	width: fit-content;
+	height: fit-content;
+	margin: auto;
+	padding: 12px 20px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--toast-surface);
+	color: #ffffff;
+}
+
+/* ---- Hakkında (ailenin ortak penceresi) ---- */
+
+.about-dialog {
+	width: min(360px, calc(100vw - 32px));
+	padding: 0;
+}
+
+.about-dialog__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--border);
+}
+
+.about-dialog__header h2 {
+	margin: 0;
+	font-size: 17px;
+}
+
+.about-dialog__close {
+	width: 32px;
+	height: 32px;
+	border: 0;
+	border-radius: 8px;
+	background: var(--surface-muted);
+	color: inherit;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.about-dialog__body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	padding: 18px 18px 20px;
+	text-align: center;
+}
+
+.about-dialog .about-dialog__body p {
+	margin: 0;
+}
+
+.about-dialog__icon {
+	width: 72px;
+	height: 72px;
+	margin-bottom: 6px;
+}
+
+.about-dialog__name strong {
+	font-size: 20px;
+}
+
+.about-dialog__description {
+	opacity: 0.75;
+}
+
+.about-dialog .about-dialog__maker {
+	margin-top: 10px;
+}
+
+.about-dialog__body a {
+	color: var(--accent);
+	text-decoration: none;
+}
+
+.about-dialog__body a:hover {
+	text-decoration: underline;
+}
+
+.about-dialog__brand {
+	color: var(--text);
+	font-weight: 700;
+}
+
+.about-dialog__brand span {
+	color: var(--accent);
+}
+
+.about-dialog__facts {
+	display: grid;
+	grid-template-columns: auto auto;
+	gap: 4px 12px;
+	margin: 14px 0 0;
+	text-align: left;
+}
+
+.about-dialog__facts dt {
+	opacity: 0.7;
+}
+
+.about-dialog__facts dd {
+	margin: 0;
+}
+
+/* Adres seçilebilir yazı: e-posta bağlantıları tahtada ve telefonda çoğu zaman bir şey açmaz. */
+.about-dialog__mail {
+	user-select: all;
+	-webkit-user-select: all;
+}
+
+/* ---- Yazdırma: yalnız belge, kâğıdın kendi kenar boşluklarıyla ---- */
+
+@page {
+	size: A4;
+	margin: 2cm 2.5cm;
+}
+
+@media print {
+	html,
+	body {
+		display: block;
+		height: auto;
+		overflow: visible;
+		background: none;
+	}
+
+	body > *:not(.workspace) {
+		display: none !important;
+	}
+
+	.workspace {
+		padding: 0;
+		overflow: visible;
+	}
+
+	.editor-host {
+		max-width: none;
+	}
+
+	.document {
+		min-height: 0;
+		padding: 0;
+		border: 0;
+		box-shadow: none;
+	}
+}

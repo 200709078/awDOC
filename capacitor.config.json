@@ -1,0 +1,10 @@
+{
+  "appId": "com.madematik.awdoc",
+  "appName": "awDOC",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

@@ -1,0 +1,2 @@
+# .mjs dosyaları JavaScript türüyle sunulur; tarayıcı modül ve işçileri yalnız bu türle çalıştırır.
+AddType text/javascript .mjs
