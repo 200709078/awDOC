@@ -4,6 +4,7 @@ import { makePng } from './helpers/make-png';
 
 async function pickImage(page: Page, name: string, buffer: Buffer) {
   const chooser = page.waitForEvent('filechooser');
+  await page.locator('#group-image').click();
   await page.locator('#tool-image').click();
   await (await chooser).setFiles({ name, mimeType: 'image/png', buffer });
 }
@@ -95,4 +96,86 @@ test('köşeden sürükleyince resim oranı bozulmadan küçülür; yeni genişl
   const [file] = await savedFiles(page);
   const width = JSON.parse(file.text).document.content[0].content[0].attrs.width;
   expect(width).toBeLessThan(260);
+});
+
+test('Resim ▾ yerleşimi: ortada tek başına, solda ve yazı yanında; araçlar yalnız resim seçiliyken', async ({ page }) => {
+  await pickImage(page, 'sekil.png', makePng(200, 200));
+  const image = page.locator('#document img[src^="data:"]');
+  await page.locator('#group-image').click();
+  await expect(page.locator('#tool-imageWrap-center')).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await image.click();
+  await page.locator('#group-image').click();
+  await page.locator('#tool-imageWrap-center').click();
+  await expect(image).toHaveAttribute('data-wrap', 'center');
+  const container = page.locator('#document [data-resize-container]');
+  await expect(container).toHaveCSS('display', 'flex');
+
+  await page.locator('#group-image').click();
+  await page.locator('#tool-imageWrap-left').click();
+  await expect(container).toHaveCSS('float', 'left');
+  // Text written after it runs beside the picture.
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.type('Yanındaki yazı');
+  const [picture, text] = await page.evaluate(() => {
+    const paragraph = document.querySelector('#document p')!;
+    const range = document.createRange();
+    range.selectNodeContents(paragraph.lastChild!);
+    return [document.querySelector('#document [data-resize-container]')!.getBoundingClientRect().right, range.getBoundingClientRect().left];
+  });
+  expect(text).toBeGreaterThan(picture);
+  await page.keyboard.press('Control+z');
+  await page.keyboard.press('Control+z');
+  await expect(image).toHaveAttribute('data-wrap', 'center');
+});
+
+test('Kırp: çerçevenin dışı gider, genişlik orantılı küçülür; Geri Al eski resmi getirir', async ({ page }) => {
+  await pickImage(page, 'sekil.png', makePng(400, 200));
+  const image = page.locator('#document img[src^="data:"]');
+  const original = await image.getAttribute('src');
+  await image.click();
+  await page.locator('#group-image').click();
+  await page.locator('#tool-cropImage').click();
+  const box = page.locator('#cropBox');
+  await expect(box).toBeVisible();
+  // The right edge dragged to the middle: half the picture stays.
+  const frame = (await box.boundingBox())!;
+  await page.mouse.move(frame.x + frame.width, frame.y + frame.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(frame.x + frame.width / 2, frame.y + frame.height / 2, { steps: 4 });
+  await page.mouse.up();
+  await page.getByRole('button', { name: 'Kırp', exact: true }).click();
+  await expect(image).not.toHaveAttribute('src', original!);
+  const natural = await image.evaluate(element => new Promise<number>(resolve => {
+    const picture = element as HTMLImageElement;
+    if (picture.complete && picture.naturalWidth) resolve(picture.naturalWidth);
+    else picture.onload = () => resolve(picture.naturalWidth);
+  }));
+  expect(natural).toBeGreaterThan(190);
+  expect(natural).toBeLessThan(210);
+  expect((await image.boundingBox())!.width).toBeCloseTo(200, -1);
+  await page.keyboard.press('Control+z');
+  await expect(image).toHaveAttribute('src', original!);
+});
+
+test('resim altı yazısı "Şekil N:" diye numaralanır; düz metne de öyle yazılır', async ({ page }) => {
+  await fakeSavePicker(page, ['Sekil.awd']);
+  await page.reload();
+  await pickImage(page, 'bir.png', makePng(100, 100));
+  await page.locator('#document img[src^="data:"]').click();
+  await page.locator('#group-image').click();
+  await page.locator('#tool-imageCaption').click();
+  await page.keyboard.type('Üçgen');
+  const caption = page.locator('#document p[data-caption]');
+  await expect(caption).toHaveText('Üçgen');
+  expect(await caption.evaluate(element => getComputedStyle(element, '::before').content)).toContain('Şekil');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('Sonraki paragraf');
+  await expect(page.locator('#document p[data-caption]')).toHaveCount(1);
+
+  await page.keyboard.press('Control+s');
+  await expect.poll(async () => (await savedFiles(page)).length).toBe(1);
+  const saved = JSON.parse((await savedFiles(page))[0].text).document;
+  const { txtFormat } = await import('../src/formats/txt');
+  expect(new TextDecoder().decode(await txtFormat.write!(saved))).toContain('Şekil 1: Üçgen\nSonraki paragraf');
 });

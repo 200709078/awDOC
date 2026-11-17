@@ -9,7 +9,7 @@ import type { EditorView } from '@tiptap/pm/view'
 import StarterKit from '@tiptap/starter-kit'
 import { AnswerKey } from './answer-key'
 import { Formula } from './formula'
-import { DocumentImage, ImageInput } from './image'
+import { DocumentImage, ImageCaption, ImageInput } from './image'
 import { PageBreak, PageSetupExtension } from './page-setup'
 import { PaginationExtension } from './pagination'
 import { Choice, Choices, Question, QuestionRow } from './question'
@@ -47,6 +47,7 @@ export function createEditor(element: HTMLElement): Editor {
       ParagraphFormat,
       Search,
       DocumentImage,
+      ImageCaption,
       ImageInput,
       // Columns can be widened by dragging their edge.
       TableKit.configure({ table: { resizable: true } }),

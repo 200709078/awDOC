@@ -353,7 +353,22 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
      - Çift sayfa sonunda bölünmez, bütünüyle sonraki sayfaya geçer (bir sayfadan uzunsa da bölünmez).
      - Dosyada `questionRow` düğümüdür.
      - Zengin üst bilgi ve gerçek iki sütun (a/b) sonraya.
-6. A/B kitapçığı (soruların ve şıkların sırası karıştırılmış ikinci kâğıt ve kendi cevap anahtarı),
+6. **Görseller (kullanıcı kararı 2026-11-17: "önerdiğin sırayla devam et"):** Kullanıcı görsel eklemenin yalnız
+   drAW'lardan mı olacağını sordu. Yanıt: hayır. Her resim 2. aşamadan beri dosyadan, yapıştırarak ve
+   sürükleyerek ekleniyor. Sıra:
+   a. **Resim düzenleme: uygulandı (2026-11-17).** "Resim" düğmesi **Resim ▾** grubu oldu:
+      - **Resim ekle…**
+      - **Yerleşim (seçili resim):** satır içinde, ortada tek başına, solda yazı sağında, sağda yazı solunda.
+        Yazının yanındaki resim sayfa sonunu aşarsa paragrafla birlikte sonraki sayfaya geçer.
+      - **Kırp…:** Resmin üstünde köşelerinden ve kenarlarından sürüklenen, ortasından taşınan çerçeve.
+        "Tümü" geri alır. Kırpılan resim yeni bir resim olur, genişliği orantılı küçülür; Ctrl+Z eskisini getirir.
+      - **Resim altı yazısı:** Resmin paragrafının altına ortalı, küçük ve eğik bir paragraf. Belge boyunca
+        "Şekil 1:", "Şekil 2:" diye kendiliğinden numaralanır; yanındaki resmin altına iner. Düz metne
+        "Şekil 1: …" olarak yazılır.
+   b. awPDF'ten bölge yakalama (sırada).
+   c. drAW2D / drAW3D'den "görsel olarak kopyala".
+   d. Telefonda kamera (sonra).
+7. A/B kitapçığı (soruların ve şıkların sırası karıştırılmış ikinci kâğıt ve kendi cevap anahtarı),
    drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası (sorular cihazda saklanır, başka sınava eklenir).
 
 ## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)

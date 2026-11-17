@@ -13,6 +13,7 @@ function textOf(node: JSONContent): string {
 /** Questions are numbered through the whole document. */
 interface Counter {
   questions: number
+  figures: number
   /** The answer key's line, worked out from the whole document. */
   answerKey: string
 }
@@ -51,6 +52,8 @@ function linesOf(node: JSONContent, counter: Counter, prefix = ''): string[] {
     case 'choices':
       return (node.content ?? []).map((choice, index) => `${prefix}${LETTERS[index] ?? '?'}) ${textOf(choice)}`)
     case 'paragraph':
+      if (node.attrs?.caption) return [`${prefix}Şekil ${++counter.figures}: ${textOf(node)}`]
+      return [prefix + textOf(node)]
     case 'heading':
       return [prefix + textOf(node)]
     // A table row is one line, its cells apart by tabs, as a spreadsheet pastes them.
@@ -84,6 +87,6 @@ export const txtFormat: DocumentFormat = {
     }
   },
   write(document) {
-    return new TextEncoder().encode(`${linesOf(document, { questions: 0, answerKey: answerKeyLine(document) }).join('\n')}\n`)
+    return new TextEncoder().encode(`${linesOf(document, { questions: 0, figures: 0, answerKey: answerKeyLine(document) }).join('\n')}\n`)
   },
 }

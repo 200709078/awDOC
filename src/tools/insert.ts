@@ -1,10 +1,11 @@
 import { IMAGE_ACCEPT } from '../app/images'
-import { insertImages } from '../editor/image'
+import { insertImages, selectedImage, type ImageWrap } from '../editor/image'
+import { showCropDialog } from '../ui/crop-dialog'
 import { showLinkDialog, showWordCount } from '../ui/dialogs'
 import { showFormulaDialog } from '../ui/formula-dialog'
 import { NodeSelection } from '@tiptap/pm/state'
 import { ICONS } from './icons'
-import type { Tool } from './tool'
+import type { Tool, ToolContext, ToolGroup } from './tool'
 
 export const findTool: Tool = {
   id: 'find',
@@ -48,9 +49,9 @@ export const wordCountTool: Tool = {
 let imageInput: HTMLInputElement | undefined
 
 /** The picker's own input, so a picture never goes through the document picker's types. */
-export const imageTool: Tool = {
+const imageTool: Tool = {
   id: 'image',
-  label: 'Resim',
+  label: 'Resim ekle…',
   icon: ICONS.image,
   run: ({ editor }) => {
     imageInput ??= Object.assign(document.createElement('input'), { type: 'file', accept: IMAGE_ACCEPT, multiple: true, hidden: true, id: 'imageInput' })
@@ -62,6 +63,56 @@ export const imageTool: Tool = {
     }
     imageInput.click()
   },
+}
+
+const hasImage = ({ editor }: ToolContext) => selectedImage(editor.state) !== null
+
+const wrapTool = (wrap: ImageWrap, label: string, icon: string): Tool => ({
+  id: `imageWrap-${wrap}`,
+  label,
+  icon,
+  isAvailable: hasImage,
+  isActive: ({ editor }) => selectedImage(editor.state)?.wrap === wrap,
+  run: ({ editor }) => { editor.chain().focus().setImageWrap(wrap).run() },
+})
+
+const cropTool: Tool = {
+  id: 'cropImage',
+  label: 'Kırp…',
+  icon: ICONS.crop,
+  isAvailable: hasImage,
+  run: ({ editor }) => showCropDialog(editor),
+}
+
+const captionTool: Tool = {
+  id: 'imageCaption',
+  label: 'Resim altı yazısı',
+  icon: ICONS.caption,
+  isAvailable: ({ editor }) => editor.can().insertImageCaption(),
+  run: ({ editor }) => { editor.chain().focus().insertImageCaption().run() },
+}
+
+const wrapTools = [
+  wrapTool('inline', 'Satır içinde', ICONS.wrapInline),
+  wrapTool('center', 'Ortada, tek başına', ICONS.wrapCenter),
+  wrapTool('left', 'Solda, yazı sağında', ICONS.wrapLeft),
+  wrapTool('right', 'Sağda, yazı solunda', ICONS.wrapRight),
+]
+const editTools = [cropTool, captionTool]
+
+/** Resim ▾: putting pictures in, and for the selected one (a click on it) where it stands, cropping, a caption. */
+export const imageGroup: ToolGroup = {
+  kind: 'group',
+  id: 'image',
+  label: 'Resim',
+  icon: ICONS.image,
+  tools: [imageTool, ...wrapTools, ...editTools],
+  isMarked: hasImage,
+  sections: [
+    { tools: [imageTool] },
+    { title: 'Yerleşim (seçili resim)', tools: wrapTools },
+    { title: 'Düzenle', tools: editTools },
+  ],
 }
 
 /** Formül: a new formula, or the selected one changed. Any document may have formulas. */

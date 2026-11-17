@@ -207,14 +207,24 @@ export function paginate(view: EditorView, page: PageGeometry): Pagination {
       else push('block', unit.wholeAt, lineTop)
     }
     if (forced) moveWhole(top + shift)
+    // A picture beside the text may reach below the paragraph's last line.
+    let floatBottom = Number.NEGATIVE_INFINITY
+    for (const image of element.querySelectorAll('img[data-wrap="left"], img[data-wrap="right"]')) {
+      const box = (image.closest('[data-resize-container]') ?? image).getBoundingClientRect()
+      floatBottom = Math.max(floatBottom, box.bottom - measuredOrigin - pushedBy(box.bottom - measuredOrigin - 0.5))
+    }
     let from = start
     // A paragraph may run over several pages: each page end it crosses is a break.
-    while (bottom + shift > contentEnd(index) - SAFETY) {
+    while (Math.max(bottom, floatBottom) + shift > contentEnd(index) - SAFETY) {
       const limit = contentEnd(index) - SAFETY - shift
       const crossing = lineCrossing(from, end, limit)
       // Only an empty paragraph has no line to find: it moves as a whole. Lines that all fit
-      // (only the box's edge crosses) stay.
-      if (crossing === null && start < end) break
+      // (only the box's edge crosses) stay, unless a picture beside them runs over: then the
+      // paragraph goes on with it (from its start; a picture cannot be split).
+      if (crossing === null && start < end) {
+        if (floatBottom + shift > contentEnd(index) - SAFETY && from === start && top + shift > contentStart(index) + SAFETY) moveWhole(top + shift)
+        break
+      }
       const pos = crossing ?? start
       const lineTop = crossing === null ? top : charRect(crossing).top
       // A single line taller than the page stays where it is.

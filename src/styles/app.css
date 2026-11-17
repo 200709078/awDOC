@@ -624,7 +624,7 @@ body {
 
 /* Questions: numbered by their place (1., 2.…), points at the top right, choices lettered A), B)… */
 .document {
-	counter-reset: question;
+	counter-reset: question figure;
 }
 
 .document .question {
@@ -755,6 +755,45 @@ body {
 	.document .answer-key__list .is-missing {
 		color: #b91c1c;
 	}
+}
+
+/* Where a picture stands: alone in the middle, or at a side with the text beside it. */
+.document [data-resize-container]:has(img[data-wrap="center"]) {
+	display: flex !important;
+	justify-content: center;
+	width: 100%;
+	margin: 2pt 0;
+}
+
+.document [data-resize-container]:has(img[data-wrap="left"]) {
+	float: left;
+	margin: 2pt 10pt 4pt 0;
+}
+
+.document [data-resize-container]:has(img[data-wrap="right"]) {
+	float: right;
+	margin: 2pt 0 4pt 10pt;
+}
+
+/* A picture beside the text stays inside its question or choice (table cells keep theirs anyway). */
+.document .question,
+.document .choice {
+	display: flow-root;
+}
+
+/* Captions: "Şekil 1:", numbered through the document. */
+.document p[data-caption] {
+	/* Under a picture beside the text, not beside it. */
+	clear: both;
+	font-size: 10pt;
+	font-style: italic;
+	counter-increment: figure;
+}
+
+.document p[data-caption]::before {
+	font-style: normal;
+	font-weight: 700;
+	content: "Şekil " counter(figure) ": ";
 }
 
 /* A page break (Ctrl+Enter): a dashed line with its name; on paper, the next page. */
@@ -1156,6 +1195,70 @@ body {
 .formula-dialog__keyboard {
 	margin-right: auto;
 }
+
+/* Kırp: the picture fitted into the window, the frame over it. */
+.crop-dialog {
+	width: min(760px, calc(100vw - 32px));
+	max-height: calc(100vh - 32px);
+}
+
+.crop-dialog .crop-dialog__hint {
+	margin: 0 0 12px;
+	font-size: 14px;
+	opacity: 0.8;
+}
+
+/* Room around the picture for the handles; the shade outside the frame stops at the stage's edge. */
+.crop-dialog__stage {
+	width: fit-content;
+	max-width: 100%;
+	margin: 0 auto 16px;
+	padding: 14px;
+	border-radius: 8px;
+	background: #6b7280;
+	touch-action: none;
+	user-select: none;
+}
+
+.crop-dialog__picture {
+	position: relative;
+}
+
+.crop-dialog__stage img {
+	display: block;
+	max-width: 100%;
+	max-height: 55vh;
+}
+
+.crop-dialog__box {
+	position: absolute;
+	box-shadow: 0 0 0 9999px rgb(0 0 0 / 45%);
+	outline: 2px solid #ffffff;
+	cursor: move;
+}
+
+.crop-dialog__stage {
+	overflow: hidden;
+}
+
+.crop-dialog__box [data-handle] {
+	position: absolute;
+	width: 22px;
+	height: 22px;
+	margin: -11px 0 0 -11px;
+	border: 2px solid var(--accent);
+	border-radius: 50%;
+	background: #ffffff;
+}
+
+.crop-dialog__box [data-handle="nw"] { top: 0; left: 0; cursor: nwse-resize; }
+.crop-dialog__box [data-handle="n"] { top: 0; left: 50%; cursor: ns-resize; }
+.crop-dialog__box [data-handle="ne"] { top: 0; left: 100%; cursor: nesw-resize; }
+.crop-dialog__box [data-handle="w"] { top: 50%; left: 0; cursor: ew-resize; }
+.crop-dialog__box [data-handle="e"] { top: 50%; left: 100%; cursor: ew-resize; }
+.crop-dialog__box [data-handle="sw"] { top: 100%; left: 0; cursor: nesw-resize; }
+.crop-dialog__box [data-handle="s"] { top: 100%; left: 50%; cursor: ns-resize; }
+.crop-dialog__box [data-handle="se"] { top: 100%; left: 100%; cursor: nwse-resize; }
 
 .dialog__error {
 	color: #dc2626;

@@ -176,6 +176,27 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="cropDialog" class="dialog crop-dialog" aria-labelledby="cropTitle">
+		<h2 id="cropTitle">Resmi kırp</h2>
+		<p class="crop-dialog__hint">Çerçeveyi köşelerinden ya da kenarlarından sürükleyin; ortasından tutup taşıyın.</p>
+		<form method="dialog">
+			<div class="crop-dialog__stage" id="cropStage">
+				<div class="crop-dialog__picture">
+					<img id="cropImage" alt="Kırpılacak resim" draggable="false">
+					<div class="crop-dialog__box" id="cropBox">
+						<span data-handle="nw"></span><span data-handle="n"></span><span data-handle="ne"></span>
+						<span data-handle="w"></span><span data-handle="e"></span>
+						<span data-handle="sw"></span><span data-handle="s"></span><span data-handle="se"></span>
+					</div>
+				</div>
+			</div>
+			<div class="dialog__actions">
+				<button value="crop" class="primary-button">Kırp</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+				<button value="reset" type="button" class="secondary-button formula-dialog__keyboard" id="cropReset">Tümü</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
 		<h2 id="recentTitle">Son belgeler</h2>
 		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>
