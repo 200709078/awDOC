@@ -73,8 +73,10 @@ test('bozuk ya da tanınmayan dosya belgeyi bozmaz, nedenini söyler', async ({ 
   await page.keyboard.type('yerinde kalır');
   await openFile(page, 'bozuk.awd', '{"format":"başka"}');
   await expect(page.locator('#toast')).toContainText('awDOC belgesi değil');
-  await openFile(page, 'resim.png', 'PNG');
+  await openFile(page, 'tablo.xlsx', 'PK');
   await expect(page.locator('#toast')).toContainText('dosya türünü henüz tanımıyor');
+  await openFile(page, 'bozuk.png', 'PNG değil');
+  await expect(page.locator('#toast')).toContainText('Resim okunamadı');
   await openFile(page, 'gelecek.awd', JSON.stringify({ format: 'awDOC', version: 99, app: 'x', document: { type: 'doc', content: [] } }));
   await expect(page.locator('#toast')).toContainText('daha yeni bir sürümüyle');
   // Düğüm türü bilinmeyen belge de açılmaz.

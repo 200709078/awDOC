@@ -169,6 +169,17 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
      birleştirilir.
    - Word'ün "Tablo Kılavuzu" gibi siyah çizgili sade görünüm.
    - Düz metne kaydederken bir satır tek satır olur, hücreler sekmeyle ayrılır.
-5. Resim
+5. **Resim: uygulandı (2026-11-17).**
+   - Resim düğmesiyle seçilir; panodan yapıştırılır (ekran görüntüsü), sayfaya sürüklenip bırakılır; Aç ile
+     ya da pencereye bırakılan resim de belgeye girer.
+   - Resim satır içinde durur (Word'ün varsayılanı); Hizalama ▾ onu sola, ortaya, sağa alır.
+   - Seçilince köşelerinde dört tutamaç çıkar; sürükleyince oranı bozulmadan büyür ya da küçülür. Tutamaçlar
+     dokunmatik ekran için büyük, yazdırılmaz.
+   - Belgeye konmadan önce hazırlanır: telefon fotoğrafının yönü düzeltilir, en uzun kenar en çok 1600
+     piksel olur; fotoğraf JPEG, saydam olabilecek resim PNG olarak saklanır. Sayfa genişliğini (600 piksel)
+     aşmadan başlar.
+   - Okunamayan resimde uyarı çıkar. SVG alınmaz (içinde betik olabilir).
+   - `.awd` içinde veri olarak durur, böylece belge tek dosyadır. Çok resimli belgeler büyürse
+     `.awd` ZIP'e geçebilir (sürüm 2).
 6. Otomatik kaydetme ve son belgeler
 7. PDF'e aktarma

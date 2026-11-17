@@ -1,4 +1,5 @@
 import { createEditor } from '../editor/editor'
+import { insertImages } from '../editor/image'
 import { acceptList } from '../formats/index'
 import { currentPlatform } from '../platform/platform'
 import { TOOLBAR } from '../tools/index'
@@ -7,6 +8,7 @@ import { connectScreenKeyboard } from '../ui/screen-keyboard'
 import { SearchBar } from '../ui/search-bar'
 import { Theme } from '../ui/theme'
 import { mountToolbar } from '../ui/toolbar'
+import { imageTypeOfName } from './images'
 import { DocumentSession } from './session'
 
 /** The composition root: the platform, the editor, the open document and the toolbar. */
@@ -23,7 +25,12 @@ export function startApp(): void {
   const toolbar = mountToolbar(document.querySelector<HTMLElement>('#toolbar')!, TOOLBAR, context)
 
   document.querySelector<HTMLInputElement>('#fileInput')!.accept = acceptList()
-  platform.onFile(file => { void session.open(file) })
+  // A picture dropped on the window or opened with the app goes into the document; anything else opens.
+  platform.onFile(file => {
+    const imageType = imageTypeOfName(file.name)
+    if (imageType) void insertImages(editor, [new Blob([file.data as Uint8Array<ArrayBuffer>], { type: imageType })])
+    else void session.open(file)
+  })
   if (platform.screenKeyboard) connectScreenKeyboard(platform.screenKeyboard)
 
   // A tap on the grey around the page puts the cursor at the end, as it would on paper.

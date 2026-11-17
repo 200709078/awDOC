@@ -42,6 +42,7 @@ export const ICONS = {
   splitCell: '<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M12 5v14"/>',
   headerRow: '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M3 9h18"/><path d="M5 6.5h14" stroke-width="3"/>',
   deleteTable: '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M8 8l8 8"/><path d="M16 8l-8 8"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-9 9"/>',
   print: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
   fullscreen: '<path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/>',
   theme: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',

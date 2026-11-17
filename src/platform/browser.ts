@@ -30,8 +30,10 @@ export function onPickedFile(listener: (file: File) => void): void {
   })
   window.addEventListener('drop', event => {
     if (!carriesFiles(event)) return
-    event.preventDefault()
     setDropping(false)
+    // The editor has taken it already (a picture dropped on the page).
+    if (event.defaultPrevented) return
+    event.preventDefault()
     const [file] = event.dataTransfer?.files ?? []
     if (file) listener(file)
   })

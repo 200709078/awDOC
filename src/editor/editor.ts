@@ -6,6 +6,7 @@ import { Color, FontFamily, FontSize, TextStyle } from '@tiptap/extension-text-s
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { EditorState, TextSelection } from '@tiptap/pm/state'
 import StarterKit from '@tiptap/starter-kit'
+import { DocumentImage, ImageInput } from './image'
 import { ParagraphFormat } from './paragraph-format'
 import { Search } from './search'
 
@@ -36,6 +37,8 @@ export function createEditor(element: HTMLElement): Editor {
       Highlight.configure({ multicolor: true }),
       ParagraphFormat,
       Search,
+      DocumentImage,
+      ImageInput,
       // Columns can be widened by dragging their edge.
       TableKit.configure({ table: { resizable: true } }),
     ],
