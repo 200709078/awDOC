@@ -81,7 +81,6 @@ export function showWordCount(editor: Editor): void {
     return [term, detail]
   }))
   const dialog = document.querySelector<HTMLDialogElement>('#countDialog')!
-  dialog.onclose = () => { editor.commands.focus() }
   dialog.showModal()
 }
 

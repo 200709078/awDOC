@@ -15,6 +15,9 @@ export function startApp(): void {
   const theme = new Theme()
   const editor = createEditor(document.querySelector<HTMLElement>('#editorHost')!)
   const session = new DocumentSession(editor, platform)
+  // At once, not through TipTap's `autofocus`, which comes a moment later and would move a cursor
+  // the user has already placed.
+  editor.commands.focus('start')
   const searchBar = new SearchBar(editor)
   const context: ToolContext = { editor, session, platform, theme, searchBar }
   const toolbar = mountToolbar(document.querySelector<HTMLElement>('#toolbar')!, TOOLBAR, context)

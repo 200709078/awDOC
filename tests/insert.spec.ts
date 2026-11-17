@@ -91,9 +91,13 @@ test('Kelime sayısı: bütün belge ve seçili bölüm', async ({ page }) => {
   const dialog = page.locator('#countDialog');
   await expect(dialog.locator('dd')).toHaveText(['5', '17', '21', '2']);
   await dialog.getByRole('button', { name: 'Kapat' }).click();
-  // Kapanınca imleç belgeye geri döner.
+  // Kapanınca imleç belgeye geri döner; ProseMirror seçimini bir an sonra yeniler, o yüzden seçim denetlenir.
   await expect(page.locator('#document')).toBeFocused();
-  await page.keyboard.press('Shift+Home');
+  await expect(async () => {
+    await page.keyboard.press('End');
+    await page.keyboard.press('Shift+Home');
+    expect(await page.evaluate(() => getSelection()?.toString())).toBe('Dört — beş');
+  }).toPass();
   await page.keyboard.press('Control+Shift+G');
   await expect(page.locator('#countTitle')).toHaveText('Kelime sayısı (seçili bölüm)');
   await expect(dialog.locator('dd').first()).toHaveText('2');

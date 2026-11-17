@@ -40,7 +40,6 @@ export function createEditor(element: HTMLElement): Editor {
       TableKit.configure({ table: { resizable: true } }),
     ],
     content: EMPTY_DOCUMENT,
-    autofocus: 'start',
     editorProps: {
       attributes: {
         class: 'document',

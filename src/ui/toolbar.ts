@@ -253,6 +253,9 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
     if (!tool || !(tool.isAvailable?.(context) ?? true)) return
     event.preventDefault()
     event.stopPropagation()
+    // ProseMirror reads a selection made by the keyboard a moment later; a shortcut pressed right
+    // after Shift+Home must already see it.
+    ;(context.editor.view as unknown as { domObserver?: { flush?(): void } }).domObserver?.flush?.()
     tool.run(context)
   }, true)
   return { close, update }
