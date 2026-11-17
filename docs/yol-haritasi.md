@@ -391,3 +391,14 @@ awPDF'te bu ekran şöyle: ortada yalnız logo (ad yazısı yok), altında ana i
   ekran açılışta mı gelsin, yoksa yalnız belge kapatılınca mı, karar kullanıcının. Açılıştaki kurtarma kopyası
   sorusu ekranla çakışmamalı.
 - Ailede ortak görünüm için awCELL'dekiyle birlikte yapılır.
+- **Ayrıntılı öneri (2026-11-17, kullanıcı "not olarak ekle" dedi; kodlama yok):**
+  - Görünüm awPDF'teki gibi: yalnız logo, mavi ana düğme, çerçeveli öbür düğmeler, altta Son Belgeler ve
+    "Listeyi Temizle".
+  - Düğmeler: **Yeni Belge** (ana), **Sınav Kâğıdı** (şablon penceresini açar), **Aç**. Dönüştürme düğmeleri
+    (**Word → PDF**, **PDF → Word**, **Word Aç**) `.docx` okuyup yazmayı gerektirir; 5. aşamayla gelir.
+  - Ne zaman: açılışta. Uygulama bir dosyayla açılırsa ("Birlikte aç", Android "Paylaş") görünmez. ☰
+    menüsünde "Giriş ekranı" ile dönülür.
+  - "Kaydedilmemiş belge bulundu" sorusu ayrı pencere yerine giriş ekranında kart olur (Geri Yükle / Sil).
+  - Tahmini iş: yarım gün (açılışta imlecin belgede olmasını bekleyen testler de düzenlenir).
+  - **Kullanıcı kararı (2026-11-17):** awDOC'ta A/B kitapçığı ve soru bankası bittikten sonra yeniden
+    konuşulacak.
