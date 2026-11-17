@@ -30,6 +30,29 @@
 		</div>
 	</div>
 	<main id="workspace" class="workspace">
+		<!-- Giriş ekranı, awPDF'inki gibi (kullanıcı kararı 2026-11-17). -->
+		<section id="welcome" class="welcome" aria-label="Giriş" hidden>
+			<img src="./img/app-icon.png" width="128" height="128" alt="awDOC">
+			<div class="welcome__actions">
+				<button id="welcomeNew" class="primary-button" type="button">Yeni Belge</button>
+				<button id="welcomeExam" class="secondary-button" type="button">Sınav Kâğıdı</button>
+				<button id="welcomeOpen" class="secondary-button" type="button">Belge Aç</button>
+				<button id="welcomeBack" class="secondary-button" type="button" hidden>Belgeye Dön</button>
+			</div>
+			<div id="welcomeRecovery" class="welcome__recovery" role="status" hidden>
+				<p id="welcomeRecoveryText"></p>
+				<div class="welcome__recovery-actions">
+					<button id="welcomeRestore" class="primary-button" type="button">Geri Yükle</button>
+					<button id="welcomeDiscard" class="secondary-button danger-button" type="button">Sil</button>
+				</div>
+			</div>
+			<div id="welcomeRecent" class="welcome__recent" hidden>
+				<h2>Son Belgeler</h2>
+				<div id="welcomeRecentList" class="welcome__recent-list"></div>
+				<button id="welcomeRecentClear" class="secondary-button" type="button">Listeyi Temizle</button>
+			</div>
+			<label class="dialog__check welcome__startup"><input id="welcomeAtStart" type="checkbox"> Açılışta bu ekranı göster</label>
+		</section>
 		<div id="editorHost" class="editor-host"></div>
 	</main>
 	<input id="fileInput" type="file" hidden>

@@ -7,6 +7,7 @@ const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
   ?? (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
 // drAW2D and drAW3D hold 4173, awPDF 4175, awCELL 4177; this port lets their tests run at the same time.
 const port = 4176;
+const baseURL = externalBaseURL ?? `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: './tests',
@@ -15,7 +16,9 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: externalBaseURL ?? `http://127.0.0.1:${port}`,
+    baseURL,
+    // Most tests start in the document; the welcome screen's own tests turn this off (tests/welcome.spec.ts).
+    storageState: { cookies: [], origins: [{ origin: new URL(baseURL).origin, localStorage: [{ name: 'awDOC.girisEkrani', value: 'kapali' }] }] },
     browserName: 'chromium',
     // A class board's screen, where every tool fits on the row; narrow screens have their own tests.
     viewport: { width: 1920, height: 1080 },

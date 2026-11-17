@@ -6,7 +6,7 @@ import { pageGroup } from './page'
 import { tableGroup } from './table'
 import { fontGroup, textGroup } from './text'
 import type { ToolbarItem } from './tool'
-import { aboutTool, fullscreenTool, themeTool } from './view'
+import { aboutTool, fullscreenTool, themeTool, welcomeTool } from './view'
 
 /**
  * The toolbar, in order. When the row is full its last items move into the ☰ menu, so the ones
@@ -39,5 +39,6 @@ export const TOOLBAR: readonly ToolbarItem[] = [
   themeTool,
   wordCountTool,
   autoSaveTool,
+  welcomeTool,
   aboutTool,
 ]

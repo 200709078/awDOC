@@ -20,6 +20,18 @@ export const themeTool: Tool = {
   run: ({ theme }) => theme.toggle(),
 }
 
+/** Giriş Ekranı: the first screen again, over the document (Belgeye Dön leads back). */
+export const welcomeTool: Tool = {
+  id: 'welcome',
+  label: 'Giriş Ekranı',
+  icon: ICONS.home,
+  isActive: ({ welcome }) => welcome.isOpen,
+  run: ({ welcome }) => {
+    if (welcome.isOpen) welcome.hide()
+    else welcome.show(true)
+  },
+}
+
 /**
  * Hakkında: the family's small window (name, version, mADEMatik Solutions, downloads, licence,
  * privacy, contact). It always sits at the end of the ☰ menu (the user's choice, 2026-11-10).

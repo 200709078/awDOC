@@ -242,6 +242,7 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
   context.theme.onChange(update)
   context.searchBar.onChange(update)
   context.pageView.onChange(update)
+  context.welcome.onChange(update)
   context.platform.onFullscreenChange(update)
   new ResizeObserver(fit).observe(root)
   update()

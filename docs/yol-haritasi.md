@@ -432,3 +432,27 @@ awPDF'te bu ekran şöyle: ortada yalnız logo (ad yazısı yok), altında ana i
   - Tahmini iş: yarım gün (açılışta imlecin belgede olmasını bekleyen testler de düzenlenir).
   - **Kullanıcı kararı (2026-11-17):** awDOC'ta A/B kitapçığı ve soru bankası bittikten sonra yeniden
     konuşulacak.
+- **Kullanıcı kararı (2026-11-17): "awDOC karşılama ekranını awPDF gibi yapalım"; ardından "geri düğmesi
+  davranışı da awPDF deki gibi olsun mümkün olduğunca".** **Uygulandı (2026-11-17):**
+  - **Ekran:** awPDF'in ilk ekranının düzeni: logo, aynı genişlikte alt alta düğmeler. **Yeni Belge** (mavi),
+    **Sınav Kâğıdı** (şablon penceresi), **Belge Aç**.
+  - **Kurtarma kartı:** Kaydedilmemiş iş varsa kart olarak çıkar (Geri Yükle / Sil). Kart dururken başka
+    belge açılırsa eski pencereyle yine sorulur, kopya kaybolmaz.
+  - **Son Belgeler** ve **Listeyi Temizle**; altta "Açılışta bu ekranı göster" kutusu (cihazda hatırlanır).
+  - **Açılış:** Uygulama bu ekranla açılır. Bir dosyayla açılırsa ekran kendiliğinden kapanır ("Birlikte
+    aç", komut satırı, Android "Paylaş").
+  - **Kapanma:** Yeni belge, açılan dosya, son belge, geri yüklenen iş, sınav şablonu ya da bir araçla
+    yapılan değişiklik ekranı kapatır.
+  - **☰ → "Giriş Ekranı":** Ekranı açık belgenin üstüne açar; "Belgeye Dön" geri getirir.
+  - **Android geri düğmesi (awPDF'teki sırayla):**
+    1. Açık pencere.
+    2. ☰ menüsü.
+    3. Bul çubuğu.
+    4. Tam ekran.
+    5. Belgenin üstüne açılmış giriş ekranı (belgeye döner).
+    6. Belgenin kendisi kapanır: kaydedilmemiş değişiklik sorulur, sonra giriş ekranı gelir.
+    7. Giriş ekranındayken uygulama arka plana geçer (belge kaybolmaz).
+  - **Dönüştürme düğmeleri:** Word → PDF, PDF → Word 5. aşamayla gelir.
+  - **Testler:** Öbür testler giriş ekranı kapalı başlar (Playwright `storageState`); ekranın ve geri
+    düğmesinin kendi testleri (`tests/welcome.spec.ts`, Android köprüsü taklidi `tests/helpers/android-bridge.ts`)
+    açık başlar. Telefonda henüz denenmedi (APK derlendi; telefon bağlantısı kesildi).

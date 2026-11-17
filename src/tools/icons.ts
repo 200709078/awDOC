@@ -79,6 +79,7 @@ export const ICONS = {
   wrapCenter: '<path d="M3 4h18"/><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M3 20h18"/>',
   wrapLeft: '<rect x="3" y="5" width="9" height="9" rx="1"/><path d="M15 6h6"/><path d="M15 10h6"/><path d="M15 14h6"/><path d="M3 19h18"/>',
   wrapRight: '<rect x="12" y="5" width="9" height="9" rx="1"/><path d="M3 6h6"/><path d="M3 10h6"/><path d="M3 14h6"/><path d="M3 19h18"/>',
+  home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/>',
   page: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/>',
   pageView: '<rect x="5" y="2.5" width="14" height="8" rx="1"/><rect x="5" y="13.5" width="14" height="8" rx="1"/>',
   continuousView: '<path d="M5 2v20"/><path d="M19 2v20"/><path d="M8.5 6h7"/><path d="M8.5 10h7"/><path d="M8.5 14h7"/><path d="M8.5 18h4"/>',

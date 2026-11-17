@@ -9,6 +9,7 @@ import { SearchBar } from '../ui/search-bar'
 import { Theme } from '../ui/theme'
 import { mountToolbar } from '../ui/toolbar'
 import { PageView } from '../ui/page-view'
+import { Welcome, welcomeAtStart } from '../ui/welcome'
 import { askRestore } from '../ui/dialogs'
 import { showFormulaDialog } from '../ui/formula-dialog'
 import { restoreAnswersShown } from '../ui/answers'
@@ -31,7 +32,8 @@ export function startApp(): void {
   const searchBar = new SearchBar(editor)
   const pageView = new PageView(editor, editorHost)
   restoreAnswersShown()
-  const context: ToolContext = { editor, session, platform, theme, searchBar, pageView }
+  const welcome = new Welcome(editor, session, pageView)
+  const context: ToolContext = { editor, session, platform, theme, searchBar, pageView, welcome }
   const toolbar = mountToolbar(document.querySelector<HTMLElement>('#toolbar')!, TOOLBAR, context)
 
   document.querySelector<HTMLInputElement>('#fileInput')!.accept = acceptList()
@@ -73,27 +75,37 @@ export function startApp(): void {
   }
 
   // Android's back button: the topmost thing on screen closes first; with nothing open the app goes behind the others.
+  // Android's back button, as in awPDF: the topmost thing on screen closes first (a window, the ☰
+  // menu, the find bar, full screen); then the welcome screen opened over a document gives the
+  // document back; then the document closes (unsaved changes asked about) and the welcome screen
+  // comes; from the welcome screen the app goes behind the others.
   platform.onBack?.(() => {
     const dialog = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].at(-1)
     if (dialog) {
       if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) dialog.close()
-      return true
+    } else if (toolbar.close()) return true
+    else if (searchBar.isOpen) searchBar.close()
+    else if (platform.isFullscreen) platform.toggleFullscreen()
+    else if (welcome.closeOnBack()) return true
+    else if (welcome.isOpen) return false
+    else {
+      void session.newDocument().then(closed => { if (closed) welcome.show(false) })
     }
-    if (toolbar.close()) return true
-    if (searchBar.isOpen) {
-      searchBar.close()
-      return true
-    }
-    if (platform.isFullscreen) {
-      platform.toggleFullscreen()
-      return true
-    }
-    return false
+    return true
   })
 
-  // Work left unsaved when the app was last closed (or killed by the phone) is offered back once.
+  // The welcome screen opens with the app, unless turned off there; a file the app was opened
+  // with (Electron's command line, Android's "open with" / "share") closes it as it comes.
+  if (welcomeAtStart()) welcome.show(false)
+
+  // Work left unsaved when the app was last closed (or killed by the phone) is offered back once:
+  // on the welcome screen as a card, otherwise in a window.
   void readRecovery().then(async copy => {
     if (!copy) return
+    if (welcome.isOpen) {
+      welcome.offerRecovery(copy)
+      return
+    }
     if (await askRestore(copy)) session.restore(copy)
     else await dropRecovery()
   })

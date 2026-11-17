@@ -177,6 +177,12 @@ export class PageView {
     return gaps
   }
 
+  /** Everything measured again soon: the editor was hidden (the welcome screen) and shows again. */
+  remeasure(): void {
+    this.full = true
+    this.schedule()
+  }
+
   /** Lays the pages out now (before printing, and in tests). */
   update(): void {
     cancelAnimationFrame(this.frame)

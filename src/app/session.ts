@@ -41,6 +41,7 @@ export class DocumentSession {
   private recoveryTimer: ReturnType<typeof setTimeout> | undefined
   private autoSaveTimer: ReturnType<typeof setTimeout> | undefined
   private readonly listeners = new Set<() => void>()
+  private readonly documentListeners = new Set<() => void>()
 
   constructor(private readonly editor: Editor, private readonly platform: Platform) {
     editor.on('update', () => {
@@ -67,6 +68,11 @@ export class DocumentSession {
 
   onChange(listener: () => void): void {
     this.listeners.add(listener)
+  }
+
+  /** Another document came: new, opened, restored or saved under a new name. */
+  onDocument(listener: () => void): void {
+    this.documentListeners.add(listener)
   }
 
   pickFile(): void {
@@ -248,6 +254,7 @@ export class DocumentSession {
     clearTimeout(this.autoSaveTimer)
     void dropRecovery()
     this.notify()
+    for (const listener of this.documentListeners) listener()
   }
 
   private setDirty(dirty: boolean): void {

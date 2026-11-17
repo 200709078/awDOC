@@ -963,6 +963,107 @@ body {
 	}
 }
 
+/* ---- Giriş ekranı: awPDF'in ilk ekranı gibi (kullanıcı kararı 2026-11-17) ---- */
+
+.workspace.is-welcome .editor-host {
+	display: none;
+}
+
+.welcome {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	min-height: 100%;
+	padding: 16px;
+}
+
+.welcome[hidden] {
+	display: none;
+}
+
+/* One column as wide as the longest label: the buttons are all the same size. */
+.welcome__actions {
+	display: grid;
+	gap: 16px;
+}
+
+.welcome__recovery {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: min(440px, 100%);
+	padding: 12px 16px;
+	border: 1px solid #f59e0b;
+	border-radius: 10px;
+	background: var(--surface);
+	text-align: center;
+}
+
+.welcome__recovery[hidden],
+.welcome__recent[hidden] {
+	display: none;
+}
+
+.welcome__recovery p {
+	margin: 0;
+}
+
+.welcome__recovery-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+.welcome__recent {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: min(440px, 100%);
+}
+
+.welcome__recent h2 {
+	margin: 8px 0 0;
+	font-size: 18px;
+}
+
+.welcome__recent-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	width: 100%;
+	max-height: 40vh;
+	overflow-y: auto;
+}
+
+.welcome__startup {
+	margin: 0;
+	font-size: 15px;
+	opacity: 0.8;
+}
+
+/* A phone held sideways: the logo and the buttons fit without scrolling. */
+@media (max-height: 500px) {
+	.welcome,
+	.welcome__actions {
+		gap: 8px;
+	}
+
+	.welcome img {
+		width: 64px;
+		height: 64px;
+	}
+
+	.welcome .primary-button,
+	.welcome .secondary-button {
+		min-height: 44px;
+	}
+}
+
 /* ---- Düğmeler, pencereler, bildirim ---- */
 
 .primary-button,
@@ -1559,6 +1660,15 @@ body {
 
 	body > *:not(.workspace) {
 		display: none !important;
+	}
+
+	/* Printing from the welcome screen prints the document under it. */
+	.welcome {
+		display: none !important;
+	}
+
+	.workspace.is-welcome .editor-host {
+		display: block;
 	}
 
 	.workspace {
