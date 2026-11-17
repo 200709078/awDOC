@@ -13,9 +13,27 @@ function textOf(node: JSONContent): string {
 /** Questions are numbered through the whole document. */
 interface Counter {
   questions: number
+  /** The answer key's line, worked out from the whole document. */
+  answerKey: string
 }
 
 const LETTERS = 'ABCDEF'
+
+/** "Cevap Anahtarı: 1. B, 2. —, 3. ?", as the answer key block shows it. */
+function answerKeyLine(document: JSONContent): string {
+  const answers: string[] = []
+  const walk = (node: JSONContent) => {
+    if (node.type !== 'question') {
+      node.content?.forEach(walk)
+      return
+    }
+    const choices = node.content?.at(-1)?.type === 'choices' ? node.content.at(-1)! : null
+    const index = choices?.content?.findIndex(choice => choice.attrs?.correct) ?? -1
+    answers.push(`${answers.length + 1}. ${choices ? (index >= 0 ? LETTERS[index] : '?') : '—'}`)
+  }
+  walk(document)
+  return `Cevap Anahtarı: ${answers.join(', ')}`
+}
 
 /** Each block on its own line; list items, questions and choices keep their marks so they still read as such. */
 function linesOf(node: JSONContent, counter: Counter, prefix = ''): string[] {
@@ -28,6 +46,8 @@ function linesOf(node: JSONContent, counter: Counter, prefix = ''): string[] {
       if (lines.length && points > 0) lines[0] += ` (${String(points).replace('.', ',')} puan)`
       return lines
     }
+    case 'answerKey':
+      return [prefix + counter.answerKey]
     case 'choices':
       return (node.content ?? []).map((choice, index) => `${prefix}${LETTERS[index] ?? '?'}) ${textOf(choice)}`)
     case 'paragraph':
@@ -64,6 +84,6 @@ export const txtFormat: DocumentFormat = {
     }
   },
   write(document) {
-    return new TextEncoder().encode(`${linesOf(document, { questions: 0 }).join('\n')}\n`)
+    return new TextEncoder().encode(`${linesOf(document, { questions: 0, answerKey: answerKeyLine(document) }).join('\n')}\n`)
   },
 }

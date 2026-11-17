@@ -11,6 +11,7 @@ import { mountToolbar } from '../ui/toolbar'
 import { PageView } from '../ui/page-view'
 import { askRestore } from '../ui/dialogs'
 import { showFormulaDialog } from '../ui/formula-dialog'
+import { restoreAnswersShown } from '../ui/answers'
 import { imageTypeOfName } from './images'
 import { dropRecovery, readRecovery } from './recovery'
 import { DocumentSession } from './session'
@@ -29,6 +30,7 @@ export function startApp(): void {
   editor.commands.focus('start')
   const searchBar = new SearchBar(editor)
   const pageView = new PageView(editor, editorHost)
+  restoreAnswersShown()
   const context: ToolContext = { editor, session, platform, theme, searchBar, pageView }
   const toolbar = mountToolbar(document.querySelector<HTMLElement>('#toolbar')!, TOOLBAR, context)
 

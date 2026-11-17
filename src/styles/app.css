@@ -700,6 +700,51 @@ body {
 	}
 }
 
+/* The right choice: a green ring on its letter, on screen only and only while the answers show. */
+@media screen {
+	.editor-host.show-answers .document .choice[data-correct]::before {
+		margin: -1px 0 0 -3px;
+		padding: 0 3px;
+		border-radius: 999px;
+		background: #dcfce7;
+		box-shadow: 0 0 0 1.5px #16a34a;
+		color: #166534;
+	}
+}
+
+/* Cevap Anahtarı: drawn from the questions; "?" where no right choice is marked. */
+.document .answer-key {
+	margin: 0 0 12pt;
+	padding: 8pt 10pt;
+	border: 1px solid #000000;
+	cursor: default;
+}
+
+.document .answer-key.ProseMirror-selectednode {
+	outline: 2px solid var(--accent);
+}
+
+.document .answer-key__title {
+	margin-bottom: 6pt;
+	font-weight: 700;
+	text-align: center;
+}
+
+.document .answer-key__list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(4.5em, 1fr));
+	gap: 3pt 8pt;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+@media screen {
+	.document .answer-key__list .is-missing {
+		color: #b91c1c;
+	}
+}
+
 /* A page break (Ctrl+Enter): a dashed line with its name; on paper, the next page. */
 .document .page-break {
 	position: relative;

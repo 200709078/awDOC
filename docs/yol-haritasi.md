@@ -300,9 +300,21 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
    - **Yazdırma ve PDF:** Numara, harf ve puan basılır (Electron PDF'inde denendi).
    - **Dosyalar:** Dosyada `question` (`points`), `choices` (`layout`) ve `choice` düğümleri olarak saklanır.
      Düz metne "1. … A) …" olarak yazılır.
-   - **Sonraya:** doğru şıkkı işaretleme ve cevap anahtarı (3. adım), "soru bölünmesin" seçeneği.
-3. Sınav başlığı şablonu ("Yeni: Sınav kâğıdı"), cevap anahtarı, iki sütunlu kâğıt, "soru bölünmesin".
-4. A/B kitapçığı, drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası.
+3. **Soru bölünmesin, doğru şık, cevap anahtarı: uygulandı (2026-11-17).**
+   - **Soru bölünmesin:** Sayfaya sığan soru iki sayfaya bölünmez; sayfa sonuna gelirse bütünüyle sonraki
+     sayfaya geçer. Bir sayfadan uzun soru satır satır bölünür. Her soru için böyle; ayrı bir seçenek yok.
+   - **Doğru şık (Sınav ▾ → Cevaplar):** İmlecin olduğu şık doğru cevap olarak işaretlenir; sorunun öbür
+     şıklarındaki işaret kalkar, aynı şıkta yeniden basınca işaret kalkar. İşaretli şıkkın harfi ekranda
+     yeşil halkayla görünür, hiçbir zaman basılmaz.
+   - **"Doğru cevapları göster":** Tahtaya yansıtırken işaretler gizlenebilir; seçim cihazda hatırlanır.
+     İşaretleyince işaretler kendiliğinden görünür olur.
+   - **Cevap anahtarı:** Belgenin sonuna sayfa sonuyla ayrı bir sayfada eklenir: "1. C 2. B 3. —"
+     (— açık uçlu soru, ? doğru şıkkı işaretlenmemiş soru). Canlıdır: soru eklenince, taşınınca ya da doğru
+     şık değişince kendiliğinden güncellenir. Basılır. İkinci kez istenince yenisi eklenmez, var olana gidilir.
+   - **Düz metin:** "Cevap Anahtarı: 1. C, 2. B" satırı.
+4. Sınav başlığı şablonu ("Yeni: Sınav kâğıdı").
+5. İki sütunlu kâğıt (sayfalamanın sütunlara göre de bölmesi gerekir).
+6. A/B kitapçığı, drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası.
 
 ## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)
 

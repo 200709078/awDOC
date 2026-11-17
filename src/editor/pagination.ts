@@ -41,12 +41,18 @@ type Unit =
   | { readonly kind: 'row'; readonly pos: number; readonly node: ProseMirrorNode }
   | { readonly kind: 'block'; readonly pos: number; readonly node: ProseMirrorNode }
   | { readonly kind: 'pageBreak'; readonly pos: number }
+  /** Kept on one page when it fits on one (a question); its own pieces follow it in the list. */
+  | { readonly kind: 'keep'; readonly pos: number; readonly end: number }
 
 /** The pieces that are laid out one under another: paragraphs, table rows, other blocks. */
 function unitsOf(doc: ProseMirrorNode): Unit[] {
   const units: Unit[] = []
   doc.descendants((node, pos, parent, index) => {
     const name = node.type.name
+    if (name === 'question') {
+      units.push({ kind: 'keep', pos, end: pos + node.nodeSize })
+      return true
+    }
     if (name === 'pageBreak') units.push({ kind: 'pageBreak', pos })
     else if (name === 'choice') units.push({ kind: 'text', pos, node, wholeAt: pos })
     else if (node.isTextblock) {
@@ -155,7 +161,11 @@ export function paginate(view: EditorView, page: PageGeometry): Pagination {
     forced = false
   }
 
+  const pageText = contentEnd(0) - contentStart(0) - SAFETY
+  /** Pieces of a question already placed as a whole. */
+  let skipUntil = -1
   for (const unit of unitsOf(view.state.doc)) {
+    if (unit.pos < skipUntil) continue
     if (unit.kind === 'pageBreak') {
       // Two page breaks in a row leave an empty page between them.
       if (forced) index++
@@ -168,6 +178,15 @@ export function paginate(view: EditorView, page: PageGeometry): Pagination {
     // The box's own edges: a gap at its start is inside it, below its top; a gap inside it is above its bottom.
     const top = rect.top - measuredOrigin - pushedBy(rect.top - measuredOrigin + 0.5)
     const bottom = rect.bottom - measuredOrigin - pushedBy(rect.bottom - measuredOrigin - 0.5)
+
+    if (unit.kind === 'keep') {
+      // A question is not split between pages: it moves on whole, unless it is longer than a page.
+      const fitsOnAPage = bottom - top <= pageText
+      const atPageTop = top + shift <= contentStart(index) + SAFETY
+      if (fitsOnAPage && (forced || (!atPageTop && bottom + shift > contentEnd(index) - SAFETY))) push('block', unit.pos, top + shift)
+      if (bottom + shift <= contentEnd(index) - SAFETY) skipUntil = unit.end
+      continue
+    }
 
     if (unit.kind !== 'text') {
       const columns = unit.kind === 'row' ? columnsOf(unit.node) : undefined

@@ -1,5 +1,6 @@
 import { currentQuestion, DEFAULT_CHOICES, totalPoints, type ChoicesLayout } from '../editor/question'
 import { showPointsDialog } from '../ui/points-dialog'
+import { answersShown, setAnswersShown } from '../ui/answers'
 import { ICONS } from './icons'
 import type { Tool, ToolContext, ToolGroup } from './tool'
 
@@ -86,7 +87,40 @@ const deleteQuestionTool: Tool = {
   run: ({ editor }) => { editor.chain().focus().deleteQuestion().run() },
 }
 
+const correctChoiceTool: Tool = {
+  id: 'correctChoice',
+  label: 'Doğru şık',
+  icon: ICONS.correctChoice,
+  isAvailable: ({ editor }) => editor.can().toggleCorrectChoice(),
+  isActive: ({ editor }) => editor.isActive('choice', { correct: true }),
+  run: ({ editor }) => {
+    // Marking an answer shows the answers: one sees what one marked.
+    if (!answersShown()) setAnswersShown(true)
+    editor.chain().focus().toggleCorrectChoice().run()
+  },
+}
+
+const showAnswersTool: Tool = {
+  id: 'showAnswers',
+  label: 'Doğru cevapları göster',
+  icon: ICONS.showAnswers,
+  isActive: () => answersShown(),
+  run: ({ editor }) => {
+    setAnswersShown(!answersShown())
+    // The toolbar redraws on a transaction.
+    editor.view.dispatch(editor.state.tr.setMeta('addToHistory', false))
+  },
+}
+
+const answerKeyTool: Tool = {
+  id: 'answerKey',
+  label: 'Cevap anahtarı',
+  icon: ICONS.answerKey,
+  run: ({ editor }) => { editor.chain().focus().insertAnswerKey().run() },
+}
+
 const insertTools = [multipleChoiceTool, openQuestionTool]
+const answerTools = [correctChoiceTool, showAnswersTool, answerKeyTool]
 const choiceTools = [
   addChoiceTool,
   removeChoiceTool,
@@ -102,11 +136,12 @@ export const examGroup: ToolGroup = {
   id: 'exam',
   label: 'Sınav',
   icon: ICONS.exam,
-  tools: [...insertTools, ...choiceTools, ...questionTools],
+  tools: [...insertTools, ...choiceTools, ...answerTools, ...questionTools],
   isMarked: inQuestion,
   sections: [
     { title: 'Soru ekle', tools: insertTools },
     { title: 'Şıklar', tools: choiceTools },
+    { title: 'Cevaplar', tools: answerTools },
     {
       titleOf: ({ editor }) => {
         const total = totalPoints(editor.state.doc)

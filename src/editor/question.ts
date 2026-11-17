@@ -24,6 +24,8 @@ declare module '@tiptap/core' {
       /** The question swaps places with the one before (-1) or after (1). */
       moveQuestion: (direction: -1 | 1) => ReturnType
       deleteQuestion: () => ReturnType
+      /** Marks the choice the cursor is in as the right answer (the only one of its question); again, unmarks it. */
+      toggleCorrectChoice: () => ReturnType
     }
   }
 }
@@ -52,6 +54,25 @@ export function currentQuestion(state: EditorState): ProseMirrorNode | null {
   return questionAt(state.selection.$from)?.node ?? null
 }
 
+const LETTERS = 'ABCDEF'
+
+/** Each question's right answer in order: its letter, "?" when none is marked, null for an open-ended question. */
+export function answersOf(doc: ProseMirrorNode): (string | null)[] {
+  const answers: (string | null)[] = []
+  doc.descendants(node => {
+    if (node.type.name !== 'question') return true
+    const choices = node.lastChild?.type.name === 'choices' ? node.lastChild : null
+    if (!choices) answers.push(null)
+    else {
+      let letter = '?'
+      choices.forEach((choice, _offset, index) => { if (choice.attrs.correct) letter = LETTERS[index] ?? '?' })
+      answers.push(letter)
+    }
+    return false
+  })
+  return answers
+}
+
 /** The points of every question, added up. */
 export function totalPoints(doc: ProseMirrorNode): number {
   let total = 0
@@ -72,6 +93,16 @@ export const Choice = Node.create({
   name: 'choice',
   content: 'inline*',
   defining: true,
+
+  addAttributes() {
+    return {
+      correct: {
+        default: false,
+        parseHTML: element => element.hasAttribute('data-correct'),
+        renderHTML: attributes => (attributes.correct ? { 'data-correct': '' } : {}),
+      },
+    }
+  },
 
   parseHTML() {
     return [{ tag: 'div[data-choice]', priority: 60 }]
@@ -254,6 +285,23 @@ export const Question = Node.create({
           const newStart = direction < 0 ? from : from + neighbour.nodeSize
           cursorInto(tr, newStart + offsetInQuestion)
           tr.scrollIntoView()
+        }
+        return true
+      },
+
+      toggleCorrectChoice: () => ({ state, tr, dispatch }) => {
+        const { $from } = state.selection
+        const depth = choiceDepth($from)
+        if (depth === null) return false
+        if (dispatch) {
+          const mark = !$from.node(depth).attrs.correct
+          const choices = $from.node(depth - 1)
+          let pos = $from.before(depth - 1) + 1
+          choices.forEach((choice, _offset, index) => {
+            const wanted = mark && index === $from.index(depth - 1)
+            if (Boolean(choice.attrs.correct) !== wanted) tr.setNodeAttribute(pos, 'correct', wanted)
+            pos += choice.nodeSize
+          })
         }
         return true
       },

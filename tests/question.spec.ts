@@ -133,14 +133,14 @@ test('şık ekle / sil, soruyu taşı ve sil; Geri Al geri getirir', async ({ pa
   await expect(page.locator('#document .question')).toHaveCount(2);
 });
 
-test('sayfa sonuna gelen soru numarasıyla birlikte yeni sayfaya geçer; yan yana şıklar bölünmez', async ({ page }) => {
+test('sayfa sonuna gelen soru bölünmez, bütünüyle yeni sayfaya geçer', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/');
   const filler = Array.from({ length: 36 }, (_, i) => ({ type: 'paragraph', content: [{ type: 'text', text: `Satır ${i + 1}` }] }));
-  const question = (text: string) => ({ type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }, { type: 'choices', attrs: { layout: 'row' }, content: ['a', 'b', 'c', 'd', 'e'].map(choice => ({ type: 'choice', content: [{ type: 'text', text: choice }] })) }] });
-  await openFile(page, 'S.awd', awdFile([...filler, question('Sınırdaki soru'), question('Sonraki soru')]));
+  const question = (text: string, layout: string) => ({ type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }, { type: 'choices', attrs: { layout }, content: ['a', 'b', 'c', 'd', 'e'].map(choice => ({ type: 'choice', content: [{ type: 'text', text: choice }] })) }] });
+  await openFile(page, 'S.awd', awdFile([...filler, question('Sınırdaki soru', 'list'), question('Yan yana', 'row'), question('Sonraki soru', 'list')]));
   await expect(page.locator('.page-sheet')).toHaveCount(2);
-  // Whatever moved, the question's number is on the sheet of its text, and the choices are inside a sheet's text area.
+  // On which sheet's text area each part of each question lies.
   const placed = await page.evaluate(() => {
     const host = getComputedStyle(document.querySelector('#editorHost')!);
     const top = parseFloat(host.getPropertyValue('--margin-top'));
@@ -148,17 +148,70 @@ test('sayfa sonuna gelen soru numarasıyla birlikte yeni sayfaya geçer; yan yan
     const sheets = [...document.querySelectorAll('.page-sheet')].map(sheet => sheet.getBoundingClientRect());
     const sheetOf = (y: number) => sheets.findIndex(sheet => y >= sheet.top + top - 3 && y <= sheet.bottom - bottom + 1);
     return [...document.querySelectorAll('#document .question')].map(question => {
-      const stem = question.querySelector('p')!;
       const range = document.createRange();
-      range.selectNodeContents(stem);
-      const text = range.getBoundingClientRect();
+      range.selectNodeContents(question.querySelector('p')!);
       const choices = question.querySelector('.choices')!.getBoundingClientRect();
-      return { number: sheetOf(question.getBoundingClientRect().top + 2), text: sheetOf(text.top + 2), choicesTop: sheetOf(choices.top + 1), choicesBottom: sheetOf(choices.bottom - 1) };
+      return {
+        number: sheetOf(question.getBoundingClientRect().top + 2),
+        text: sheetOf(range.getBoundingClientRect().top + 2),
+        choicesTop: sheetOf(choices.top + 1),
+        choicesBottom: sheetOf(choices.bottom - 1),
+      };
     });
   });
+  // The filler fills most of the first page: the first question does not fit after it.
+  expect(placed[0].number).toBe(1);
   for (const question of placed) {
-    expect(question.number).toBe(question.text);
-    expect(question.choicesTop).toBeGreaterThanOrEqual(0);
-    expect(question.choicesTop).toBe(question.choicesBottom);
+    expect(question.text).toBe(question.number);
+    expect(question.choicesTop).toBe(question.number);
+    expect(question.choicesBottom).toBe(question.number);
   }
+});
+
+test('doğru şık işaretlenir (soru başına bir), yalnız ekranda görünür ve gizlenebilir; cevap anahtarı canlı', async ({ page }) => {
+  await page.goto('/');
+  const mc = (text: string) => ({ type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }, { type: 'choices', content: ['a', 'b', 'c', 'd'].map(choice => ({ type: 'choice', content: [{ type: 'text', text: choice }] })) }] });
+  await openFile(page, 'S.awd', awdFile([mc('Bir'), { type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Açık uçlu' }] }] }, mc('Üç')]));
+  await page.locator('#document .question').first().locator('.choice').nth(1).click();
+  await examTool(page, 'correctChoice');
+  await expect(page.locator('#document .question').first().locator('.choice[data-correct]')).toHaveText('b');
+  // Another choice of the same question takes the mark over.
+  await page.locator('#document .question').first().locator('.choice').nth(3).click();
+  await examTool(page, 'correctChoice');
+  await expect(page.locator('#document .question').first().locator('.choice[data-correct]')).toHaveText('d');
+  const ring = () => page.locator('#document .choice[data-correct]').evaluate(element => getComputedStyle(element, '::before').boxShadow);
+  expect(await ring()).not.toBe('none');
+
+  // Hidden for the board; never printed.
+  await examTool(page, 'showAnswers');
+  expect(await ring()).toBe('none');
+  await examTool(page, 'showAnswers');
+  expect(await ring()).not.toBe('none');
+  await page.emulateMedia({ media: 'print' });
+  expect(await ring()).toBe('none');
+  await page.emulateMedia({ media: 'screen' });
+
+  // The key lists every question and follows the changes.
+  await examTool(page, 'answerKey');
+  const key = page.locator('#document .answer-key');
+  await expect(key).toHaveCount(1);
+  await expect(key.locator('li')).toHaveText(['1. D', '2. —', '3. ?']);
+  await expect(page.locator('#document .page-break')).toHaveCount(1);
+  await page.locator('#document .question').nth(2).locator('.choice').first().click();
+  await examTool(page, 'correctChoice');
+  await expect(key.locator('li')).toHaveText(['1. D', '2. —', '3. A']);
+  await page.keyboard.press('Control+z');
+  await expect(key.locator('li')).toHaveText(['1. D', '2. —', '3. ?']);
+  // Asked again, it does not make a second key.
+  await examTool(page, 'answerKey');
+  await expect(page.locator('#document .answer-key')).toHaveCount(1);
+});
+
+test('düz metinde cevap anahtarı satırı', async () => {
+  const choice = (text: string, correct = false) => ({ type: 'choice', attrs: { correct }, content: [{ type: 'text', text }] });
+  const bytes = await txtFormat.write!({ type: 'doc', content: [
+    { type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'S' }] }, { type: 'choices', content: [choice('x'), choice('y', true)] }] },
+    { type: 'answerKey' },
+  ] });
+  expect(new TextDecoder().decode(bytes)).toBe('1. S\n   A) x\n   B) y\nCevap Anahtarı: 1. B\n');
 });

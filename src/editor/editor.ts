@@ -7,6 +7,7 @@ import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { EditorState, TextSelection } from '@tiptap/pm/state'
 import type { EditorView } from '@tiptap/pm/view'
 import StarterKit from '@tiptap/starter-kit'
+import { AnswerKey } from './answer-key'
 import { Formula } from './formula'
 import { DocumentImage, ImageInput } from './image'
 import { PageBreak, PageSetupExtension } from './page-setup'
@@ -54,6 +55,7 @@ export function createEditor(element: HTMLElement): Editor {
       Question,
       Choices,
       Choice,
+      AnswerKey,
       PageSetupExtension,
       PageBreak,
       PaginationExtension,
