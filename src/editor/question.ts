@@ -26,6 +26,12 @@ declare module '@tiptap/core' {
       deleteQuestion: () => ReturnType
       /** Marks the choice the cursor is in as the right answer (the only one of its question); again, unmarks it. */
       toggleCorrectChoice: () => ReturnType
+      /** Two open-ended questions side by side, after the block the cursor is in. */
+      insertQuestionRow: () => ReturnType
+      /** The question the cursor is in and the next one go side by side. */
+      pairWithNextQuestion: () => ReturnType
+      /** Two questions side by side go back one under the other. */
+      unpairQuestions: () => ReturnType
     }
   }
 }
@@ -37,6 +43,22 @@ export function questionAt($pos: ResolvedPos): { node: ProseMirrorNode; pos: num
     if (node.type.name === 'question') return { node, pos: $pos.before(depth), depth }
   }
   return null
+}
+
+/**
+ * The block of the document a question stands in: the question itself, or the pair of questions
+ * side by side it is part of. Moving and leaving work on this.
+ */
+export function questionBlockAt($pos: ResolvedPos): { node: ProseMirrorNode; pos: number } | null {
+  const question = questionAt($pos)
+  if (!question) return null
+  if (question.depth === 1) return { node: question.node, pos: question.pos }
+  if (question.depth === 2 && $pos.node(1).type.name === 'questionRow') return { node: $pos.node(1), pos: $pos.before(1) }
+  return null
+}
+
+function rowAt($pos: ResolvedPos): { node: ProseMirrorNode; pos: number } | null {
+  return $pos.depth >= 1 && $pos.node(1).type.name === 'questionRow' ? { node: $pos.node(1), pos: $pos.before(1) } : null
 }
 
 function choiceDepth($pos: ResolvedPos): number | null {
@@ -87,6 +109,53 @@ export function totalPoints(doc: ProseMirrorNode): number {
 function cursorInto(tr: Transaction, pos: number): void {
   tr.setSelection(TextSelection.near(tr.doc.resolve(Math.min(pos, tr.doc.content.size))))
 }
+
+/** An empty question; with `count` empty choices (0: open-ended). */
+function newQuestion(state: EditorState, count: number): ProseMirrorNode {
+  const { schema } = state
+  const parts: ProseMirrorNode[] = [schema.nodes.paragraph.create()]
+  if (count > 0) parts.push(schema.nodes.choices.create(null, Array.from({ length: Math.min(count, MAX_CHOICES) }, () => schema.nodes.choice.create())))
+  return schema.nodes.question.create(null, parts)
+}
+
+/**
+ * Puts a question (or a pair) after the question or top-level block the cursor is in, in place of
+ * an empty paragraph, with a paragraph after it so writing goes on below; the cursor goes
+ * `inside` positions into it (its first paragraph).
+ */
+function placeQuestionBlock(state: EditorState, tr: Transaction, block: ProseMirrorNode, inside: number): void {
+  const { $from } = state.selection
+  const top = $from.depth > 0 ? { node: $from.node(1), pos: $from.before(1) } : null
+  let at: number
+  if (top && top.node.type.name === 'paragraph' && top.node.content.size === 0) {
+    tr.delete(top.pos, top.pos + top.node.nodeSize)
+    at = top.pos
+  } else at = top ? top.pos + top.node.nodeSize : $from.pos
+  tr.insert(at, block)
+  const after = at + block.nodeSize
+  if (after >= tr.doc.content.size || tr.doc.resolve(after).nodeAfter?.type.name !== 'paragraph') {
+    tr.insert(after, state.schema.nodes.paragraph.create())
+  }
+  cursorInto(tr, at + inside)
+  tr.scrollIntoView()
+}
+
+/** Two questions side by side, as a pair of columns; numbered left, then right. */
+export const QuestionRow = Node.create({
+  name: 'questionRow',
+  group: 'block',
+  content: 'question question',
+  defining: true,
+  isolating: true,
+
+  parseHTML() {
+    return [{ tag: 'div[data-question-row]', priority: 60 }]
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-question-row': '', class: 'question-row' }), 0]
+  },
+})
 
 /** One choice of a multiple-choice question; its letter (A, B…) comes from its place. */
 export const Choice = Node.create({
@@ -178,34 +247,7 @@ export const Question = Node.create({
   addCommands() {
     return {
       insertQuestion: count => ({ state, tr, dispatch }) => {
-        const { schema } = state
-        const { $from } = state.selection
-        const stem = schema.nodes.paragraph.create()
-        const parts: ProseMirrorNode[] = [stem]
-        if (count > 0) {
-          const choices = Array.from({ length: Math.min(count, MAX_CHOICES) }, () => schema.nodes.choice.create())
-          parts.push(schema.nodes.choices.create(null, choices))
-        }
-        const question = this.type.create(null, parts)
-        if (dispatch) {
-          // After the question (or top-level block) the cursor is in; an empty paragraph is replaced.
-          const inside = questionAt($from)
-          const top = $from.depth > 0 ? { node: $from.node(1), pos: $from.before(1) } : null
-          let at: number
-          if (inside && inside.depth === 1) at = inside.pos + inside.node.nodeSize
-          else if (top && top.node.type.name === 'paragraph' && top.node.content.size === 0) {
-            tr.delete(top.pos, top.pos + top.node.nodeSize)
-            at = top.pos
-          } else at = top ? top.pos + top.node.nodeSize : $from.pos
-          tr.insert(at, question)
-          // A paragraph after it, so writing can go on below the question.
-          const after = at + question.nodeSize
-          if (after >= tr.doc.content.size || tr.doc.resolve(after).nodeAfter?.type.name !== 'paragraph') {
-            tr.insert(after, schema.nodes.paragraph.create())
-          }
-          cursorInto(tr, at + 2)
-          tr.scrollIntoView()
-        }
+        if (dispatch) placeQuestionBlock(state, tr, newQuestion(state, count), 2)
         return true
       },
 
@@ -270,8 +312,8 @@ export const Question = Node.create({
       },
 
       moveQuestion: direction => ({ state, tr, dispatch }) => {
-        const question = questionAt(state.selection.$from)
-        if (!question || question.depth !== 1) return false
+        const question = questionBlockAt(state.selection.$from)
+        if (!question) return false
         const $question = state.doc.resolve(question.pos)
         const index = $question.index(0)
         const neighbour = state.doc.maybeChild(index + direction)
@@ -306,9 +348,50 @@ export const Question = Node.create({
         return true
       },
 
+      insertQuestionRow: () => ({ state, tr, dispatch }) => {
+        if (dispatch) {
+          const row = state.schema.nodes.questionRow.create(null, [newQuestion(state, 0), newQuestion(state, 0)])
+          placeQuestionBlock(state, tr, row, 3)
+        }
+        return true
+      },
+
+      pairWithNextQuestion: () => ({ state, tr, dispatch }) => {
+        const question = questionAt(state.selection.$from)
+        if (!question || question.depth !== 1) return false
+        const index = state.doc.resolve(question.pos).index(0)
+        const next = state.doc.maybeChild(index + 1)
+        if (next?.type.name !== 'question') return false
+        if (dispatch) {
+          const offset = state.selection.from - question.pos
+          tr.replaceWith(question.pos, question.pos + question.node.nodeSize + next.nodeSize, this.editor.schema.nodes.questionRow.create(null, [question.node, next]))
+          cursorInto(tr, question.pos + 1 + offset)
+        }
+        return true
+      },
+
+      unpairQuestions: () => ({ state, tr, dispatch }) => {
+        const row = rowAt(state.selection.$from)
+        if (!row) return false
+        if (dispatch) {
+          const offset = state.selection.from - row.pos
+          tr.replaceWith(row.pos, row.pos + row.node.nodeSize, row.node.content)
+          cursorInto(tr, row.pos + offset - 1)
+        }
+        return true
+      },
+
       deleteQuestion: () => ({ state, tr, dispatch }) => {
         const question = questionAt(state.selection.$from)
         if (!question) return false
+        const row = rowAt(state.selection.$from)
+        if (row && dispatch) {
+          // Out of a pair, the other question stays, on its own.
+          const other = row.node.child(state.selection.$from.index(1) === 0 ? 1 : 0)
+          tr.replaceWith(row.pos, row.pos + row.node.nodeSize, other)
+          cursorInto(tr, row.pos + 2)
+          return true
+        }
         if (dispatch) {
           tr.delete(question.pos, question.pos + question.node.nodeSize)
           if (tr.doc.childCount === 0) tr.insert(0, state.schema.nodes.paragraph.create())
@@ -364,14 +447,14 @@ export const Question = Node.create({
         const full = choices.childCount >= MAX_CHOICES
         /** Out of the question, into the paragraph below it; `dropChoice` removes the (empty) choice first. */
         const leave = (dropChoice: boolean) => {
-          const question = questionAt($from)!
+          const question = questionBlockAt($from)
           return editor.chain().command(({ tr }) => {
             if (dropChoice) {
               const start = $from.before(depth)
               tr.delete(start, start + $from.parent.nodeSize)
             }
-            const after = tr.mapping.map(question.pos + question.node.nodeSize)
-            if (question.depth === 1) {
+            if (question) {
+              const after = tr.mapping.map(question.pos + question.node.nodeSize)
               const next = tr.doc.resolve(after).nodeAfter
               if (next?.type.name !== 'paragraph' || next.content.size > 0) tr.insert(after, editor.schema.nodes.paragraph.create())
               cursorInto(tr, after + 1)

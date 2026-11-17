@@ -700,6 +700,18 @@ body {
 	}
 }
 
+/* Two questions side by side: two columns, numbered left then right. */
+.document .question-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 1.5em;
+	margin: 0 0 12pt;
+}
+
+.document .question-row > .question {
+	margin: 0;
+}
+
 /* The right choice: a green ring on its letter, on screen only and only while the answers show. */
 @media screen {
 	.editor-host.show-answers .document .choice[data-correct]::before {
@@ -1432,7 +1444,8 @@ body {
 
 	/* Choices side by side are laid out (and moved to a new page) as one piece. */
 	.document .choices[data-layout="row"],
-	.document .choices[data-layout="grid"] {
+	.document .choices[data-layout="grid"],
+	.document .question-row {
 		break-inside: avoid;
 	}
 

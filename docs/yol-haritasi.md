@@ -341,6 +341,18 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
    - **(d) Sorular için "yan yana iki soru" bloğu:** İki soruyu yan yana koyan bir düzen (tablo gibi).
      Kolay ve sağlam; ama sorular bir sütundan öbürüne kendiliğinden akmaz.
    **Öneri (Claude):** önce (d) ya da (c), (b) sonraya. Karar kullanıcının.
+   - Kullanıcı başlığı üst bilgiye koymayı sordu (2026-11-17). Yanıt: olur. Ancak bunun için zengin üst bilgi
+     ve "ilk sayfada farklı" gerekir. Ekranda sütun satırları eşit yükseklikte olduğu için 2. ve sonraki
+     sayfalarda da üstte yer ayrılır; orası boş kalır ya da kısa bir tekrar başlığı olur.
+   - **Kullanıcı kararı (2026-11-17): (d) yan yana iki soru.** Uygulandı:
+     - Sınav ▾ → "Yan yana iki soru" iki açık uçlu soruyu yan yana ekler.
+     - "Sonraki soruyla yan yana" yazılmış bir soruyu bir sonrakiyle eşler; "Yan yana olmaktan çıkar"
+       ayırır.
+     - Numaralar soldan sağa sürer.
+     - Taşıma çifti birlikte taşır. Çiftten silinen sorunun eşi tek başına kalır.
+     - Çift sayfa sonunda bölünmez, bütünüyle sonraki sayfaya geçer (bir sayfadan uzunsa da bölünmez).
+     - Dosyada `questionRow` düğümüdür.
+     - Zengin üst bilgi ve gerçek iki sütun (a/b) sonraya.
 6. A/B kitapçığı (soruların ve şıkların sırası karıştırılmış ikinci kâğıt ve kendi cevap anahtarı),
    drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası (sorular cihazda saklanır, başka sınava eklenir).
 

@@ -42,13 +42,18 @@ type Unit =
   | { readonly kind: 'block'; readonly pos: number; readonly node: ProseMirrorNode }
   | { readonly kind: 'pageBreak'; readonly pos: number }
   /** Kept on one page when it fits on one (a question); its own pieces follow it in the list. */
-  | { readonly kind: 'keep'; readonly pos: number; readonly end: number }
+  | { readonly kind: 'keep'; readonly pos: number; readonly end: number; readonly unsplittable?: boolean }
 
 /** The pieces that are laid out one under another: paragraphs, table rows, other blocks. */
 function unitsOf(doc: ProseMirrorNode): Unit[] {
   const units: Unit[] = []
   doc.descendants((node, pos, parent, index) => {
     const name = node.type.name
+    // Two questions side by side cannot break line by line: always one piece.
+    if (name === 'questionRow') {
+      units.push({ kind: 'keep', pos, end: pos + node.nodeSize, unsplittable: true })
+      return false
+    }
     if (name === 'question') {
       units.push({ kind: 'keep', pos, end: pos + node.nodeSize })
       return true
@@ -181,7 +186,7 @@ export function paginate(view: EditorView, page: PageGeometry): Pagination {
 
     if (unit.kind === 'keep') {
       // A question is not split between pages: it moves on whole, unless it is longer than a page.
-      const fitsOnAPage = bottom - top <= pageText
+      const fitsOnAPage = unit.unsplittable || bottom - top <= pageText
       const atPageTop = top + shift <= contentStart(index) + SAFETY
       if (fitsOnAPage && (forced || (!atPageTop && bottom + shift > contentEnd(index) - SAFETY))) push('block', unit.pos, top + shift)
       if (bottom + shift <= contentEnd(index) - SAFETY) skipUntil = unit.end

@@ -12,7 +12,7 @@ import { Formula } from './formula'
 import { DocumentImage, ImageInput } from './image'
 import { PageBreak, PageSetupExtension } from './page-setup'
 import { PaginationExtension } from './pagination'
-import { Choice, Choices, Question } from './question'
+import { Choice, Choices, Question, QuestionRow } from './question'
 import { ParagraphFormat } from './paragraph-format'
 import { Search } from './search'
 
@@ -53,6 +53,7 @@ export function createEditor(element: HTMLElement): Editor {
       // The page (size, margins, header, footer) is part of the document; page breaks too.
       Formula,
       Question,
+      QuestionRow,
       Choices,
       Choice,
       AnswerKey,

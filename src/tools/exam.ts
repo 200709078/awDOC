@@ -127,7 +127,30 @@ const examPaperTool: Tool = {
   run: ({ editor, session }) => showExamDialog(editor, session),
 }
 
-const insertTools = [examPaperTool, multipleChoiceTool, openQuestionTool]
+const questionRowTool: Tool = {
+  id: 'questionRow',
+  label: 'Yan yana iki soru',
+  icon: ICONS.questionRow,
+  run: ({ editor }) => { editor.chain().focus().insertQuestionRow().run() },
+}
+
+const pairTool: Tool = {
+  id: 'pairQuestions',
+  label: 'Sonraki soruyla yan yana',
+  icon: ICONS.pairQuestions,
+  isAvailable: ({ editor }) => editor.can().pairWithNextQuestion(),
+  run: ({ editor }) => { editor.chain().focus().pairWithNextQuestion().run() },
+}
+
+const unpairTool: Tool = {
+  id: 'unpairQuestions',
+  label: 'Yan yana olmaktan çıkar',
+  icon: ICONS.unpairQuestions,
+  isAvailable: ({ editor }) => editor.can().unpairQuestions(),
+  run: ({ editor }) => { editor.chain().focus().unpairQuestions().run() },
+}
+
+const insertTools = [examPaperTool, multipleChoiceTool, openQuestionTool, questionRowTool]
 const answerTools = [correctChoiceTool, showAnswersTool, answerKeyTool]
 const choiceTools = [
   addChoiceTool,
@@ -136,7 +159,7 @@ const choiceTools = [
   layoutTool('row', 'choicesRow', 'Şıklar yan yana', ICONS.choicesRow),
   layoutTool('grid', 'choicesGrid', 'Şıklar iki sütun', ICONS.choicesGrid),
 ]
-const questionTools = [pointsTool, moveUpTool, moveDownTool, deleteQuestionTool]
+const questionTools = [pointsTool, pairTool, unpairTool, moveUpTool, moveDownTool, deleteQuestionTool]
 
 /** Sınav ▾: questions and their choices. A plain document never needs to open it. */
 export const examGroup: ToolGroup = {

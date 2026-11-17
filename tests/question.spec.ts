@@ -215,3 +215,55 @@ test('düz metinde cevap anahtarı satırı', async () => {
   ] });
   expect(new TextDecoder().decode(bytes)).toBe('1. S\n   A) x\n   B) y\nCevap Anahtarı: 1. B\n');
 });
+
+test('yan yana iki soru: soldan sağa numaralanır; eşle, taşı, ayır; çiftten silinen soru öbürünü yalnız bırakır', async ({ page }) => {
+  await page.goto('/');
+  await examTool(page, 'questionRow');
+  await expect(page.locator('#document .question-row .question')).toHaveCount(2);
+  await page.keyboard.type('Sol soru');
+  await page.locator('#document .question-row .question').nth(1).locator('p').click();
+  await page.keyboard.type('Sağ soru');
+  const boxes = await page.locator('#document .question-row .question').evaluateAll(elements => elements.map(element => element.getBoundingClientRect()).map(box => ({ top: Math.round(box.top), left: box.left })));
+  expect(boxes[0].top).toBe(boxes[1].top);
+  expect(boxes[0].left).toBeLessThan(boxes[1].left);
+
+  await openFile(page, 'S.awd', awdFile(['Bir', 'İki', 'Üç'].map(text => ({ type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] }))));
+  await page.getByRole('button', { name: 'Kaydetmeden devam et' }).click();
+  await expect(page.locator('#document .question')).toHaveCount(3);
+  await page.locator('#document .question p', { hasText: 'Bir' }).click();
+  await examTool(page, 'pairQuestions');
+  await expect(page.locator('#document .question-row .question')).toHaveText(['Bir', 'İki']);
+  // The pair moves as one.
+  await examTool(page, 'moveQuestionDown');
+  await expect(page.locator('#document > div').first()).toHaveText('Üç');
+  await expect(page.locator('#document .question-row')).toHaveCount(1);
+  await examTool(page, 'unpairQuestions');
+  await expect(page.locator('#document .question-row')).toHaveCount(0);
+  await expect(page.locator('#document .question')).toHaveText(['Üç', 'Bir', 'İki']);
+  // Paired again, then one of the pair deleted: the other stays on its own.
+  await page.locator('#document .question p', { hasText: 'Bir' }).click();
+  await examTool(page, 'pairQuestions');
+  await page.locator('#document .question p', { hasText: 'İki' }).click();
+  await examTool(page, 'deleteQuestion');
+  await expect(page.locator('#document .question-row')).toHaveCount(0);
+  await expect(page.locator('#document .question')).toHaveText(['Üç', 'Bir']);
+});
+
+test('sayfa sonuna gelen yan yana soru çifti bölünmez', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/');
+  const filler = Array.from({ length: 34 }, (_, i) => ({ type: 'paragraph', content: [{ type: 'text', text: `Satır ${i + 1}` }] }));
+  const question = (text: string) => ({ type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }, { type: 'paragraph' }, { type: 'paragraph' }, { type: 'paragraph' }] });
+  await openFile(page, 'S.awd', awdFile([...filler, { type: 'questionRow', content: [question('Sol'), question('Sağ')] }]));
+  await expect(page.locator('.page-sheet')).toHaveCount(2);
+  const sheets = await page.evaluate(() => {
+    const host = getComputedStyle(document.querySelector('#editorHost')!);
+    const top = parseFloat(host.getPropertyValue('--margin-top'));
+    const bottom = parseFloat(host.getPropertyValue('--margin-bottom'));
+    const pages = [...document.querySelectorAll('.page-sheet')].map(sheet => sheet.getBoundingClientRect());
+    const row = document.querySelector('#document .question-row')!.getBoundingClientRect();
+    const sheetOf = (y: number) => pages.findIndex(sheet => y >= sheet.top + top - 3 && y <= sheet.bottom - bottom + 1);
+    return [sheetOf(row.top + 2), sheetOf(row.bottom - 2)];
+  });
+  expect(sheets).toEqual([1, 1]);
+});
