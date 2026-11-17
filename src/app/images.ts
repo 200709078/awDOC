@@ -20,6 +20,12 @@ export function imageTypeOfName(name: string): string | undefined {
   return IMAGE_TYPES[name.toLowerCase().match(/\.([^.]+)$/)?.[1] ?? '']
 }
 
+/** A shared picture named without an extension (some galleries) gets the one of its type, so the app sees a picture. */
+export function withImageExtension(name: string, type: string | undefined): string {
+  const extension = Object.entries(IMAGE_TYPES).find(([, mime]) => mime === type)?.[0]
+  return extension && !imageTypeOfName(name) ? `${name}.${extension}` : name
+}
+
 export const isImage = (file: Blob & { name?: string }) => Object.values(IMAGE_TYPES).includes(file.type) || Boolean(file.name && imageTypeOfName(file.name))
 
 export interface PreparedImage {

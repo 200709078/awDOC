@@ -41,6 +41,14 @@
                 <data android:pathPattern=".*\\..*\\..*\\.AWD" />
             </intent-filter>
 
+            <!-- "Share" a picture to awDOC (awPDF's captured region, a photo): it goes into the document.
+                 No permission: Android lends the picture for this visit. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+
         </activity>
 
     </application>

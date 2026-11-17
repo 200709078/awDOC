@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -75,12 +76,24 @@ public class AwDocNativePlugin extends Plugin {
         });
     }
 
-    /** Capacitor sends the intent that starts the app through here too. */
+    /**
+     * Capacitor sends the intent that starts the app through here too: "open with" (an awDOC file)
+     * or "share" (a picture from awPDF, the gallery or the camera, which goes into the document).
+     */
     @Override
     protected void handleOnNewIntent(Intent intent) {
-        Uri uri = intent.getData();
-        if (!Intent.ACTION_VIEW.equals(intent.getAction()) || uri == null) return;
-        getBridge().execute(() -> sendFile(uri));
+        Uri uri = null;
+        if (Intent.ACTION_VIEW.equals(intent.getAction())) uri = intent.getData();
+        else if (Intent.ACTION_SEND.equals(intent.getAction())) uri = sharedStream(intent);
+        if (uri == null) return;
+        Uri file = uri;
+        getBridge().execute(() -> sendFile(file));
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Uri sharedStream(Intent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri.class);
+        return intent.getParcelableExtra(Intent.EXTRA_STREAM);
     }
 
     /**
@@ -122,6 +135,9 @@ public class AwDocNativePlugin extends Plugin {
         JSObject file = new JSObject();
         file.put("id", ++openedId);
         file.put("name", displayName(uri));
+        // A shared picture's name may have no extension; its type tells what it is.
+        String type = getContext().getContentResolver().getType(uri);
+        if (type != null) file.put("type", type);
         try {
             ParcelFileDescriptor descriptor = seekableDescriptor(uri);
             file.put("size", descriptor.getStatSize());

@@ -179,3 +179,11 @@ test('resim altı yazısı "Şekil N:" diye numaralanır; düz metne de öyle ya
   const { txtFormat } = await import('../src/formats/txt');
   expect(new TextDecoder().decode(await txtFormat.write!(saved))).toContain('Şekil 1: Üçgen\nSonraki paragraf');
 });
+
+test('paylaşılan resmin adı uzantısızsa türünden uzantı alır (Android "Paylaş")', async () => {
+  const { withImageExtension } = await import('../src/app/images');
+  expect(withImageExtension('IMG_2026', 'image/jpeg')).toBe('IMG_2026.jpg');
+  expect(withImageExtension('bölge.png', 'image/png')).toBe('bölge.png');
+  expect(withImageExtension('Belge.awd', 'application/octet-stream')).toBe('Belge.awd');
+  expect(withImageExtension('isimsiz', undefined)).toBe('isimsiz');
+});

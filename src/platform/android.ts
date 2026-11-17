@@ -1,4 +1,5 @@
 import { registerPlugin, type PluginListenerHandle } from '@capacitor/core'
+import { withImageExtension } from '../app/images'
 import { fromBase64, toBase64 } from '../core/base64'
 import { browserPlatform } from './browser'
 import type { FileType, OpenedFile, Platform } from './platform'
@@ -10,6 +11,8 @@ interface NativeFile {
   size: number
   /** Present when Android lets the app write the file again later. */
   source?: string
+  /** Its MIME type, when the sender gave one (a shared picture). */
+  type?: string
 }
 
 /** The Android app's own plugin (android/…/AwDocNativePlugin.java). */
@@ -45,7 +48,8 @@ function sixDigitHex(color: string): string {
 }
 
 /** The bridge carries text, so a file comes over piece by piece. */
-async function readNative({ id, name, size, source }: NativeFile): Promise<OpenedFile> {
+async function readNative({ id, name: sentName, size, source, type }: NativeFile): Promise<OpenedFile> {
+  const name = withImageExtension(sentName, type)
   if (size < 0) throw new Error(`${name} açılamadı.`)
   const data = new Uint8Array(size)
   for (let begin = 0; begin < size; begin += CHUNK_BYTES) {

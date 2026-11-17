@@ -365,9 +365,19 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
       - **Resim altı yazısı:** Resmin paragrafının altına ortalı, küçük ve eğik bir paragraf. Belge boyunca
         "Şekil 1:", "Şekil 2:" diye kendiliğinden numaralanır; yanındaki resmin altına iner. Düz metne
         "Şekil 1: …" olarak yazılır.
-   b. awPDF'ten bölge yakalama (sırada).
-   c. drAW2D / drAW3D'den "görsel olarak kopyala".
-   d. Telefonda kamera (sonra).
+   b. **awPDF'ten bölge yakalama: denendi, çalışıyor (2026-11-17).**
+      - **Masaüstü ve web:** awPDF → "Bölgeyi Görsel Al" → çerçeve → "Kopyala", sonra awDOC'ta Ctrl+V. Bunun
+        için kod değişikliği gerekmedi; iki uygulama birlikte açılıp uçtan uca denendi.
+      - **Android (uygulandı):** Telefonda uygulamalar arası resim panosu güvenilir olmadığı için awDOC
+        Android'de **"Paylaş" ile gelen resmi** kabul ediyor (manifestte `image/*` için `ACTION_SEND`, izin
+        yok). awPDF'in bölge penceresindeki Paylaş, galeri ve kamera uygulamasının paylaşımı awDOC'u gösterir;
+        resim belgede imlecin yerine girer. Adı uzantısız gelen resim türünden uzantı alır. Derleniyor; telefonda
+        denenmedi (telefon bağlı değildi).
+   c. **drAW2D / drAW3D'den "Görüntüyü kopyala": yazıldı, o projelerde commit onayı bekliyor (2026-11-17).**
+      İki uygulamanın Dosya ▾ menüsüne eklendi. Görüntü panoya gider, awDOC'a Ctrl+V ile yapıştırılır
+      (drAW2D → awDOC uçtan uca denendi). drAW2D ve drAW3D'de commit/push kullanıcıya sorulur.
+   d. Telefonda kamera: Android'de kameranın "Paylaş"ı (b) ile awDOC'a resim gönderiyor; uygulama içinden
+      doğrudan kamera açmak sonraya.
 7. A/B kitapçığı (soruların ve şıkların sırası karıştırılmış ikinci kâğıt ve kendi cevap anahtarı),
    drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası (sorular cihazda saklanır, başka sınava eklenir).
 
