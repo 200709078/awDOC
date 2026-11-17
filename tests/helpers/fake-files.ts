@@ -54,3 +54,27 @@ export async function openFile(page: Page, name: string, text: string): Promise<
 export function awdFile(content: unknown[]): string {
   return JSON.stringify({ format: 'awDOC', version: 1, app: 'test', document: { type: 'doc', content } });
 }
+
+/**
+ * "Save" hands out real handles from the browser's private file system (OPFS): unlike the fakes
+ * above they can be kept in IndexedDB, as the recent list does.
+ */
+export async function opfsSavePicker(page: Page, names: string[]): Promise<void> {
+  await page.addInitScript((queue: string[]) => {
+    window.showSaveFilePicker = async ({ suggestedName }) => {
+      const root = await navigator.storage.getDirectory();
+      return root.getFileHandle(queue.shift() ?? suggestedName, { create: true });
+    };
+  }, names);
+}
+
+export function opfsText(page: Page, name: string): Promise<string | null> {
+  return page.evaluate(async fileName => {
+    const root = await navigator.storage.getDirectory();
+    try {
+      return await (await (await root.getFileHandle(fileName)).getFile()).text();
+    } catch {
+      return null;
+    }
+  }, name);
+}

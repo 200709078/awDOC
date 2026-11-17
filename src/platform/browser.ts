@@ -45,6 +45,8 @@ export function showFileInput(): void {
 
 const pickerTypes = (types: readonly FileType[]) => types.map(type => ({ description: type.description, accept: { [type.mime]: [`.${type.extension}`] } }))
 
+const isHandle = (value: unknown): value is FileSystemFileHandle => typeof FileSystemFileHandle === 'function' && value instanceof FileSystemFileHandle
+
 const isAbort = (error: unknown) => (error as DOMException | undefined)?.name === 'AbortError'
 
 async function writeHandle(handle: FileSystemFileHandle, data: Uint8Array): Promise<void> {
@@ -92,8 +94,20 @@ export function browserPlatform(): Platform {
       wired = true
       onPickedFile(file => { void openedFromBlob(file).then(deliver) })
     },
+    storableRef: ref => (isHandle(ref) ? ref : undefined),
+    // From a tap in the list, so the browser may ask for the permission there.
+    reopen: async stored => {
+      if (!isHandle(stored)) return null
+      if (await stored.queryPermission({ mode: 'readwrite' }) !== 'granted'
+        && await stored.requestPermission({ mode: 'readwrite' }) !== 'granted') return null
+      try {
+        return await openedFromBlob(await stored.getFile(), stored)
+      } catch {
+        return null
+      }
+    },
     write: async (ref, data) => {
-      if (!(typeof FileSystemFileHandle === 'function' && ref instanceof FileSystemFileHandle)) return false
+      if (!isHandle(ref)) return false
       // Asked once per visit; a keyboard shortcut counts as the user's own act.
       if (await ref.queryPermission({ mode: 'readwrite' }) !== 'granted'
         && await ref.requestPermission({ mode: 'readwrite' }) !== 'granted') return false

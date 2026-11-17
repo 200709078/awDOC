@@ -8,7 +8,9 @@ import { connectScreenKeyboard } from '../ui/screen-keyboard'
 import { SearchBar } from '../ui/search-bar'
 import { Theme } from '../ui/theme'
 import { mountToolbar } from '../ui/toolbar'
+import { askRestore } from '../ui/dialogs'
 import { imageTypeOfName } from './images'
+import { dropRecovery, readRecovery } from './recovery'
 import { DocumentSession } from './session'
 
 /** The composition root: the platform, the editor, the open document and the toolbar. */
@@ -76,5 +78,12 @@ export function startApp(): void {
       return true
     }
     return false
+  })
+
+  // Work left unsaved when the app was last closed (or killed by the phone) is offered back once.
+  void readRecovery().then(async copy => {
+    if (!copy) return
+    if (await askRestore(copy)) session.restore(copy)
+    else await dropRecovery()
   })
 }

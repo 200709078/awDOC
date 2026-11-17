@@ -1,5 +1,5 @@
 import { alignGroup, listGroup, paragraphGroup, redoTool, undoTool } from './edit'
-import { newDocumentTool, openTool, printTool, saveAsTool, saveTool } from './file'
+import { autoSaveTool, newDocumentTool, openTool, printTool, recentTool, saveAsTool, saveTool } from './file'
 import { findTool, imageTool, linkTool, replaceTool, wordCountTool } from './insert'
 import { tableGroup } from './table'
 import { fontGroup, textGroup } from './text'
@@ -28,8 +28,10 @@ export const TOOLBAR: readonly ToolbarItem[] = [
   tableGroup,
   printTool,
   saveAsTool,
+  recentTool,
   fullscreenTool,
   themeTool,
   wordCountTool,
+  autoSaveTool,
   aboutTool,
 ]

@@ -48,6 +48,13 @@ export interface Platform {
   onFile(listener: (file: OpenedFile) => void): void
   /** Writes over the file `ref` stands for. False when that is not possible; the app then asks where to save. */
   write(ref: FileRef, data: Uint8Array): Promise<boolean>
+  /**
+   * What can be kept between visits (in IndexedDB) to find the file of `ref` again: a file handle,
+   * the shell's source, a content address. Undefined where the platform cannot come back to it.
+   */
+  storableRef(ref: FileRef): unknown
+  /** Opens a file again from `storableRef`'s value; null when it is gone or no longer allowed. */
+  reopen(stored: unknown): Promise<OpenedFile | null>
   /** Writes a new file where the user chooses, offering `name`; null when the user cancelled. */
   saveAs(name: string, data: Uint8Array, type: FileType, near?: FileRef): Promise<SavedFile | null>
   /** Hands a link to the system's browser or mail app. */

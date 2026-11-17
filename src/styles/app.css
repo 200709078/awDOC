@@ -709,6 +709,46 @@ body {
 	height: 24px;
 }
 
+.recent-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-height: 50vh;
+	margin: 8px 0 24px;
+	overflow-y: auto;
+}
+
+.recent-item {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	min-height: 56px;
+	padding: 8px 12px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface);
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.recent-item:hover {
+	background: var(--surface-muted);
+}
+
+.recent-item__name {
+	font-size: 17px;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.recent-item__date {
+	font-size: 14px;
+	opacity: 0.7;
+}
+
 .count-list {
 	display: grid;
 	grid-template-columns: 1fr auto;

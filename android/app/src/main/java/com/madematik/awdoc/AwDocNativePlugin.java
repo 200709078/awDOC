@@ -106,6 +106,12 @@ public class AwDocNativePlugin extends Plugin {
         call.resolve();
     }
 
+    /** The recent list's way back to a file; on the same thread as `readFile`. */
+    @PluginMethod
+    public void reopenFile(PluginCall call) {
+        call.resolve(openFile(Uri.parse(call.getString("source", ""))));
+    }
+
     /** Retained until the page listens, since a tap can start the app before the page loads. */
     private void sendFile(Uri uri) {
         notifyListeners("fileOpened", openFile(uri), true);

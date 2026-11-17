@@ -1,3 +1,4 @@
+import { showRecentDocuments } from '../ui/dialogs'
 import { ICONS } from './icons'
 import type { Tool } from './tool'
 
@@ -41,4 +42,20 @@ export const printTool: Tool = {
   icon: ICONS.print,
   shortcuts: ['ctrl+p'],
   run: ({ platform }) => platform.print(),
+}
+
+export const recentTool: Tool = {
+  id: 'recent',
+  label: 'Son Belgeler',
+  icon: ICONS.recent,
+  run: ({ session }) => { void showRecentDocuments(session) },
+}
+
+/** Writes awDOC files on their own after a pause in typing; on by default (the user may turn it off). */
+export const autoSaveTool: Tool = {
+  id: 'autoSave',
+  label: 'Otomatik Kaydet',
+  icon: ICONS.autoSave,
+  isActive: ({ session }) => session.isAutoSaving,
+  run: ({ session }) => session.toggleAutoSave(),
 }

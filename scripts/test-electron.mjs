@@ -7,9 +7,11 @@ import path from 'node:path'
 import { _electron as electron } from '@playwright/test'
 
 const executablePath = process.env.AWDOC_ELECTRON_EXECUTABLE
-const launchEnvironment = { ...process.env, AWDOC_DEV_SERVER_URL: '' }
-delete launchEnvironment.ELECTRON_RUN_AS_NODE
 const folder = mkdtempSync(path.join(tmpdir(), 'awdoc-'))
+// A profile of its own, so the user's recent list never sees the test's files.
+const profile = mkdtempSync(path.join(tmpdir(), 'awdoc-profil-'))
+const launchEnvironment = { ...process.env, AWDOC_DEV_SERVER_URL: '', AWDOC_USER_DATA: profile }
+delete launchEnvironment.ELECTRON_RUN_AS_NODE
 const file = path.join(folder, 'Deneme.awd')
 writeFileSync(file, `${JSON.stringify({
   format: 'awDOC',
@@ -61,9 +63,18 @@ try {
   assert.equal(saved.document.content[0].content[0].text, 'Masaüstü denemesi — eklendi')
   assert.deepEqual(readdirSync(folder), ['Deneme.awd'], 'Geçici dosya kalmamalı')
 
+  // The recent list finds the file again through the shell's lasting source.
+  await page.locator('#tool-newDocument').click()
+  await page.waitForFunction(() => document.querySelector('#document')?.textContent === '')
+  await page.locator('#toolbarMenuButton').click()
+  await page.locator('#tool-recent').click()
+  await page.locator('#recentList .recent-item__name', { hasText: 'Deneme' }).click()
+  await page.waitForFunction(() => document.querySelector('#document')?.textContent === 'Masaüstü denemesi — eklendi')
+
   assert.deepEqual(errors, [])
-  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma ve aynı dosyaya kaydetme çalışıyor.')
+  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme ve son belgeler çalışıyor.')
 } finally {
   await application.close()
   rmSync(folder, { recursive: true, force: true })
+  rmSync(profile, { recursive: true, force: true })
 }

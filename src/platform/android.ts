@@ -19,6 +19,8 @@ interface AwDocNative {
   /** Puts the app behind the others; the open document is still there on coming back. */
   leaveApp(): Promise<void>
   pickFile(): Promise<void>
+  /** Opens a file again by its kept address; size -1 when it is gone or no longer allowed. */
+  reopenFile(options: { source: string }): Promise<NativeFile>
   readFile(options: { id: number; begin: number; end: number }): Promise<{ data: string }>
   print(options: { name: string }): Promise<void>
   setFullscreen(options: { enabled: boolean }): Promise<void>
@@ -68,6 +70,12 @@ export function androidPlatform(): Platform {
       void native.addListener('fileOpened', file => {
         readNative(file).then(listener).catch(console.error)
       })
+    },
+    storableRef: ref => (typeof ref === 'string' ? ref : undefined),
+    reopen: async stored => {
+      if (typeof stored !== 'string') return null
+      const file = await native.reopenFile({ source: stored })
+      return file.size < 0 ? null : readNative(file)
     },
     write: async (ref, data) => {
       if (typeof ref !== 'string') return false

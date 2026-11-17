@@ -12,6 +12,9 @@ const iconPath = fileURLToPath(new URL(
   import.meta.url,
 ))
 
+// The Electron test (scripts/test-electron.mjs) runs in a profile of its own, never the user's.
+if (process.env.AWDOC_USER_DATA) app.setPath('userData', process.env.AWDOC_USER_DATA)
+
 const SCHEME = 'awdoc'
 const screenKeyboard = new ScreenKeyboardService()
 const OPENABLE_PROTOCOLS = new Set(['http:', 'https:', 'mailto:'])

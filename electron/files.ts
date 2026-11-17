@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
+import { randomUUID } from 'node:crypto'
 import { readFile, rename, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -6,6 +7,8 @@ import path from 'node:path'
 export const DOCUMENT_EXTENSIONS: ReadonlySet<string> = new Set(['awd', 'txt'])
 /** A document this large is not a text document; reading it whole would only freeze the app. */
 const MAX_BYTES = 200 * 1024 * 1024
+/** Lasting names for paths, for the recent list; the oldest go first. */
+const MAX_SOURCES = 100
 
 interface SaveType {
   extension: string
@@ -16,6 +19,8 @@ export interface OpenedFile {
   id: number
   name: string
   data: Uint8Array
+  /** Stands for the path, which the page never learns; `files:reopen` accepts only these. */
+  source: string
 }
 
 const extensionOf = (filePath: string) => path.extname(filePath).slice(1).toLowerCase()
@@ -28,12 +33,18 @@ export class DesktopFiles {
   /** Where each file is; never sent to the page. */
   private readonly paths = new Map<number, string>()
   private lastId = 0
+  private sources: Record<string, string> = {}
+  private readonly sourcesPath = path.join(app.getPath('userData'), 'belgeler.json')
+  private readonly loaded = readFile(this.sourcesPath, 'utf8').then(
+    text => { this.sources = JSON.parse(text) as Record<string, string> },
+    () => undefined,
+  )
 
   async open(filePath: string): Promise<OpenedFile> {
     if (!DOCUMENT_EXTENSIONS.has(extensionOf(filePath))) throw new Error(`Desteklenmeyen dosya: ${filePath}`)
     if ((await stat(filePath)).size > MAX_BYTES) throw new Error(`Dosya çok büyük: ${filePath}`)
     const data = new Uint8Array(await readFile(filePath))
-    return { id: this.remember(filePath), name: path.basename(filePath), data }
+    return { id: this.remember(filePath), name: path.basename(filePath), data, source: await this.sourceOf(filePath) }
   }
 
   register(): void {
@@ -45,6 +56,11 @@ export class DesktopFiles {
       if (!filePath || !(data instanceof Uint8Array)) return false
       await this.writeSafely(filePath, data)
       return true
+    })
+    ipcMain.handle('files:reopen', async (_event, source: unknown) => {
+      await this.loaded
+      const filePath = typeof source === 'string' ? this.sources[source] : undefined
+      return filePath ? this.open(filePath).catch(() => null) : null
     })
     ipcMain.handle('files:save-as', (event, name: unknown, data: unknown, nearId: unknown, type: unknown) => {
       if (typeof name !== 'string' || !(data instanceof Uint8Array)) throw new Error('Kaydedilecek dosya yok.')
@@ -69,7 +85,18 @@ export class DesktopFiles {
     await rename(temporary, filePath)
   }
 
-  private async saveAs(window: BrowserWindow | null, name: string, data: Uint8Array, nearId: unknown, type: SaveType): Promise<{ id: number; name: string } | null> {
+  private async sourceOf(filePath: string): Promise<string> {
+    await this.loaded
+    const known = Object.keys(this.sources).find(source => this.sources[source] === filePath)
+    if (known) return known
+    const source = randomUUID()
+    this.sources[source] = filePath
+    for (const oldest of Object.keys(this.sources).slice(0, -MAX_SOURCES)) delete this.sources[oldest]
+    await writeFile(this.sourcesPath, JSON.stringify(this.sources)).catch(console.error)
+    return source
+  }
+
+  private async saveAs(window: BrowserWindow | null, name: string, data: Uint8Array, nearId: unknown, type: SaveType): Promise<{ id: number; name: string; source: string } | null> {
     const near = this.paths.get(nearId as number)
     const options = {
       defaultPath: path.join(near ? path.dirname(near) : app.getPath('documents'), path.basename(name)),
@@ -79,6 +106,6 @@ export class DesktopFiles {
     if (canceled || !filePath) return null
     const target = filePath.toLowerCase().endsWith(`.${type.extension}`) ? filePath : `${filePath}.${type.extension}`
     await this.writeSafely(target, data)
-    return { id: this.remember(target), name: path.basename(target) }
+    return { id: this.remember(target), name: path.basename(target), source: await this.sourceOf(target) }
   }
 }

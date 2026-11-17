@@ -19,6 +19,8 @@ interface DesktopOpenedFile {
   id: number
   name: string
   data: Uint8Array
+  /** Stands for the path, which the page never learns; `reopen` takes it back later. */
+  source: string
 }
 
 /** The disk as the page may see it: only files the user gave the app, and only by number. */
@@ -28,7 +30,9 @@ interface DesktopFiles {
   /** Writes over the file the shell knows as `id`. */
   write(id: number, data: Uint8Array): Promise<boolean>
   /** Asks where to save, next to the file `nearId` when given; null when the user cancelled. */
-  saveAs(name: string, data: Uint8Array, nearId: number | undefined, type: { extension: string; description: string }): Promise<{ id: number; name: string } | null>
+  saveAs(name: string, data: Uint8Array, nearId: number | undefined, type: { extension: string; description: string }): Promise<{ id: number; name: string; source: string } | null>
+  /** Opens again the file `source` stood for; null when it is gone. */
+  reopen(source: string): Promise<DesktopOpenedFile | null>
 }
 
 /** Opens the system's on-screen keyboard for a text field. */

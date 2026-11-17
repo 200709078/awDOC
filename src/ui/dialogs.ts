@@ -1,6 +1,9 @@
 import type { Editor } from '@tiptap/core'
 import { countText } from '../core/count'
 import { normalizeLink } from '../core/links'
+import { clearRecent, listRecent } from '../app/recent'
+import type { RecoveryCopy } from '../app/recovery'
+import type { DocumentSession } from '../app/session'
 import type { Platform } from '../platform/platform'
 
 /**
@@ -99,4 +102,48 @@ export function showTableDialog(editor: Editor): void {
   dialog.returnValue = ''
   dialog.showModal()
   rows.select()
+}
+
+const DATE = new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })
+
+/** Son Belgeler: a tap opens the file again (asking first about unsaved changes). */
+export async function showRecentDocuments(session: DocumentSession): Promise<void> {
+  const dialog = document.querySelector<HTMLDialogElement>('#recentDialog')!
+  const list = document.querySelector<HTMLElement>('#recentList')!
+  const entries = await listRecent()
+  document.querySelector<HTMLElement>('#recentEmpty')!.hidden = entries.length > 0
+  document.querySelector<HTMLElement>('#recentClear')!.hidden = entries.length === 0
+  list.replaceChildren(...entries.map(entry => {
+    const item = document.createElement('button')
+    item.type = 'button'
+    item.className = 'recent-item'
+    const name = document.createElement('span')
+    name.className = 'recent-item__name'
+    name.textContent = entry.name.replace(/\.awd$/i, '')
+    const date = document.createElement('span')
+    date.className = 'recent-item__date'
+    date.textContent = DATE.format(entry.usedAt)
+    item.append(name, date)
+    item.addEventListener('click', () => {
+      dialog.close()
+      void session.openRecent(entry)
+    })
+    return item
+  }))
+  document.querySelector<HTMLButtonElement>('#recentClear')!.onclick = () => {
+    void clearRecent()
+    dialog.close()
+  }
+  dialog.showModal()
+}
+
+/** Asked once at start when a copy of unsaved work was left behind; true to bring it back. */
+export function askRestore(copy: RecoveryCopy): Promise<boolean> {
+  const dialog = document.querySelector<HTMLDialogElement>('#recoveryDialog')!
+  document.querySelector('#recoveryMessage')!.textContent = `"${copy.name}" belgesindeki kaydedilmemiş değişiklikler (${DATE.format(copy.savedAt)}) bu cihazda saklanmış.`
+  dialog.returnValue = ''
+  dialog.showModal()
+  return new Promise(resolve => {
+    dialog.addEventListener('close', () => resolve(dialog.returnValue === 'restore'), { once: true })
+  })
 }

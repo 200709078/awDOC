@@ -1,7 +1,13 @@
 import { browserPlatform, onPickedFile, openedFromBlob, showFileInput } from './browser'
 import type { OpenedFile, Platform } from './platform'
 
-const fromDisk = ({ id, name, data }: DesktopOpenedFile): OpenedFile => ({ name, data, ref: id })
+/** The shell's lasting name for each file it numbered; kept so the recent list can find it again. */
+const sources = new Map<number, string>()
+
+const fromDisk = ({ id, name, data, source }: DesktopOpenedFile): OpenedFile => {
+  sources.set(id, source)
+  return { name, data, ref: id }
+}
 
 /**
  * The Electron window: full screen belongs to the window and files come from the shell, which
@@ -28,10 +34,18 @@ export function desktopPlatform(controls: DesktopWindowControls, files: DesktopF
         })
       })
     },
+    storableRef: ref => (typeof ref === 'number' ? sources.get(ref) : undefined),
+    reopen: async stored => {
+      if (typeof stored !== 'string') return null
+      const file = await files.reopen(stored).catch(() => null)
+      return file && fromDisk(file)
+    },
     write: async (ref, data) => typeof ref === 'number' && files.write(ref, data),
     saveAs: async (name, data, type, near) => {
       const saved = await files.saveAs(name, data, typeof near === 'number' ? near : undefined, type)
-      return saved && { name: saved.name, ref: saved.id }
+      if (!saved) return null
+      sources.set(saved.id, saved.source)
+      return { name: saved.name, ref: saved.id }
     },
     get isFullscreen() {
       return isFullscreen

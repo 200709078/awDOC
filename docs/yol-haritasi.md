@@ -181,5 +181,19 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
    - Okunamayan resimde uyarı çıkar. SVG alınmaz (içinde betik olabilir).
    - `.awd` içinde veri olarak durur, böylece belge tek dosyadır. Çok resimli belgeler büyürse
      `.awd` ZIP'e geçebilir (sürüm 2).
-6. Otomatik kaydetme ve son belgeler
+6. **Otomatik kaydetme ve son belgeler: uygulandı (2026-11-17).**
+   - **Kurtarma kopyası (her zaman):** kaydedilmemiş değişiklik varken yazmaya 2 saniye ara verilince belgenin
+     kopyası yalnız bu cihaza (IndexedDB) yazılır. Uygulama kapanır, çöker ya da telefon onu kapatırsa bir
+     sonraki açılışta "Kaydedilmemiş belge bulundu" diye sorulur (Geri Yükle / Sil). Belge kaydedilince,
+     yeni belge açılınca ya da Sil seçilince kopya silinir.
+   - **Otomatik Kaydet (☰ menüsünde anahtar, varsayılan açık):** bir `.awd` dosyasından gelen ya da
+     kaydedilmiş belge, yazmaya 4 saniye ara verilince kendi dosyasına sessizce yazılır. Adsız belgede ve
+     düz metinde bir şey yapmaz. Yazamazsa bir kez uyarır; o belgede Kaydet ile devam edilir. Seçim cihazda
+     saklanır. **Açık soru:** varsayılan açık mı kalsın? (öneri: açık; Google Dokümanlar alışkanlığı)
+   - **Son Belgeler (☰ menüsünde):** açılan ve kaydedilen son 12 belge, tarihleriyle. Dokununca belge yeniden
+     açılır (önce kaydedilmemiş değişiklik sorulur). Dosya silinmiş ya da izin kalkmışsa söylenir ve listeden
+     çıkar. Yeniden bulma: tarayıcıda dosya tutamacı (Chromium), masaüstünde kabuğun verdiği kalıcı kimlik
+     (`belgeler.json`), Android'de kalıcı izinli içerik adresi.
+   - Electron denemesi artık kendi geçici profilinde çalışır (`AWDOC_USER_DATA`). Önceki denemelerin
+     kullanıcının profilinde bıraktığı izler silindi.
 7. PDF'e aktarma

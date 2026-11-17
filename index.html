@@ -78,6 +78,23 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
+		<h2 id="recentTitle">Son belgeler</h2>
+		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>
+		<div id="recentList" class="recent-list"></div>
+		<form method="dialog" class="dialog__actions">
+			<button value="close" class="primary-button">Kapat</button>
+			<button id="recentClear" type="button" class="secondary-button">Listeyi Temizle</button>
+		</form>
+	</dialog>
+	<dialog id="recoveryDialog" class="dialog" aria-labelledby="recoveryTitle">
+		<h2 id="recoveryTitle">Kaydedilmemiş belge bulundu</h2>
+		<p id="recoveryMessage"></p>
+		<form method="dialog" class="dialog__actions">
+			<button value="restore" class="primary-button">Geri Yükle</button>
+			<button value="discard" class="secondary-button danger-button">Sil</button>
+		</form>
+	</dialog>
 	<dialog id="countDialog" class="dialog" aria-labelledby="countTitle">
 		<h2 id="countTitle">Kelime sayısı</h2>
 		<dl id="countList" class="count-list"></dl>
