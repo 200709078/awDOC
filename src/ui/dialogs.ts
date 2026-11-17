@@ -84,3 +84,20 @@ export function showWordCount(editor: Editor): void {
   dialog.onclose = () => { editor.commands.focus() }
   dialog.showModal()
 }
+
+/** Tablo Ekle: rows and columns, a header row if wanted; the table goes where the cursor is. */
+export function showTableDialog(editor: Editor): void {
+  const dialog = document.querySelector<HTMLDialogElement>('#tableDialog')!
+  const rows = document.querySelector<HTMLInputElement>('#tableRows')!
+  const columns = document.querySelector<HTMLInputElement>('#tableColumns')!
+  const header = document.querySelector<HTMLInputElement>('#tableHeader')!
+  dialog.onclose = () => {
+    const chain = editor.chain().focus()
+    if (dialog.returnValue === 'insert' && rows.validity.valid && columns.validity.valid) {
+      chain.insertTable({ rows: Number(rows.value), cols: Number(columns.value), withHeaderRow: header.checked }).run()
+    } else chain.run()
+  }
+  dialog.returnValue = ''
+  dialog.showModal()
+  rows.select()
+}

@@ -1,5 +1,6 @@
 import { Editor, type JSONContent } from '@tiptap/core'
 import Highlight from '@tiptap/extension-highlight'
+import { TableKit } from '@tiptap/extension-table'
 import TextAlign from '@tiptap/extension-text-align'
 import { Color, FontFamily, FontSize, TextStyle } from '@tiptap/extension-text-style'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
@@ -35,6 +36,8 @@ export function createEditor(element: HTMLElement): Editor {
       Highlight.configure({ multicolor: true }),
       ParagraphFormat,
       Search,
+      // Columns can be widened by dragging their edge.
+      TableKit.configure({ table: { resizable: true } }),
     ],
     content: EMPTY_DOCUMENT,
     autofocus: 'start',

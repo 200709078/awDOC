@@ -157,7 +157,18 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
      - Yalnız web ve e-posta adresleri kabul edilir (javascript:, file: gibi adresler reddedilir).
    - **Kelime Sayısı (Ctrl+Shift+G, ☰ menüsünde):** kelime, boşluklu/boşluksuz karakter ve paragraf sayısını
      gösterir; seçim varsa yalnız seçili bölümü sayar.
-4. Tablo
+4. **Tablo: uygulandı (2026-11-17).**
+   - Tablo ▾ grubu. "Tablo Ekle…" penceresi satır ve sütun sayısını, isteğe bağlı başlık satırını sorar.
+   - Bölümler:
+     - Satır: üste ekle, alta ekle, sil.
+     - Sütun: sola ekle, sağa ekle, sil.
+     - Hücre: birleştir, böl, başlık satırı.
+     - Tabloyu sil.
+   - Tablo dışındayken bu araçlar devre dışıdır. Simgeler yanlış anlaşılabileceği için hepsi adıyla durur.
+   - Tab hücreler arasında gezer. Sütun kenarı sürüklenerek genişletilir. Hücreler sürüklenerek seçilip
+     birleştirilir.
+   - Word'ün "Tablo Kılavuzu" gibi siyah çizgili sade görünüm.
+   - Düz metne kaydederken bir satır tek satır olur, hücreler sekmeyle ayrılır.
 5. Resim
 6. Otomatik kaydetme ve son belgeler
 7. PDF'e aktarma

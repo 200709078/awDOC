@@ -60,6 +60,24 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="tableDialog" class="dialog" aria-labelledby="tableTitle">
+		<h2 id="tableTitle">Tablo ekle</h2>
+		<form method="dialog">
+			<div class="dialog__pair">
+				<label class="dialog__field">Satır
+					<input id="tableRows" type="number" inputmode="numeric" min="1" max="50" step="1" value="3" required>
+				</label>
+				<label class="dialog__field">Sütun
+					<input id="tableColumns" type="number" inputmode="numeric" min="1" max="12" step="1" value="3" required>
+				</label>
+			</div>
+			<label class="dialog__check"><input id="tableHeader" type="checkbox"> İlk satır başlık olsun</label>
+			<div class="dialog__actions">
+				<button value="insert" class="primary-button">Ekle</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="countDialog" class="dialog" aria-labelledby="countTitle">
 		<h2 id="countTitle">Kelime sayısı</h2>
 		<dl id="countList" class="count-list"></dl>

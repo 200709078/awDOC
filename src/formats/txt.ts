@@ -14,6 +14,9 @@ function linesOf(node: JSONContent, prefix = ''): string[] {
     case 'paragraph':
     case 'heading':
       return [prefix + textOf(node)]
+    // A table row is one line, its cells apart by tabs, as a spreadsheet pastes them.
+    case 'tableRow':
+      return [prefix + (node.content ?? []).map(cell => (cell.content ?? []).map(textOf).join(' ')).join('\t')]
     case 'bulletList':
       return (node.content ?? []).flatMap(item => (item.content ?? []).flatMap((child, index) => linesOf(child, index === 0 ? `${prefix}• ` : `${prefix}  `)))
     case 'orderedList': {

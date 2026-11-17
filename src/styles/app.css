@@ -164,7 +164,11 @@ body {
 	flex-direction: column;
 	gap: 2px;
 	min-width: 220px;
+	/* A long window (Tablo) scrolls on a low screen instead of leaving it. */
+	max-height: calc(100vh - var(--toolbar-height) - 16px);
 	padding: 6px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
 	border: 1px solid var(--border);
 	border-radius: 12px;
 	background: var(--surface);
@@ -286,6 +290,8 @@ body {
 .toolbar__menu .toolbar__panel {
 	position: static;
 	min-width: 0;
+	max-height: none;
+	overflow: visible;
 	padding: 2px 0 6px 24px;
 	border: 0;
 	border-radius: 0;
@@ -476,6 +482,61 @@ body {
 	color: #1d4ed8;
 }
 
+/* Tables: a plain grid, as Word's "Table Grid". */
+.document .tableWrapper {
+	margin: 0 0 8pt;
+	overflow-x: auto;
+}
+
+.document table {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+.document td,
+.document th {
+	position: relative;
+	min-width: 1em;
+	padding: 2pt 5pt;
+	border: 1px solid #000000;
+	vertical-align: top;
+	text-align: left;
+}
+
+.document th {
+	background: #f2f2f2;
+	font-weight: 700;
+}
+
+.document td p,
+.document th p {
+	margin: 0;
+}
+
+/* Cells chosen together (to merge them): a blue wash over them. */
+.document .selectedCell::after {
+	position: absolute;
+	inset: 0;
+	background: rgb(37 99 235 / 18%);
+	content: "";
+	pointer-events: none;
+}
+
+.document .column-resize-handle {
+	position: absolute;
+	top: 0;
+	right: -2px;
+	bottom: -2px;
+	width: 4px;
+	background: #2563eb;
+	pointer-events: none;
+}
+
+.document.resize-cursor {
+	cursor: col-resize;
+}
+
 /* A highlight keeps the text's own colour. */
 .document mark {
 	padding: 0 1px;
@@ -572,6 +633,26 @@ body {
 .dialog__error {
 	color: #dc2626;
 	font-weight: 600;
+}
+
+.dialog__pair {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+.dialog__check {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 48px;
+	margin-bottom: 16px;
+	font-size: 18px;
+}
+
+.dialog__check input {
+	width: 24px;
+	height: 24px;
 }
 
 .count-list {
