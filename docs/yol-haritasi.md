@@ -209,3 +209,14 @@ görünümü.
 
 **2. aşamadan sonra (kullanıcı kararı 2026-11-17, "hepsine evet"):** Otomatik Kaydet varsayılan açık kalır;
 2. aşama GitHub'a gönderildi ve madematik.com/awDOC/'a yüklendi; 3. aşamaya geçildi.
+
+## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)
+
+Kullanıcı: awPDF'teki karşılama / giriş ekranı awDOC'a da (ve awCELL'e) eklensin; "henüz kodlama".
+awPDF'te bu ekran şöyle: ortada yalnız logo (ad yazısı yok), altında ana iş düğmeleri (ana düğme mavi), en altta
+"Son Dosyalar" listesi ve "Listeyi Temizle". Ekran dosya açık değilken görünür (`#emptyState`).
+- **Öneri (Claude):** düğmeler **Yeni Belge** (ana düğme), **Aç**; ileride 4. aşamayla **Sınav Kâğıdı** ve 5. aşamayla
+  **Word Aç**; altında awDOC'un Son Belgeler listesi (bugün ☰ menüsünde). Bugün awDOC doğrudan boş belgeyle açılıyor:
+  ekran açılışta mı gelsin, yoksa yalnız belge kapatılınca mı, karar kullanıcının. Açılıştaki kurtarma kopyası
+  sorusu ekranla çakışmamalı.
+- Ailede ortak görünüm için awCELL'dekiyle birlikte yapılır.
