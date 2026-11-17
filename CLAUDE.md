@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 awDOC is a word processor (in the spirit of Word / Google Docs) built on TipTap (ProseMirror), TypeScript + Vite, shipped as a web app, an Electron desktop app (Linux AppImage/deb, Windows NSIS) and an Android app (Capacitor, APK). It is the sibling of awPDF and awCELL and follows the drAW family's conventions. The UI, test names, docs (README, `docs/yol-haritasi.md`) and messages are in **Turkish** — keep new user-facing strings and docs in Turkish.
 
-Status: stage 1 (skeleton) done 2026-11-17; not published yet (no release, not on madematik.com). **The user's rule (2026-11-17): commit only — no push unless asked, and no release, tag, deploy or Play upload until every stage in the roadmap is done.** The plan, the user's decisions and the stages are in `docs/yol-haritasi.md`; record new requests there with a date and do not implement any item until the user explicitly asks.
+Status: stage 1 (skeleton) done 2026-11-17. The web app is live at `madematik.com/awDOC/` since 2026-11-17 (the user's request; `.env` is a copy of awPDF's with `FTP_REMOTE_DIR=/public/awDOC`); no package release yet. **The user's rule (2026-11-17): commit only — no push unless asked, and no release, tag, deploy or Play upload until every stage in the roadmap is done.** The plan, the user's decisions and the stages are in `docs/yol-haritasi.md`; record new requests there with a date and do not implement any item until the user explicitly asks.
 
 ## Decisions (2026-11-17, the user's)
 
@@ -31,7 +31,7 @@ npm run electron:dev     # Electron against the Vite dev server
 npm run dist:linux | dist:win
 npm run android:sync     # build + copy dist/ into android/ (Capacitor)
 npm run android:apk      # release APK; signed when ANDROID_KEYSTORE* env vars are set
-npm run deploy           # build + FTP upload to public_html/public/awDOC — never without asking; the server folder does not exist yet and .env is not set up
+npm run deploy           # build + FTP upload to public_html/public/awDOC (`-- --dry-run` only lists); live site: only when the user asks
 bash scripts/icons.sh    # every icon from public/img/app-icon.svg (Inkscape + ImageMagick)
 ```
 

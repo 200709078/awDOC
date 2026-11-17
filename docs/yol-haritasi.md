@@ -31,6 +31,11 @@ okuma. Dört imza secret'ı da var: `ANDROID_KEYSTORE_BASE64` ve `ANDROID_KEY_AL
   yayınlamayalım." Aşamalar (1–6) bitene kadar sürüm etiketi, GitHub sürümü, canlıya alma ve Play yok; işler
   yalnız yerelde commit'lenir, push kullanıcı isteyince yapılır. İskeletin ilk commit'i bu karardan hemen önce
   `main`'e gönderilmişti (sürüm iş akışı çalışmadı).
+- **Web sürümü canlıda (kullanıcı isteği 2026-11-17):** Kullanıcı `public_html/public/awDOC` klasörünü açıp
+  yüklenmesini istedi; iskelet `npm run deploy` ile madematik.com/awDOC/'a çıktı ve kullanıcı çalıştığını doğruladı.
+  Bu, "sürüm yok" kuralının istisnasıdır: paket sürümü (etiket, GitHub Releases, Play) yine aşamalar bitince.
+  Web'e sonraki yüklemeler de kullanıcı isteyince yapılır. madematik.com'daki Projelerim listesine ekleme
+  ayrıca sorulacak.
 
 - Kardeşlerle aynı altyapı: TypeScript + Vite; Electron (Linux `.deb`/AppImage, Windows `.exe`), Capacitor
   (Android `.apk`, Play için `.aab`). `release.yml` ve `scripts/release-assets.mjs` aileyle birebir aynı; ortak
@@ -115,7 +120,6 @@ Kullanıcı "başla" dedi (2026-11-17). Yapılanlar:
     sistemin kaydetme ekranı, ikinci Kaydet'in aynı dosyaya yazması, açma, geri düğmesi.
   - Gerçek tahtada ve Windows'ta henüz denenmedi.
 - **Bekleyenler:**
-  - Canlıya alma: sunucuda `public_html/public/awDOC` klasörü ve `.env` henüz yok.
   - madematik.com'da awDOC sayfası (Hakkında'daki indirme bağlantısı `projelerim/awdoc` oraya gider).
   - İlk sürüm (etiket) ve Play kaydı.
   - Bunların hepsi kullanıcıya sorulacak.
