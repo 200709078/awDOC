@@ -3,6 +3,7 @@ import { showPointsDialog } from '../ui/points-dialog'
 import { answersShown, setAnswersShown } from '../ui/answers'
 import { showExamDialog } from '../ui/exam-dialog'
 import { showBookletDialog } from '../ui/booklet-dialog'
+import { showBankAddDialog, showBankDialog } from '../ui/bank-dialog'
 import { ICONS } from './icons'
 import type { Tool, ToolContext, ToolGroup } from './tool'
 
@@ -158,6 +159,22 @@ const bookletTool: Tool = {
   run: ({ editor, session }) => showBookletDialog(editor, session),
 }
 
+const bankAddTool: Tool = {
+  id: 'bankAdd',
+  label: 'Bankaya ekle…',
+  icon: ICONS.bankAdd,
+  run: ({ editor, session }) => { void showBankAddDialog(editor, session) },
+}
+
+const bankTool: Tool = {
+  id: 'bank',
+  label: 'Soru bankası…',
+  icon: ICONS.bank,
+  run: ({ editor, session }) => { void showBankDialog(editor, session) },
+}
+
+const bankTools = [bankTool, bankAddTool]
+
 const insertTools = [examPaperTool, multipleChoiceTool, openQuestionTool, questionRowTool]
 const answerTools = [correctChoiceTool, showAnswersTool, answerKeyTool, bookletTool]
 const choiceTools = [
@@ -175,10 +192,11 @@ export const examGroup: ToolGroup = {
   id: 'exam',
   label: 'Sınav',
   icon: ICONS.exam,
-  tools: [...insertTools, ...choiceTools, ...answerTools, ...questionTools],
+  tools: [...insertTools, ...bankTools, ...choiceTools, ...answerTools, ...questionTools],
   isMarked: inQuestion,
   sections: [
     { title: 'Soru ekle', tools: insertTools },
+    { title: 'Soru bankası', tools: bankTools },
     { title: 'Şıklar', tools: choiceTools },
     { title: 'Cevaplar', tools: answerTools },
     {

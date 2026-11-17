@@ -210,6 +210,40 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="bankAddDialog" class="dialog" aria-labelledby="bankAddTitle">
+		<h2 id="bankAddTitle">Soru bankasına ekle</h2>
+		<form method="dialog">
+			<fieldset class="page-dialog__choice">
+				<legend>Hangi sorular</legend>
+				<label class="dialog__check"><input type="radio" name="bankAddWhich" value="one" checked> <span id="bankAddOne">Bu soru</span></label>
+				<label class="dialog__check"><input type="radio" name="bankAddWhich" value="all"> <span id="bankAddAll">Belgedeki bütün sorular</span></label>
+			</fieldset>
+			<label class="dialog__field">Konu (isteğe bağlı)
+				<input id="bankAddTopic" type="text" autocomplete="off" list="bankTopics" placeholder="Ör. Üçgenler">
+			</label>
+			<datalist id="bankTopics"></datalist>
+			<div class="dialog__actions">
+				<button value="add" class="primary-button">Ekle</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
+	<dialog id="bankDialog" class="dialog bank-dialog" aria-labelledby="bankTitle">
+		<h2 id="bankTitle">Soru bankası</h2>
+		<p class="bank-dialog__hint">Sorular yalnız bu cihazda saklanır. "Ekle" soruyu imlecin olduğu yerin altına koyar; pencere açık kalır.</p>
+		<form method="dialog">
+			<div class="dialog__pair">
+				<label class="dialog__field">Ara<input id="bankSearch" type="search" autocomplete="off" placeholder="Sorunun içinde geçen bir söz"></label>
+				<label class="dialog__field">Konu<select id="bankTopic"></select></label>
+			</div>
+			<p id="bankEmpty" class="bank-dialog__empty" hidden></p>
+			<div id="bankList" class="bank-dialog__list"></div>
+			<div class="dialog__actions">
+				<button value="close" class="primary-button">Kapat</button>
+				<button value="export" class="secondary-button formula-dialog__keyboard" id="bankExport">Listedekileri yeni belgede aç</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
 		<h2 id="recentTitle">Son belgeler</h2>
 		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>

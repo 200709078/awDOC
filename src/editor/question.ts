@@ -1,4 +1,4 @@
-import { Node, mergeAttributes, type Editor } from '@tiptap/core'
+import { Node, mergeAttributes, type Editor, type JSONContent } from '@tiptap/core'
 import { Fragment, type Node as ProseMirrorNode, type ResolvedPos } from '@tiptap/pm/model'
 import { Plugin, TextSelection, type EditorState, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
@@ -32,6 +32,8 @@ declare module '@tiptap/core' {
       pairWithNextQuestion: () => ReturnType
       /** Two questions side by side go back one under the other. */
       unpairQuestions: () => ReturnType
+      /** A question (or pair) from the question bank, after the block the cursor is in. */
+      insertQuestionBlock: (content: JSONContent) => ReturnType
     }
   }
 }
@@ -345,6 +347,19 @@ export const Question = Node.create({
             pos += choice.nodeSize
           })
         }
+        return true
+      },
+
+      insertQuestionBlock: content => ({ state, tr, dispatch }) => {
+        let block: ProseMirrorNode
+        try {
+          block = state.schema.nodeFromJSON(content)
+          block.check()
+        } catch {
+          return false
+        }
+        if (block.type.name !== 'question' && block.type.name !== 'questionRow') return false
+        if (dispatch) placeQuestionBlock(state, tr, block, block.type.name === 'questionRow' ? 3 : 2)
         return true
       },
 

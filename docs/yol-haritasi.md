@@ -391,7 +391,25 @@ Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
    - **Etiket:** Üst bilgiye "B Kitapçığı" eklenir (varsa var olanın yanına).
    - **Karıştırma:** Sıra hiçbir zaman A ile aynı çıkmaz.
    - **Yetersiz soru:** Tek açık uçlu soruda yapılmaz; nedeni söylenir.
-8. Soru bankası (sorular cihazda saklanır, başka sınava eklenir): sırada.
+8. **Soru bankası: uygulandı (2026-11-17).** Sınav ▾ → Soru bankası.
+   - **"Bankaya ekle…":** İmlecin olduğu soruyu (yan yana çiftse ikisini) ya da belgedeki bütün soruları
+     saklar. Konu isteğe bağlıdır; önceki konular önerilir. Aynı soru ikinci kez saklanmaz.
+   - **Saklanan:** Soru, belgedeki hâliyle saklanır (resim, formül, doğru şık, puan dahil).
+   - **"Soru bankası…" penceresi:**
+     - En yeniler üstte; her soruda ön yazı, konu, "4 şıklı" ya da "açık uçlu" ve tarih.
+     - Arama Türkçe harflere duyarlı (Bul'daki gibi); konuya göre süzme.
+     - "Ekle" soruyu imlecin olduğu yerin altına koyar, pencere açık kalır.
+     - "Sil" ikinci basışta siler.
+     - "Listedekileri yeni belgede aç" süzülen soruları yeni bir belgeye döker.
+   - **Cihazlar arası taşıma:** Banka yalnız bu cihazda (IndexedDB, `awDOC` veritabanı sürüm 2, `questions`
+     deposu). Başka cihaza taşımak için: "Listedekileri yeni belgede aç" → `.awd` olarak kaydet; öbür cihazda o
+     belgeyi açıp "Bankaya ekle… → Belgedeki bütün sorular".
+   - Gizlilik sayfası cihazda saklananların tam listesiyle güncellendi.
+
+**4. aşama durumu (2026-11-17):** formül, soru bloğu, soru bölünmesin, doğru şık, cevap anahtarı, sınav kâğıdı
+şablonu, yan yana iki soru, resim düzenleme, Android'de paylaşılan resim, B kitapçığı ve soru bankası bitti.
+Kalanlar: gerçek iki sütun (zengin üst bilgiyle; kullanıcıyla konuşulacak), telefonda uygulama içinden kamera.
+Kullanıcı kararı: karşılama ekranı bunlardan sonra konuşulacak.
 
 ## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)
 

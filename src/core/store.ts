@@ -4,18 +4,23 @@
  * full disk); callers treat the store as a convenience, never as the document's only copy.
  */
 const DATABASE = 'awDOC'
-const VERSION = 1
+/** 2: the question bank (2026-11-17). */
+const VERSION = 2
 export const RECENT_STORE = 'recent'
 export const RECOVERY_STORE = 'recovery'
+export const QUESTION_STORE = 'questions'
 
 let opened: Promise<IDBDatabase> | undefined
 
 function database(): Promise<IDBDatabase> {
   opened ??= new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DATABASE, VERSION)
+    // Each version adds what it needs; what an older version made is kept.
     request.onupgradeneeded = () => {
-      request.result.createObjectStore(RECENT_STORE, { keyPath: 'key' })
-      request.result.createObjectStore(RECOVERY_STORE)
+      const stores = request.result.objectStoreNames
+      if (!stores.contains(RECENT_STORE)) request.result.createObjectStore(RECENT_STORE, { keyPath: 'key' })
+      if (!stores.contains(RECOVERY_STORE)) request.result.createObjectStore(RECOVERY_STORE)
+      if (!stores.contains(QUESTION_STORE)) request.result.createObjectStore(QUESTION_STORE, { keyPath: 'id' })
     }
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
