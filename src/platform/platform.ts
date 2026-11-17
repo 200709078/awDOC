@@ -57,6 +57,11 @@ export interface Platform {
   reopen(stored: unknown): Promise<OpenedFile | null>
   /** Writes a new file where the user chooses, offering `name`; null when the user cancelled. */
   saveAs(name: string, data: Uint8Array, type: FileType, near?: FileRef): Promise<SavedFile | null>
+  /**
+   * Saves the printed document as a PDF where the user chooses, resolving the file's name (null
+   * when cancelled). Absent where only the print dialog can make one (its "Save as PDF").
+   */
+  exportPdf?(name: string, near?: FileRef): Promise<string | null>
   /** Hands a link to the system's browser or mail app. */
   openExternal(url: string): void
   /** Prints what the `@media print` styles show. */

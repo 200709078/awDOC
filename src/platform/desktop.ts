@@ -41,6 +41,7 @@ export function desktopPlatform(controls: DesktopWindowControls, files: DesktopF
       return file && fromDisk(file)
     },
     write: async (ref, data) => typeof ref === 'number' && files.write(ref, data),
+    exportPdf: async (name, near) => (await files.exportPdf(name, typeof near === 'number' ? near : undefined))?.name ?? null,
     saveAs: async (name, data, type, near) => {
       const saved = await files.saveAs(name, data, typeof near === 'number' ? near : undefined, type)
       if (!saved) return null

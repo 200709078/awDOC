@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('awDOCDesktop', {
     },
     write: (id: number, data: Uint8Array): Promise<boolean> => ipcRenderer.invoke('files:write', id, data),
     reopen: (source: string): Promise<unknown> => ipcRenderer.invoke('files:reopen', source),
+    exportPdf: (name: string, nearId: number | undefined): Promise<unknown> => ipcRenderer.invoke('files:export-pdf', name, nearId),
     saveAs: (name: string, data: Uint8Array, nearId: number | undefined, type: { extension: string; description: string }): Promise<unknown> => ipcRenderer.invoke('files:save-as', name, data, nearId, { extension: type.extension, description: type.description }),
   },
   windowControls: {

@@ -937,6 +937,11 @@ body {
 		display: none;
 	}
 
+	/* The blinking cursor is not part of the page (it showed in PDFs). */
+	.document {
+		caret-color: transparent;
+	}
+
 	.document .ProseMirror-selectednode img {
 		outline: 0;
 	}

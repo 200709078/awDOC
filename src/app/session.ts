@@ -175,6 +175,23 @@ export class DocumentSession {
     }
   }
 
+  /** PDF Olarak Kaydet: a file on the desktop; elsewhere the print dialog's own "Save as PDF". */
+  async exportPdf(): Promise<void> {
+    const name = `${this.fileName === UNTITLED ? 'Belge' : this.name.replace(/\.[^.]+$/, '')}.pdf`
+    if (!this.platform.exportPdf) {
+      showToast('Açılan yazdırma penceresinde yazıcı olarak "PDF olarak kaydet"i seçin.')
+      this.platform.print()
+      return
+    }
+    try {
+      const saved = await this.platform.exportPdf(name, this.ref)
+      if (saved) showToast(`${saved} kaydedildi.`)
+    } catch (error) {
+      console.error(error)
+      showToast('PDF kaydedilemedi.')
+    }
+  }
+
   /** Only awDOC's own files are written over: another format would lose what it cannot hold. */
   private get canWriteBack(): boolean {
     return Boolean(this.format?.keepsEverything && this.format.write && this.ref !== undefined)

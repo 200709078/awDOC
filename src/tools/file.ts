@@ -44,6 +44,13 @@ export const printTool: Tool = {
   run: ({ platform }) => platform.print(),
 }
 
+export const pdfTool: Tool = {
+  id: 'exportPdf',
+  label: 'PDF Olarak Kaydet',
+  icon: ICONS.pdf,
+  run: ({ session }) => { void session.exportPdf() },
+}
+
 export const recentTool: Tool = {
   id: 'recent',
   label: 'Son Belgeler',

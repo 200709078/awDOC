@@ -1,7 +1,7 @@
 // Masaüstü uygulamasını gerçekten açıp dener (grafik oturum gerekir): `npm run test:electron`.
 // Paketlenmiş uygulama için: AWDOC_ELECTRON_EXECUTABLE=$PWD/release/linux-unpacked/awdoc node scripts/test-electron.mjs
 import assert from 'node:assert/strict'
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { _electron as electron } from '@playwright/test'
@@ -71,8 +71,19 @@ try {
   await page.locator('#recentList .recent-item__name', { hasText: 'Deneme' }).click()
   await page.waitForFunction(() => document.querySelector('#document')?.textContent === 'Masaüstü denemesi — eklendi')
 
+  // PDF Olarak Kaydet: the save dialog is answered in the main process, then the file must be a PDF.
+  const pdfPath = path.join(folder, 'Deneme.pdf')
+  await application.evaluate(({ dialog }, target) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath: target })
+  }, pdfPath)
+  await page.evaluate(() => document.querySelector('#tool-exportPdf').click())
+  await page.waitForFunction(() => document.querySelector('#toast')?.textContent?.includes('Deneme.pdf'))
+  assert.equal(readFileSync(pdfPath).subarray(0, 5).toString('latin1'), '%PDF-', 'PDF dosyası yazılmalı')
+  // AWDOC_TEST_PDF=<yol>: the PDF is kept there, to look at it.
+  if (process.env.AWDOC_TEST_PDF) copyFileSync(pdfPath, process.env.AWDOC_TEST_PDF)
+
   assert.deepEqual(errors, [])
-  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme ve son belgeler çalışıyor.')
+  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler ve PDF aktarımı çalışıyor.')
 } finally {
   await application.close()
   rmSync(folder, { recursive: true, force: true })

@@ -62,6 +62,12 @@ export class DesktopFiles {
       const filePath = typeof source === 'string' ? this.sources[source] : undefined
       return filePath ? this.open(filePath).catch(() => null) : null
     })
+    // The page as printed (only the document, A4 from its @page rule), saved where the user chooses.
+    ipcMain.handle('files:export-pdf', async (event, name: unknown, nearId: unknown) => {
+      if (typeof name !== 'string') throw new Error('Ad yok.')
+      const pdf = await event.sender.printToPDF({ printBackground: true, preferCSSPageSize: true })
+      return this.saveAs(BrowserWindow.fromWebContents(event.sender), name, new Uint8Array(pdf), nearId, { extension: 'pdf', description: 'PDF belgesi' }, false)
+    })
     ipcMain.handle('files:save-as', (event, name: unknown, data: unknown, nearId: unknown, type: unknown) => {
       if (typeof name !== 'string' || !(data instanceof Uint8Array)) throw new Error('Kaydedilecek dosya yok.')
       const { extension, description } = (type ?? {}) as Partial<SaveType>
@@ -96,7 +102,8 @@ export class DesktopFiles {
     return source
   }
 
-  private async saveAs(window: BrowserWindow | null, name: string, data: Uint8Array, nearId: unknown, type: SaveType): Promise<{ id: number; name: string; source: string } | null> {
+  /** `keep` false: an exported copy (PDF) the page will never write again, so it gets no number. */
+  private async saveAs(window: BrowserWindow | null, name: string, data: Uint8Array, nearId: unknown, type: SaveType, keep = true): Promise<{ id: number; name: string; source: string } | { name: string } | null> {
     const near = this.paths.get(nearId as number)
     const options = {
       defaultPath: path.join(near ? path.dirname(near) : app.getPath('documents'), path.basename(name)),
@@ -106,6 +113,7 @@ export class DesktopFiles {
     if (canceled || !filePath) return null
     const target = filePath.toLowerCase().endsWith(`.${type.extension}`) ? filePath : `${filePath}.${type.extension}`
     await this.writeSafely(target, data)
+    if (!keep) return { name: path.basename(target) }
     return { id: this.remember(target), name: path.basename(target), source: await this.sourceOf(target) }
   }
 }

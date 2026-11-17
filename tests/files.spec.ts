@@ -85,3 +85,16 @@ test('bozuk ya da tanınmayan dosya belgeyi bozmaz, nedenini söyler', async ({ 
   await expect(page.locator('#document')).toHaveText('yerinde kalır');
   await expect(page.locator('#unsavedDialog')).toBeHidden();
 });
+
+test('PDF Olarak Kaydet (web): yazdırma penceresi açılır, "PDF olarak kaydet" seçmesi söylenir', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.assign(window, { printCalls: 0 });
+    window.print = () => { (window as unknown as { printCalls: number }).printCalls += 1; };
+  });
+  await page.goto('/');
+  await page.keyboard.type('yazdırılacak');
+  await page.locator('#toolbarMenuButton').isVisible();
+  await page.evaluate(() => document.querySelector<HTMLButtonElement>('#tool-exportPdf')!.click());
+  await expect(page.locator('#toast')).toContainText('PDF olarak kaydet');
+  expect(await page.evaluate(() => (window as unknown as { printCalls: number }).printCalls)).toBe(1);
+});

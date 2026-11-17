@@ -33,6 +33,8 @@ interface DesktopFiles {
   saveAs(name: string, data: Uint8Array, nearId: number | undefined, type: { extension: string; description: string }): Promise<{ id: number; name: string; source: string } | null>
   /** Opens again the file `source` stood for; null when it is gone. */
   reopen(source: string): Promise<DesktopOpenedFile | null>
+  /** Prints the page to a PDF and asks where to save it; null when the user cancelled. */
+  exportPdf(name: string, nearId: number | undefined): Promise<{ name: string } | null>
 }
 
 /** Opens the system's on-screen keyboard for a text field. */

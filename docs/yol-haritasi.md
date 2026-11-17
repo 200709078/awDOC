@@ -62,7 +62,7 @@ okuma. Dört imza secret'ı da var: `ANDROID_KEYSTORE_BASE64` ve `ANDROID_KEY_AL
 2. **Çekirdek düzenleyici (sürekli görünüm):** paragraf ve başlık stilleri; K/İ/A/üstü çizili; yazı tipi,
    boyut, renk, vurgu; hizalama, satır aralığı, girinti; madde ve numaralı listeler; tablo; resim; bağlantı;
    bul-değiştir; geri al/yinele; kelime sayısı; `.awd` kaydet/aç, otomatik kaydetme, son belgeler;
-   yazdır / PDF'e aktar.
+   yazdır / PDF'e aktar. **Uygulandı (2026-11-17).** Ayrıntı aşağıda, "2. aşama".
 3. **A4 sayfa görünümü:** kenar boşlukları, sayfa sonu, üst/alt bilgi, sayfa numarası, yatay/dikey sayfa.
 4. **Öğretmen özellikleri:** formül düzenleyici, soru bloğu (otomatik numara, puan, A–E şıklar yan yana /
    alt alta), sınav başlığı şablonu, iki sütunlu kâğıt, cevap anahtarı, A/B kitapçığı, drAW2D/drAW3D ve
@@ -196,4 +196,13 @@ Kullanıcı web yüklemesinden sonra "2. aşamaya geç" dedi. Alt adımlar, her 
      (`belgeler.json`), Android'de kalıcı izinli içerik adresi.
    - Electron denemesi artık kendi geçici profilinde çalışır (`AWDOC_USER_DATA`). Önceki denemelerin
      kullanıcının profilinde bıraktığı izler silindi.
-7. PDF'e aktarma
+7. **PDF'e aktarma: uygulandı (2026-11-17).**
+   - "PDF Olarak Kaydet" (☰ menüsünde). Masaüstünde Electron'un kendi PDF üreticisiyle: yer sorulur, A4,
+     yalnız belge basılır, kenar boşlukları yazdırmadaki gibi.
+   - Web'de ve Android'de doğrudan PDF yazan bir yol yok: yazdırma penceresi açılır ve "PDF olarak kaydet"i
+     seçmesi söylenir. Önerilen dosya adı belgenin adıdır.
+   - Yazdırmada ve PDF'te imleç, arama işaretleri ve resim tutamaçları görünmez.
+
+**2. aşama bitti (2026-11-17).** Playwright testleri 80, Electron denemesi (kaynaktan) geçiyor. Gerçek tahtada,
+Windows'ta ve telefonda 2. aşama henüz denenmedi (telefon 1. aşamada denendi). Sırada 3. aşama: A4 sayfa
+görünümü.

@@ -48,6 +48,9 @@ export function startApp(): void {
   }
   session.onChange(showTitle)
   showTitle()
+  // The print dialog's "Save as PDF" names the file after the page's title: the document's name.
+  window.addEventListener('beforeprint', () => { document.title = session.name.replace(/\.[^.]+$/, '') })
+  window.addEventListener('afterprint', showTitle)
 
   // The browser holds the page back while there are unsaved changes; Electron asks the user.
   window.addEventListener('beforeunload', event => {

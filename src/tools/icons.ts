@@ -45,6 +45,7 @@ export const ICONS = {
   image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="M21 16l-5-5-9 9"/>',
   recent: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   autoSave: '<path d="M5 3h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M8 14a4 4 0 0 0 7.5 1.5"/><path d="M16 11a4 4 0 0 0-7.5-1.5"/><path d="M15.5 17.5v-2h-2"/><path d="M8.5 7.5v2h2"/>',
+  pdf: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 17v-4h1.5a1.25 1.25 0 0 1 0 2.5H8"/><path d="M12.5 13v4h.5a2 2 0 0 0 0-4z"/>',
   print: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
   fullscreen: '<path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/>',
   theme: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
