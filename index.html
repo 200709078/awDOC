@@ -125,6 +125,23 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="formulaDialog" class="dialog formula-dialog" aria-labelledby="formulaTitle">
+		<h2 id="formulaTitle">Formül</h2>
+		<form method="dialog">
+			<div id="formulaField" class="formula-dialog__field"><p class="formula-dialog__loading">Formül düzenleyicisi yükleniyor…</p></div>
+			<p class="formula-dialog__hint">Yazarken: <kbd>/</kbd> kesir, <kbd>^</kbd> üs, <kbd>_</kbd> alt indis, <kbd>sqrt</kbd> kök, <kbd>pi</kbd> π. Ondalık için virgül: 3,5</p>
+			<div id="formulaPalette" class="formula-dialog__palette" role="group" aria-label="Sık kullanılanlar"></div>
+			<details class="formula-dialog__latex">
+				<summary>LaTeX olarak</summary>
+				<input id="formulaLatex" type="text" autocomplete="off" spellcheck="false" aria-label="LaTeX">
+			</details>
+			<div class="dialog__actions">
+				<button value="save" class="primary-button" id="formulaSave">Ekle</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+				<button value="keyboard" type="button" class="secondary-button formula-dialog__keyboard" id="formulaKeyboard">Klavye</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
 		<h2 id="recentTitle">Son belgeler</h2>
 		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>

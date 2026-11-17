@@ -50,6 +50,7 @@ export const ICONS = {
   fullscreen: '<path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/>',
   theme: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
   about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.01"/>',
+  formula: '<path d="M3 13h3l3 7 5-16h7"/><path d="M14 11l6 7"/><path d="M20 11l-6 7"/>',
   page: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/>',
   pageView: '<rect x="5" y="2.5" width="14" height="8" rx="1"/><rect x="5" y="13.5" width="14" height="8" rx="1"/>',
   continuousView: '<path d="M5 2v20"/><path d="M19 2v20"/><path d="M8.5 6h7"/><path d="M8.5 10h7"/><path d="M8.5 14h7"/><path d="M8.5 18h4"/>',

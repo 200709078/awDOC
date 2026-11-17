@@ -69,6 +69,7 @@ okuma. Dört imza secret'ı da var: `ANDROID_KEYSTORE_BASE64` ve `ANDROID_KEY_AL
    alt alta), sınav başlığı şablonu, iki sütunlu kâğıt, cevap anahtarı, A/B kitapçığı, drAW2D/drAW3D ve
    awPDF'ten görsel ekleme, soru bankası. Formül ve soru bloğu sürekli görünümde de çalışır; iki sütun ve
    "soru bölünmesin" A4 aşamasından sonra gelir. Sıra (kullanıcı kararı 2026-11-17): önce formül ve soru bloğu.
+   **Başladı (2026-11-17):** formül uygulandı. Ayrıntı aşağıda, "4. aşama".
 5. **Dosya dönüştürme:** `.docx`, `.odt`, `.doc` bağdaştırıcıları.
 6. **İleri genel özellikler:** içindekiler, dipnot, yorumlar, izlenen değişiklikler, adres-mektup birleştirme.
 
@@ -249,6 +250,36 @@ Kullanıcı 2. aşamanın sonunda "hepsine evet" dedi (3. aşamaya geç). Yapıl
   görülürse yalnız düzenlenen sayfadan sonrasını yeniden ölçmek mümkün.
 
 **Denenmedi:** gerçek tahta, Windows, telefon (Android'in yazdırmasında üst / alt bilgi ve sayfa numarası).
+
+## 4. aşama: öğretmen özellikleri (2026-11-17'de başladı)
+
+Kullanıcı 3. aşamanın sonunda "evet. devam et" dedi. Sıra (kullanıcı kararı): önce formül ve soru bloğu.
+Alt adımlar (öneri, 2. aşamadaki gibi her biri ayrı commit):
+
+1. **Formül: uygulandı (2026-11-17).**
+   - **Düzenleyici:** Görsel formül düzenleyici MathLive (MIT; 0.111.4, sabit sürüm). LaTeX bilmeden yazılır:
+     `/` kesir, `^` üs, `_` alt indis, `sqrt` kök, `pi` π. Ondalık ayırıcı virgül (3,5).
+   - **Pencere:** Formül penceresinde sık kullanılanlar paleti var: kesir, üs, kök, mutlak değer, ±, ×, ÷, ≤, ≥,
+     ≠, π, ∞, derece, açı, üçgen, paralel, dik, küme işaretleri, ∑, ∫, lim, log, sin/cos, Yunan harfleri, matris.
+   - **LaTeX kutusu:** LaTeX bilenler için ayrı bir kutu var.
+   - **Klavye:** "Klavye" düğmesi MathLive'ın matematik klavyesini açar (tahta ve telefon için); klavye ekranın
+     altında, pencere üstünde durur. Dokunmatik ekranda alana dokununca kendiliğinden de açılır.
+   - **Açma ve kapatma:** Araç çubuğunda "Formül" (√x) ya da Alt+= (Word'deki gibi; Türkçe klavyede
+     Alt+Shift+0) ile açılır. Enter ya da klavyenin ↵ tuşu formülü ekler.
+   - **Düzenleme:** Formüle çift tıklamak ya da seçip Enter'a basmak onu açar. Boşaltılan formül silinir.
+     Değişiklik Ctrl+Z ile geri alınır.
+   - **Belgede:** Formül satırın içinde, yazının boyutunda durur; her belgede kullanılabilir. Dosyada LaTeX
+     olarak saklanır (`formula` düğümü, `latex` özniteliği). Düz metne LaTeX olarak yazılır. Word'e
+     aktarırken MathML'e çevrilecek (5. aşama; MathLive bunu yapabiliyor).
+   - **Yükleme:** MathLive büyük (sıkıştırılmış 223 KB); yalnız ilk formül görülünce ya da yazılınca yüklenir,
+     uygulamanın açılışı yavaşlamaz. Yazı tipleri uygulamanın içinde, internet gerekmez.
+   - **Bulunup düzeltilen sorun:** Electron'un PDF'inde sayfanın en üstündeki formülün üssü bir önceki
+     sayfanın altına da basılıyordu (yazdırmada formül kendi kutusunun içine boyanır, `contain: paint`).
+   - **Arayüz dili:** MathLive'ın arayüzü Türkçe değil. İngilizce menüsü gizlendi; klavyedeki birkaç
+     açıklama İngilizce kalır.
+2. **Soru bloğu** (sırada): otomatik numara, puan, A–E şıklar (alt alta / yan yana / iki sütun); "Sınav ▾" grubu.
+3. Sınav başlığı şablonu ("Yeni: Sınav kâğıdı"), cevap anahtarı, iki sütunlu kâğıt, "soru bölünmesin".
+4. A/B kitapçığı, drAW2D/drAW3D ve awPDF'ten görsel ekleme, soru bankası.
 
 ## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)
 

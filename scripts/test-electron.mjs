@@ -82,7 +82,14 @@ try {
   await page.locator('#document p').first().click()
   await page.keyboard.press('End')
   await page.keyboard.press('Control+Enter')
-  await page.keyboard.type('İkinci sayfa')
+  await page.keyboard.type('İkinci sayfa ')
+  // A formula: MathLive and its fonts come from the app itself (no network, strict CSP).
+  await page.keyboard.press('Alt+=')
+  await page.locator('#formulaInput').waitFor()
+  await page.keyboard.type('x^2')
+  await page.keyboard.press('Enter')
+  await page.locator('#document .formula .ML__latex').waitFor()
+  await page.waitForFunction(() => document.fonts.check('16px KaTeX_Main') && document.fonts.check('italic 16px KaTeX_Math'))
   await page.waitForFunction(() => document.querySelectorAll('.page-sheet').length === 2 || !document.querySelector('#editorHost.is-paged'))
   // Saved with the file (and nothing left unsaved to ask about when the window closes).
   await page.keyboard.press('Control+s')
@@ -100,11 +107,12 @@ try {
   await page.waitForFunction(() => document.querySelector('#toast')?.textContent?.includes('Deneme.pdf'))
   assert.equal(readFileSync(pdfPath).subarray(0, 5).toString('latin1'), '%PDF-', 'PDF dosyası yazılmalı')
   assert.equal(readFileSync(pdfPath).toString('latin1').match(/\/Type\s*\/Page[^s]/g)?.length, 2, 'Sayfa sonundan sonra PDF iki sayfa olmalı')
+  assert.match(readFileSync(pdfPath).toString('latin1'), /KaTeX_Math/, 'Formülün yazı tipi PDF\'e gömülmeli')
   // AWDOC_TEST_PDF=<yol>: the PDF is kept there, to look at it.
   if (process.env.AWDOC_TEST_PDF) copyFileSync(pdfPath, process.env.AWDOC_TEST_PDF)
 
   assert.deepEqual(errors, [])
-  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler, sayfa düzeni ve PDF aktarımı çalışıyor.')
+  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler, sayfa düzeni, formül ve PDF aktarımı çalışıyor.')
 } finally {
   await application.close()
   rmSync(folder, { recursive: true, force: true })

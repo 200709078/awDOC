@@ -1,6 +1,8 @@
 import { IMAGE_ACCEPT } from '../app/images'
 import { insertImages } from '../editor/image'
 import { showLinkDialog, showWordCount } from '../ui/dialogs'
+import { showFormulaDialog } from '../ui/formula-dialog'
+import { NodeSelection } from '@tiptap/pm/state'
 import { ICONS } from './icons'
 import type { Tool } from './tool'
 
@@ -59,5 +61,19 @@ export const imageTool: Tool = {
       void insertImages(editor, files)
     }
     imageInput.click()
+  },
+}
+
+/** Formül: a new formula, or the selected one changed. Any document may have formulas. */
+export const formulaTool: Tool = {
+  id: 'formula',
+  label: 'Formül',
+  icon: ICONS.formula,
+  shortcuts: ['alt+='],
+  isActive: ({ editor }) => editor.isActive('formula'),
+  run: ({ editor }) => {
+    const { selection } = editor.state
+    const selected = selection instanceof NodeSelection && selection.node.type.name === 'formula'
+    void showFormulaDialog(editor, selected ? selection.from : undefined)
   },
 }

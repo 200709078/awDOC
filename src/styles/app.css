@@ -603,6 +603,25 @@ body {
 	color: inherit;
 }
 
+/* A formula: MathLive's drawing, in the text's size; selected, a blue frame. */
+.document .formula {
+	display: inline-block;
+	padding: 0 1px;
+	border-radius: 3px;
+	cursor: default;
+	white-space: nowrap;
+}
+
+.document .formula.ProseMirror-selectednode {
+	outline: 2px solid var(--accent);
+}
+
+.document .formula.is-wrong {
+	color: #b91c1c;
+	font-family: "DejaVu Sans Mono", monospace;
+	font-size: 0.9em;
+}
+
 /* A page break (Ctrl+Enter): a dashed line with its name; on paper, the next page. */
 .document .page-break {
 	position: relative;
@@ -898,6 +917,111 @@ body {
 	}
 }
 
+/* Formül: a large field, the common pieces as buttons, LaTeX for those who know it. */
+.formula-dialog {
+	width: min(720px, calc(100vw - 32px));
+	max-height: calc(100vh - 32px);
+}
+
+.formula-dialog__field math-field {
+	display: block;
+	width: 100%;
+	min-height: 72px;
+	padding: 8px 12px;
+	border: 2px solid var(--accent);
+	border-radius: 8px;
+	background: #ffffff;
+	color: #111827;
+	font-size: 28px;
+}
+
+/* MathLive's own menu (in English) and keyboard icon: the window has a Klavye button. */
+.formula-dialog__field math-field::part(menu-toggle),
+.formula-dialog__field math-field::part(virtual-keyboard-toggle) {
+	display: none;
+}
+
+/* MathLive's maths keys, put inside the window: along the screen's bottom, the window above them. */
+.formula-dialog .ML__keyboard {
+	position: fixed;
+	top: auto;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	height: var(--_keyboard-height);
+}
+
+.formula-dialog.has-keyboard {
+	margin-top: 8px;
+}
+
+.formula-dialog__loading {
+	min-height: 72px;
+}
+
+.formula-dialog .formula-dialog__hint {
+	margin: 8px 0 12px;
+	font-size: 14px;
+	opacity: 0.8;
+}
+
+.formula-dialog__hint kbd {
+	padding: 0 4px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	font-family: inherit;
+}
+
+.formula-dialog__palette {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+	gap: 4px;
+	max-height: 30vh;
+	margin-bottom: 12px;
+	overflow-y: auto;
+}
+
+.formula-dialog__piece {
+	min-height: 48px;
+	padding: 2px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: #ffffff;
+	color: #111827;
+	font-size: 17px;
+	cursor: pointer;
+	touch-action: manipulation;
+}
+
+.formula-dialog__piece:hover {
+	border-color: var(--accent);
+}
+
+.formula-dialog__latex {
+	margin-bottom: 16px;
+}
+
+.formula-dialog__latex summary {
+	min-height: 32px;
+	cursor: pointer;
+}
+
+.formula-dialog__latex input {
+	width: 100%;
+	min-height: 44px;
+	padding: 0 10px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface-muted);
+	color: inherit;
+	font-family: "DejaVu Sans Mono", monospace;
+	font-size: 15px;
+}
+
+.formula-dialog__keyboard {
+	margin-right: auto;
+}
+
 .dialog__error {
 	color: #dc2626;
 	font-weight: 600;
@@ -1165,6 +1289,12 @@ body {
 
 	.document tr {
 		break-inside: avoid;
+	}
+
+	/* A formula's raised parts (an exponent) are moved up from below; at the top of a page Electron
+	   also painted them at the foot of the page before. Painting stays inside the formula's box. */
+	.document .formula {
+		contain: paint;
 	}
 
 	/* A scrolling box would not break across pages. */

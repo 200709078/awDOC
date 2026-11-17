@@ -1,11 +1,15 @@
 import { isGroup, type Tool, type ToolbarItem, type ToolContext, type ToolGroup, type ToolSection } from '../tools/tool'
 import { readPendingSelection } from '../editor/editor'
 
-/** Such as `ctrl+s`, `ctrl+shift+s`, `f11`. */
+/**
+ * Such as `ctrl+s`, `ctrl+shift+s`, `f11`, `alt+=`. Shift counts only with Ctrl or a named key:
+ * `=` is Shift+0 on a Turkish keyboard, and Alt+= must be the same shortcut there.
+ */
 export function shortcutOf(event: KeyboardEvent): string {
   const ctrl = event.ctrlKey || event.metaKey
+  const alt = event.altKey && !ctrl
   const shift = event.shiftKey && (ctrl || event.key.length > 1)
-  return `${ctrl ? 'ctrl+' : ''}${shift ? 'shift+' : ''}${event.key.toLowerCase()}`
+  return `${ctrl ? 'ctrl+' : ''}${alt ? 'alt+' : ''}${shift ? 'shift+' : ''}${event.key.toLowerCase()}`
 }
 
 const MENU_LABEL = 'Menüyü Aç'

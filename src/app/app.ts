@@ -10,6 +10,7 @@ import { Theme } from '../ui/theme'
 import { mountToolbar } from '../ui/toolbar'
 import { PageView } from '../ui/page-view'
 import { askRestore } from '../ui/dialogs'
+import { showFormulaDialog } from '../ui/formula-dialog'
 import { imageTypeOfName } from './images'
 import { dropRecovery, readRecovery } from './recovery'
 import { DocumentSession } from './session'
@@ -21,6 +22,8 @@ export function startApp(): void {
   const editorHost = document.querySelector<HTMLElement>('#editorHost')!
   const editor = createEditor(editorHost)
   const session = new DocumentSession(editor, platform)
+  // A double click (or Enter) on a formula opens it in the formula window.
+  editor.storage.formula.edit = pos => { void showFormulaDialog(editor, pos) }
   // At once, not through TipTap's `autofocus`, which comes a moment later and would move a cursor
   // the user has already placed.
   editor.commands.focus('start')

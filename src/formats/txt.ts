@@ -5,6 +5,8 @@ import type { DocumentFormat } from './format'
 function textOf(node: JSONContent): string {
   if (node.type === 'text') return node.text ?? ''
   if (node.type === 'hardBreak') return '\n'
+  // A formula as its LaTeX: the closest plain text has to it.
+  if (node.type === 'formula') return String(node.attrs?.latex ?? '')
   return (node.content ?? []).map(textOf).join('')
 }
 

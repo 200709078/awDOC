@@ -7,6 +7,7 @@ import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { EditorState, TextSelection } from '@tiptap/pm/state'
 import type { EditorView } from '@tiptap/pm/view'
 import StarterKit from '@tiptap/starter-kit'
+import { Formula } from './formula'
 import { DocumentImage, ImageInput } from './image'
 import { PageBreak, PageSetupExtension } from './page-setup'
 import { PaginationExtension } from './pagination'
@@ -48,6 +49,7 @@ export function createEditor(element: HTMLElement): Editor {
       // Columns can be widened by dragging their edge.
       TableKit.configure({ table: { resizable: true } }),
       // The page (size, margins, header, footer) is part of the document; page breaks too.
+      Formula,
       PageSetupExtension,
       PageBreak,
       PaginationExtension,
