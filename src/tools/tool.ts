@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/core'
 import type { DocumentSession } from '../app/session'
 import type { Platform } from '../platform/platform'
+import type { PageView } from '../ui/page-view'
 import type { SearchBar } from '../ui/search-bar'
 import type { Theme } from '../ui/theme'
 
@@ -11,6 +12,7 @@ export interface ToolContext {
   readonly platform: Platform
   readonly theme: Theme
   readonly searchBar: SearchBar
+  readonly pageView: PageView
 }
 
 /**

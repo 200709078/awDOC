@@ -8,6 +8,7 @@ import { connectScreenKeyboard } from '../ui/screen-keyboard'
 import { SearchBar } from '../ui/search-bar'
 import { Theme } from '../ui/theme'
 import { mountToolbar } from '../ui/toolbar'
+import { PageView } from '../ui/page-view'
 import { askRestore } from '../ui/dialogs'
 import { imageTypeOfName } from './images'
 import { dropRecovery, readRecovery } from './recovery'
@@ -17,13 +18,15 @@ import { DocumentSession } from './session'
 export function startApp(): void {
   const platform = currentPlatform()
   const theme = new Theme()
-  const editor = createEditor(document.querySelector<HTMLElement>('#editorHost')!)
+  const editorHost = document.querySelector<HTMLElement>('#editorHost')!
+  const editor = createEditor(editorHost)
   const session = new DocumentSession(editor, platform)
   // At once, not through TipTap's `autofocus`, which comes a moment later and would move a cursor
   // the user has already placed.
   editor.commands.focus('start')
   const searchBar = new SearchBar(editor)
-  const context: ToolContext = { editor, session, platform, theme, searchBar }
+  const pageView = new PageView(editor, editorHost)
+  const context: ToolContext = { editor, session, platform, theme, searchBar, pageView }
   const toolbar = mountToolbar(document.querySelector<HTMLElement>('#toolbar')!, TOOLBAR, context)
 
   document.querySelector<HTMLInputElement>('#fileInput')!.accept = acceptList()

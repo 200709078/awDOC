@@ -64,6 +64,7 @@ okuma. Dört imza secret'ı da var: `ANDROID_KEYSTORE_BASE64` ve `ANDROID_KEY_AL
    bul-değiştir; geri al/yinele; kelime sayısı; `.awd` kaydet/aç, otomatik kaydetme, son belgeler;
    yazdır / PDF'e aktar. **Uygulandı (2026-11-17).** Ayrıntı aşağıda, "2. aşama".
 3. **A4 sayfa görünümü:** kenar boşlukları, sayfa sonu, üst/alt bilgi, sayfa numarası, yatay/dikey sayfa.
+   **Uygulandı (2026-11-17).** Ayrıntı aşağıda, "3. aşama".
 4. **Öğretmen özellikleri:** formül düzenleyici, soru bloğu (otomatik numara, puan, A–E şıklar yan yana /
    alt alta), sınav başlığı şablonu, iki sütunlu kâğıt, cevap anahtarı, A/B kitapçığı, drAW2D/drAW3D ve
    awPDF'ten görsel ekleme, soru bankası. Formül ve soru bloğu sürekli görünümde de çalışır; iki sütun ve
@@ -209,6 +210,45 @@ görünümü.
 
 **2. aşamadan sonra (kullanıcı kararı 2026-11-17, "hepsine evet"):** Otomatik Kaydet varsayılan açık kalır;
 2. aşama GitHub'a gönderildi ve madematik.com/awDOC/'a yüklendi; 3. aşamaya geçildi.
+
+## 3. aşama: A4 sayfa görünümü (2026-11-17, uygulandı)
+
+Kullanıcı 2. aşamanın sonunda "hepsine evet" dedi (3. aşamaya geç). Yapılanlar:
+
+- **Sayfa görünümü:** belge A4 kâğıtlar hâlinde, kâğıtların arasında gri boşlukla görünür. Sayfaya sığmayan
+  satır bir sonraki sayfanın başına geçer: paragraf satır satır, tablo satır satır bölünür (tablo satırı ikiye
+  bölünmez; bir sayfadan uzun tek satır ya da resim olduğu yerde kalır). Yazdıkça, sildikçe hemen yeniden dizilir.
+- **Sürekli görünüm** kalır; ikisi arasında Sayfa ▾ içinden geçilir, seçim cihazda hatırlanır. Genişliği 900
+  pikselden az ekranlar (telefon) sürekli görünümle açılır, geniş ekranlar sayfa görünümüyle.
+- **Masaüstünde sürekli görünüm de sayfanın genişliğinde ve kenar boşluklarındadır:** satırlar kâğıttakiyle aynı
+  yerden kırılır, sayfalar bu görünümde de bilinir (Sayfa ▾ kaç sayfa olduğunu yazar).
+- **Yazdırma ve PDF ekrandaki sayfaları aynen basar:** sayfa ekranda nerede bölünüyorsa kâğıtta da orada bölünür
+  (masaüstü ve tarayıcı PDF'i ile denendi). Telefonun dar sürekli görünümünde bölmeyi yazdırma kendisi yapar.
+- **Sayfa sonu (Ctrl+Enter ya da Sayfa ▾):** sonrası yeni sayfada başlar. Sürekli görünümde kesikli bir çizgi
+  ("Sayfa sonu"), sayfa görünümünde sayfanın son satırının altında küçük bir işaret. Seçilip silinebilir. Liste
+  ve tablo içinde çalışmaz (yalnız belgenin kendi paragrafları arasında).
+- **Sayfa Düzeni… penceresi (Sayfa ▾):** dikey / yatay; kenar boşlukları (Normal 2,5 cm, Dar 1,27 cm, Geniş
+  2,5 / 5 cm ya da cm olarak elle, 0,5–8 cm); üst bilgi ve alt bilgi (her sayfada bir satır, ortada); sayfa
+  numarası (yok, altta ortada, altta sağda, üstte sağda) ve biçimi ("1", "1 / 3", "Sayfa 1"). Dikey / Yatay
+  Sayfa ▾ içinde ayrıca tek dokunuşla değişir.
+- **Sayfa ayarı belgenin içinde saklanır** (`.awd` dosyasında, kurtarma kopyasında); Ctrl+Z ile geri alınır.
+  Eski `.awd` dosyaları varsayılan sayfayla (A4 dikey, 2,5 cm) açılır. Dosyadaki bozuk değerler varsayılana ya
+  da sınıra döner.
+- Varsayılan kenar boşlukları Word'deki gibi 2,5 cm oldu (önceden yazdırmada 2 / 2,5 cm idi).
+- **Bulunup düzeltilen bir yarış (her yerde):** End ya da Shift+Home'dan hemen sonra basılan bir kısayol
+  (Ctrl+Enter, Enter, Tab, Ctrl+B…) eski imleç yerinde çalışabiliyordu; artık önce klavyenin yaptığı seçim okunur.
+- Testler: 8 yeni Playwright testi (toplam 88); Electron denemesi sayfa düzenini kaydeder, sayfa sonuyla iki
+  sayfalık PDF üretir; PDF'te üst bilgi ve "1/2", "2/2" var.
+
+**Bilinen sınırlar (sonraya):**
+- Tablonun başlık satırı yeni sayfada tekrarlanmaz; bir sayfadan uzun tek tablo satırı bölünmez.
+- Üst / alt bilgi düz, tek satır, ortalı metin; "ilk sayfada farklı" yok; içine resim ya da tarih konamaz.
+- Sayfa görünümünü küçültme / büyütme (yakınlaştırma) yok: telefonda sayfa görünümü yana kaydırılır.
+- Kâğıt yalnız A4 (A5, Letter yok).
+- Çok uzun belgede (50+ sayfa) her tuşta sayfalara bölme ölçümü masaüstünde ~12 ms sürer; tahtada yavaşlık
+  görülürse yalnız düzenlenen sayfadan sonrasını yeniden ölçmek mümkün.
+
+**Denenmedi:** gerçek tahta, Windows, telefon (Android'in yazdırmasında üst / alt bilgi ve sayfa numarası).
 
 ## Karşılama (giriş) ekranı (2026-11-17, kullanıcı isteği; henüz kodlanmayacak)
 

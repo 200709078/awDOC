@@ -50,4 +50,11 @@ export const ICONS = {
   fullscreen: '<path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/>',
   theme: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
   about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.5v.01"/>',
+  page: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/>',
+  pageView: '<rect x="5" y="2.5" width="14" height="8" rx="1"/><rect x="5" y="13.5" width="14" height="8" rx="1"/>',
+  continuousView: '<path d="M5 2v20"/><path d="M19 2v20"/><path d="M8.5 6h7"/><path d="M8.5 10h7"/><path d="M8.5 14h7"/><path d="M8.5 18h4"/>',
+  portrait: '<rect x="6" y="3" width="12" height="18" rx="1.5"/>',
+  landscape: '<rect x="3" y="6" width="18" height="12" rx="1.5"/>',
+  pageBreak: '<path d="M6 3v5h12V3"/><path d="M6 21v-5h12v5"/><path d="M3 12h3"/><path d="M9 12h2"/><path d="M13 12h2"/><path d="M18 12h3"/>',
+  pageSetup: '<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 3v18" stroke-dasharray="2 2"/><path d="M4 7h16" stroke-dasharray="2 2"/>',
 } as const

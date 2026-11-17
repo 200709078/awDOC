@@ -10,8 +10,12 @@
 	/* The page is paper in both themes: it is white when printed. */
 	--paper: #ffffff;
 	--paper-text: #111827;
-	--paper-width: 794px; /* A4, 21 cm at 96 DPI */
-	--paper-padding: 72px 88px;
+	/* The page's measures; ui/page-view.ts sets them on the editor's host from the document's page setup. */
+	--page-width: 793.7px; /* A4, 21 cm at 96 DPI */
+	--margin-top: 94.5px;
+	--margin-right: 94.5px;
+	--margin-bottom: 94.5px;
+	--margin-left: 94.5px;
 	color-scheme: light;
 }
 
@@ -390,7 +394,7 @@ body {
 	box-shadow: 0 0 0 1.5px rgb(204 82 0);
 }
 
-/* ---- Belge: sürekli görünüm (sayfasız), A4 genişliğinde kâğıt ---- */
+/* ---- Belge: sürekli görünüm, sayfanın genişliğinde ve kenar boşluklarıyla kâğıt ---- */
 
 .workspace {
 	position: relative;
@@ -413,14 +417,15 @@ body {
 }
 
 .editor-host {
-	max-width: var(--paper-width);
+	position: relative;
+	max-width: var(--page-width);
 	margin: 0 auto;
 }
 
 .document {
 	min-height: calc(100vh - var(--toolbar-height) - 72px);
-	padding: var(--paper-padding);
-	border: 1px solid var(--border);
+	/* The text column is as wide as on the page, so the pages are known in this view too. */
+	padding: var(--margin-top) var(--margin-right) var(--margin-bottom) var(--margin-left);
 	border-radius: 2px;
 	background: var(--paper);
 	color: var(--paper-text);
@@ -428,7 +433,8 @@ body {
 	font-size: 12pt;
 	/* Word's default spacing (paragraph-format.ts DEFAULT_LINE_HEIGHT). */
 	line-height: 1.15;
-	box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+	/* A shadow, not a border: a border would make the text column narrower than the page's. */
+	box-shadow: 0 0 0 1px var(--border), 0 1px 4px rgb(0 0 0 / 12%);
 	outline: none;
 	overflow-wrap: break-word;
 	caret-color: var(--paper-text);
@@ -597,21 +603,170 @@ body {
 	color: inherit;
 }
 
-/* Phones: the page fills the width, the margins shrink. */
-@media (max-width: 700px) {
-	:root {
-		--paper-padding: 24px 20px;
+/* A page break (Ctrl+Enter): a dashed line with its name; on paper, the next page. */
+.document .page-break {
+	position: relative;
+	height: 1.5em;
+	margin: 0 0 8pt;
+	cursor: default;
+}
+
+.document .page-break::before {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	left: 0;
+	border-top: 1px dashed #9ca3af;
+	content: "";
+}
+
+.document .page-break::after {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	padding: 0 8px;
+	background: var(--paper);
+	color: #6b7280;
+	font-size: 9pt;
+	line-height: 1.2;
+	content: "Sayfa sonu";
+	transform: translate(-50%, -50%);
+}
+
+.document .page-break.ProseMirror-selectednode::before {
+	border-top: 2px solid var(--accent);
+}
+
+/* ---- Sayfa görünümü: kâğıtlar arkada, metin sayfaların kenar boşluklarına göre itilir ---- */
+
+.page-sheets {
+	display: none;
+}
+
+@media screen {
+	.editor-host.is-paged {
+		width: var(--page-width);
+		max-width: none;
 	}
 
+	.editor-host.is-paged .document {
+		position: relative;
+		z-index: 1;
+		min-height: var(--pages-height, var(--page-height));
+		padding: var(--margin-top) var(--margin-right) var(--margin-bottom) var(--margin-left);
+		border-radius: 0;
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.editor-host.is-paged .page-sheets {
+		display: block;
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.page-sheet {
+		position: absolute;
+		right: 0;
+		left: 0;
+		height: var(--page-height);
+		background: var(--paper);
+		box-shadow: 0 0 0 1px var(--border), 0 1px 4px rgb(0 0 0 / 14%);
+		color: #374151;
+		font-family: Calibri, Carlito, "Liberation Sans", Arial, sans-serif;
+		font-size: 10pt;
+	}
+
+	.page-sheet__header,
+	.page-sheet__footer,
+	.page-sheet__number {
+		display: flex;
+		position: absolute;
+		right: var(--margin-right);
+		left: var(--margin-left);
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		white-space: pre;
+	}
+
+	.page-sheet__header {
+		top: 0;
+		height: var(--margin-top);
+	}
+
+	.page-sheet__footer,
+	.page-sheet__number[data-place^="bottom"] {
+		bottom: 0;
+		height: var(--margin-bottom);
+	}
+
+	.page-sheet__number[data-place="top-right"] {
+		top: 0;
+		height: var(--margin-top);
+	}
+
+	.page-sheet__number[data-place$="right"] {
+		justify-content: flex-end;
+	}
+
+	.page-sheet__number[data-place="none"] {
+		display: none;
+	}
+
+	/* The space that carries the text past the margins and the gap onto the next sheet. */
+	.page-gap {
+		display: block;
+	}
+
+	tr.page-gap {
+		display: table-row;
+	}
+
+	tr.page-gap td {
+		padding: 0;
+		border: 0;
+	}
+
+	.editor-host:not(.is-paged) .page-gap,
+	.editor-host.is-measuring .page-gap {
+		display: none;
+	}
+
+	/* On the sheets a page break takes no room: the next page shows it. Measured that way in both views. */
+	.editor-host.is-paged .page-break,
+	.editor-host.is-measuring .page-break {
+		height: 0;
+		margin: 0;
+	}
+
+	.editor-host.is-paged .page-break::before {
+		top: 0;
+	}
+
+	.editor-host.is-paged .page-break::after {
+		top: 0;
+		transform: translate(-50%, 0);
+	}
+}
+
+/* Phones: the page fills the width, the margins shrink. */
+@media (max-width: 700px) {
 	.workspace {
 		padding: 0;
 	}
 
 	.document {
 		min-height: calc(100vh - var(--toolbar-height));
-		border: 0;
+		padding: 24px 20px;
 		border-radius: 0;
 		box-shadow: none;
+	}
+
+	.editor-host.is-paged {
+		margin: 12px;
 	}
 }
 
@@ -682,6 +837,65 @@ body {
 	color: inherit;
 	font: inherit;
 	font-size: 18px;
+}
+
+.dialog__field select {
+	min-height: 48px;
+	padding: 0 8px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface-muted);
+	color: inherit;
+	font: inherit;
+	font-size: 18px;
+}
+
+/* Sayfa düzeni: many fields, so they sit closer and the window scrolls on a small screen. */
+.page-dialog {
+	width: min(520px, calc(100vw - 32px));
+	max-height: calc(100vh - 32px);
+}
+
+.page-dialog .dialog__field {
+	margin-bottom: 16px;
+}
+
+.page-dialog__choice {
+	display: flex;
+	gap: 24px;
+	margin: 0 0 8px;
+	padding: 0;
+	border: 0;
+}
+
+.page-dialog__choice legend {
+	margin-bottom: 4px;
+	padding: 0;
+}
+
+.page-dialog__choice .dialog__check {
+	margin-bottom: 0;
+}
+
+.page-dialog__margins {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+}
+
+.page-dialog__margins .dialog__field {
+	min-width: 0;
+}
+
+.page-dialog__margins input {
+	width: 100%;
+	min-width: 0;
+}
+
+@media (max-width: 480px) {
+	.page-dialog__margins {
+		grid-template-columns: 1fr 1fr;
+	}
 }
 
 .dialog__error {
@@ -898,10 +1112,7 @@ body {
 
 /* ---- Yazdırma: yalnız belge, kâğıdın kendi kenar boşluklarıyla ---- */
 
-@page {
-	size: A4;
-	margin: 2cm 2.5cm;
-}
+/* The page itself (size, margins, header, footer, page number) is written by ui/page-view.ts. */
 
 @media print {
 	html,
@@ -944,5 +1155,51 @@ body {
 
 	.document .ProseMirror-selectednode img {
 		outline: 0;
+	}
+
+	/* Pages break where the screen breaks them; on their own the lines do not move (no orphans, no widows). */
+	.document {
+		orphans: 1;
+		widows: 1;
+	}
+
+	.document tr {
+		break-inside: avoid;
+	}
+
+	/* A scrolling box would not break across pages. */
+	.document .tableWrapper {
+		overflow: visible;
+	}
+
+	.page-gap {
+		display: none;
+	}
+
+	.editor-host.is-paginated .page-gap:not(.page-gap--forced) {
+		display: block;
+		height: 0 !important;
+		break-before: page;
+	}
+
+	.editor-host.is-paginated tr.page-gap:not(.page-gap--forced) {
+		display: table-row;
+	}
+
+	tr.page-gap td {
+		height: 0 !important;
+		padding: 0;
+		border: 0;
+	}
+
+	.document .page-break {
+		height: 0;
+		margin: 0;
+		break-after: page;
+	}
+
+	.document .page-break::before,
+	.document .page-break::after {
+		display: none;
 	}
 }

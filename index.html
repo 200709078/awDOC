@@ -78,6 +78,53 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="pageDialog" class="dialog page-dialog" aria-labelledby="pageTitle">
+		<h2 id="pageTitle">Sayfa düzeni</h2>
+		<form method="dialog">
+			<fieldset class="page-dialog__choice">
+				<legend>Kâğıt (A4)</legend>
+				<label class="dialog__check"><input type="radio" name="pageOrientation" value="portrait"> Dikey</label>
+				<label class="dialog__check"><input type="radio" name="pageOrientation" value="landscape"> Yatay</label>
+			</fieldset>
+			<label class="dialog__field">Kenar boşlukları
+				<select id="pageMarginPreset"></select>
+			</label>
+			<div class="page-dialog__margins">
+				<label class="dialog__field">Üst (cm)<input id="pageMarginTop" type="text" inputmode="decimal" autocomplete="off"></label>
+				<label class="dialog__field">Alt (cm)<input id="pageMarginBottom" type="text" inputmode="decimal" autocomplete="off"></label>
+				<label class="dialog__field">Sol (cm)<input id="pageMarginLeft" type="text" inputmode="decimal" autocomplete="off"></label>
+				<label class="dialog__field">Sağ (cm)<input id="pageMarginRight" type="text" inputmode="decimal" autocomplete="off"></label>
+			</div>
+			<label class="dialog__field">Üst bilgi (her sayfanın üstünde)
+				<input id="pageHeader" type="text" maxlength="200" autocomplete="off" placeholder="Ör. 2026-2027 Matematik 1. Dönem 1. Yazılı">
+			</label>
+			<label class="dialog__field">Alt bilgi (her sayfanın altında)
+				<input id="pageFooter" type="text" maxlength="200" autocomplete="off">
+			</label>
+			<div class="dialog__pair">
+				<label class="dialog__field">Sayfa numarası
+					<select id="pageNumbers">
+						<option value="none">Yok</option>
+						<option value="bottom-center">Altta ortada</option>
+						<option value="bottom-right">Altta sağda</option>
+						<option value="top-right">Üstte sağda</option>
+					</select>
+				</label>
+				<label class="dialog__field">Biçim
+					<select id="pageNumberFormat">
+						<option value="number">1</option>
+						<option value="number-of-total">1 / 3</option>
+						<option value="page-number">Sayfa 1</option>
+					</select>
+				</label>
+			</div>
+			<p id="pageError" class="dialog__error" role="alert" hidden></p>
+			<div class="dialog__actions">
+				<button value="apply" class="primary-button">Uygula</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="recentDialog" class="dialog" aria-labelledby="recentTitle">
 		<h2 id="recentTitle">Son belgeler</h2>
 		<p id="recentEmpty">Henüz açılmış ya da kaydedilmiş bir belge yok.</p>

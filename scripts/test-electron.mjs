@@ -71,6 +71,26 @@ try {
   await page.locator('#recentList .recent-item__name', { hasText: 'Deneme' }).click()
   await page.waitForFunction(() => document.querySelector('#document')?.textContent === 'Masaüstü denemesi — eklendi')
 
+  // A header and page numbers (Sayfa Düzeni) are printed in the PDF's margins; a page break makes a second page.
+  await page.evaluate(() => document.querySelector('#tool-pageSetup').click())
+  await page.locator('#pageHeader').fill('Masaüstü üst bilgisi')
+  await page.locator('#pageNumbers').selectOption('bottom-right')
+  await page.locator('#pageNumberFormat').selectOption('number-of-total')
+  await page.locator('#pageDialog').getByRole('button', { name: 'Uygula' }).click()
+  await page.locator('#pageDialog').waitFor({ state: 'hidden' })
+  await page.waitForFunction(() => document.activeElement?.id === 'document')
+  await page.locator('#document p').first().click()
+  await page.keyboard.press('End')
+  await page.keyboard.press('Control+Enter')
+  await page.keyboard.type('İkinci sayfa')
+  await page.waitForFunction(() => document.querySelectorAll('.page-sheet').length === 2 || !document.querySelector('#editorHost.is-paged'))
+  // Saved with the file (and nothing left unsaved to ask about when the window closes).
+  await page.keyboard.press('Control+s')
+  await page.waitForFunction(() => !document.querySelector('#documentStatus').classList.contains('is-dirty'))
+  const withPages = JSON.parse(readFileSync(file, 'utf8')).document
+  assert.equal(withPages.attrs.page.header, 'Masaüstü üst bilgisi')
+  assert.deepEqual(withPages.content.map(node => node.type), ['paragraph', 'pageBreak', 'paragraph'])
+
   // PDF Olarak Kaydet: the save dialog is answered in the main process, then the file must be a PDF.
   const pdfPath = path.join(folder, 'Deneme.pdf')
   await application.evaluate(({ dialog }, target) => {
@@ -79,11 +99,12 @@ try {
   await page.evaluate(() => document.querySelector('#tool-exportPdf').click())
   await page.waitForFunction(() => document.querySelector('#toast')?.textContent?.includes('Deneme.pdf'))
   assert.equal(readFileSync(pdfPath).subarray(0, 5).toString('latin1'), '%PDF-', 'PDF dosyası yazılmalı')
+  assert.equal(readFileSync(pdfPath).toString('latin1').match(/\/Type\s*\/Page[^s]/g)?.length, 2, 'Sayfa sonundan sonra PDF iki sayfa olmalı')
   // AWDOC_TEST_PDF=<yol>: the PDF is kept there, to look at it.
   if (process.env.AWDOC_TEST_PDF) copyFileSync(pdfPath, process.env.AWDOC_TEST_PDF)
 
   assert.deepEqual(errors, [])
-  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler ve PDF aktarımı çalışıyor.')
+  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler, sayfa düzeni ve PDF aktarımı çalışıyor.')
 } finally {
   await application.close()
   rmSync(folder, { recursive: true, force: true })

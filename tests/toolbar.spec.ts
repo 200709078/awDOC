@@ -91,7 +91,8 @@ test('koyu tema arayüzü boyar, kâğıt beyaz kalır', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('#tool-theme')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#toolbar')).toHaveCSS('background-color', 'rgb(31, 41, 55)');
-  await expect(page.locator('#document')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  // The page view's sheets are the paper (the text lies on them, see-through).
+  await expect(page.locator('.page-sheet').first()).toHaveCSS('background-color', 'rgb(255, 255, 255)');
 });
 
 test('☰ içinde bilinen simgeler (hizalama) yazısız yan yana, ötekiler simge ve adla durur', async ({ page }) => {

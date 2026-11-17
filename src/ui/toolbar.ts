@@ -1,4 +1,5 @@
 import { isGroup, type Tool, type ToolbarItem, type ToolContext, type ToolGroup, type ToolSection } from '../tools/tool'
+import { readPendingSelection } from '../editor/editor'
 
 /** Such as `ctrl+s`, `ctrl+shift+s`, `f11`. */
 export function shortcutOf(event: KeyboardEvent): string {
@@ -236,6 +237,7 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
   context.session.onChange(update)
   context.theme.onChange(update)
   context.searchBar.onChange(update)
+  context.pageView.onChange(update)
   context.platform.onFullscreenChange(update)
   new ResizeObserver(fit).observe(root)
   update()
@@ -253,9 +255,8 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
     if (!tool || !(tool.isAvailable?.(context) ?? true)) return
     event.preventDefault()
     event.stopPropagation()
-    // ProseMirror reads a selection made by the keyboard a moment later; a shortcut pressed right
-    // after Shift+Home must already see it.
-    ;(context.editor.view as unknown as { domObserver?: { flush?(): void } }).domObserver?.flush?.()
+    // A shortcut pressed right after Shift+Home must already see that selection.
+    readPendingSelection(context.editor.view)
     tool.run(context)
   }, true)
   return { close, update }
