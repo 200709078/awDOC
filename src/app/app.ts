@@ -62,14 +62,20 @@ export function startApp(): void {
   window.addEventListener('beforeprint', () => { document.title = session.name.replace(/\.[^.]+$/, '') })
   window.addEventListener('afterprint', showTitle)
 
-  // The desktop's close question has "Kaydet": the document is saved, then the window closes
-  // (a save given up, at the "where" question, keeps it open).
+  // Closing the desktop window with unsaved changes: the app's own question (as before Yeni or Aç);
+  // Kaydet saves first (a save given up, at the "where" question, keeps the window open).
   const windowControls = window.awDOCDesktop?.windowControls
-  windowControls?.onSaveAndClose?.(() => {
-    void session.save().then(saved => { if (saved) windowControls.close() })
+  let askingToClose = false
+  windowControls?.onCloseRequested?.(() => {
+    // Already asked (by Yeni or Aç, or by a click on ✕ a moment ago): that answer decides.
+    if (askingToClose || document.querySelector<HTMLDialogElement>('#unsavedDialog')!.open) return
+    askingToClose = true
+    void session.confirmLeave()
+      .then(leave => { if (leave) windowControls.closeNow?.() })
+      .finally(() => { askingToClose = false })
   })
 
-  // The browser holds the page back while there are unsaved changes; Electron asks the user.
+  // The browser holds the page back while there are unsaved changes; in Electron the page asks (above).
   window.addEventListener('beforeunload', event => {
     if (session.isDirty) event.preventDefault()
   })

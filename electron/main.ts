@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol, shell, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, net, protocol, shell, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { DesktopFiles, DOCUMENT_EXTENSIONS, type OpenedFile } from './files.js'
@@ -55,6 +55,9 @@ function senderWindow(event: IpcMainEvent | IpcMainInvokeEvent): BrowserWindow |
   return BrowserWindow.fromWebContents(event.sender)
 }
 
+/** Windows whose page has answered its own question about unsaved changes. */
+const answeredClose = new WeakSet<BrowserWindow>()
+
 /** The renderer draws its own title bar; these channels back its window buttons. */
 function registerWindowControls(): void {
   ipcMain.on('window:minimize', event => senderWindow(event)?.minimize())
@@ -70,6 +73,13 @@ function registerWindowControls(): void {
   })
   ipcMain.on('window:set-fullscreen', (event, enabled: unknown) => senderWindow(event)?.setFullScreen(enabled === true))
   ipcMain.on('window:close', event => senderWindow(event)?.close())
+  // The page has asked about unsaved changes itself (Kaydetme, or Kaydet done): it closes now.
+  ipcMain.on('window:close-now', event => {
+    const window = senderWindow(event)
+    if (!window) return
+    answeredClose.add(window)
+    window.close()
+  })
   ipcMain.handle('window:is-maximized', event => senderWindow(event)?.isMaximized() ?? false)
   ipcMain.handle('window:is-fullscreen', event => senderWindow(event)?.isFullScreen() ?? false)
 }
@@ -140,20 +150,11 @@ async function createWindow(): Promise<void> {
     return { action: 'deny' }
   })
   window.webContents.on('will-navigate', event => event.preventDefault())
-  // The page holds back closing while the document has unsaved changes; the user decides here.
+  // The page holds back closing while the document has unsaved changes. It asks with its own window
+  // (the one Yeni and Aç show, the same in awCELL and awPDF), then closes through window:close-now.
   window.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBoxSync(window, {
-      type: 'warning',
-      title: 'awDOC',
-      message: 'Kaydedilmemiş değişiklikler var.',
-      detail: 'Kaydetmezseniz değişiklikler kaybolur.',
-      buttons: ['Kaydet', 'Kaydetme', 'Vazgeç'],
-      defaultId: 0,
-      cancelId: 2,
-    })
-    // Kaydet: the page saves, then closes the window itself (a cancelled save keeps it open).
-    if (choice === 0) window.webContents.send('window:save-and-close')
-    if (choice === 1) event.preventDefault()
+    if (answeredClose.has(window)) event.preventDefault()
+    else window.webContents.send('window:close-requested')
   })
 
   await window.loadURL(devServerUrl || `${SCHEME}://${APP_HOST}/index.html`)

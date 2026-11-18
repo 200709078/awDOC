@@ -30,7 +30,7 @@ export type UnsavedAnswer = 'save' | 'discard' | 'cancel'
 
 /** Asked before the open document gives way to another; Esc and the back button cancel. */
 export async function askUnsavedChanges(name: string): Promise<UnsavedAnswer> {
-  document.querySelector('#unsavedMessage')!.textContent = `"${name}" belgesindeki değişiklikler kaydedilmedi.`
+  document.querySelector('#unsavedMessage')!.textContent = `"${name}" içinde kaydedilmemiş değişiklikler var.`
   const value = await answer(document.querySelector<HTMLDialogElement>('#unsavedDialog')!)
   return value === 'save' || value === 'discard' ? value : 'cancel'
 }
