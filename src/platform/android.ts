@@ -106,6 +106,7 @@ export function androidPlatform(): Platform {
     },
     // The WebView hands a page it may not open itself over to the system.
     openExternal: url => { window.location.href = url },
+    hasCamera: true,
     print: () => { void native.print({ name: 'awDOC' }).catch(console.error) },
     setSystemBars: ({ color, dark }) => { void native.setSystemBars({ color: sixDigitHex(color), dark }).catch(console.error) },
     get isFullscreen() {

@@ -65,6 +65,31 @@ const imageTool: Tool = {
   },
 }
 
+let cameraInput: HTMLInputElement | undefined
+
+/**
+ * Kamera (Android): the system's camera app takes a photo and it goes into the document. The
+ * WebView answers `capture` itself; with no camera permission declared it needs none (the camera
+ * app takes the picture and hands it over).
+ */
+const cameraTool: Tool = {
+  id: 'camera',
+  label: 'Kameradan çek…',
+  icon: ICONS.camera,
+  isSupported: ({ platform }) => Boolean(platform.hasCamera),
+  run: ({ editor }) => {
+    cameraInput ??= Object.assign(document.createElement('input'), { type: 'file', accept: 'image/*', hidden: true, id: 'cameraInput' })
+    cameraInput.setAttribute('capture', 'environment')
+    if (!cameraInput.isConnected) document.body.append(cameraInput)
+    cameraInput.onchange = () => {
+      const files = [...cameraInput!.files ?? []]
+      cameraInput!.value = ''
+      void insertImages(editor, files)
+    }
+    cameraInput.click()
+  },
+}
+
 const hasImage = ({ editor }: ToolContext) => selectedImage(editor.state) !== null
 
 const wrapTool = (wrap: ImageWrap, label: string, icon: string): Tool => ({
@@ -106,10 +131,10 @@ export const imageGroup: ToolGroup = {
   id: 'image',
   label: 'Resim',
   icon: ICONS.image,
-  tools: [imageTool, ...wrapTools, ...editTools],
+  tools: [imageTool, cameraTool, ...wrapTools, ...editTools],
   isMarked: hasImage,
   sections: [
-    { tools: [imageTool] },
+    { tools: [imageTool, cameraTool] },
     { title: 'Yerleşim (seçili resim)', tools: wrapTools },
     { title: 'Düzenle', tools: editTools },
   ],

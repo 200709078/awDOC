@@ -66,6 +66,8 @@ export interface Platform {
   openExternal(url: string): void
   /** Prints what the `@media print` styles show. */
   print(): void
+  /** A photo can be taken straight into the document (Android: the system's camera app, no permission). */
+  readonly hasCamera?: boolean
   /** A smart board has no keys; absent everywhere else, where the system sees to its own keyboard. */
   readonly screenKeyboard?: DesktopScreenKeyboard
   /** The system's own bars around the app take the interface's colour; absent where it has none. */

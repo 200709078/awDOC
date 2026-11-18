@@ -148,7 +148,8 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
       }
       const items = document.createElement('div')
       items.className = 'toolbar__section-items'
-      for (const tool of section.tools) {
+      // A tool the platform cannot do (Kamera beyond Android) is left out of its group too.
+      for (const tool of section.tools.filter(item => item.isSupported?.(context) ?? true)) {
         const control = toolControl(tool, group)
         tools.push(control)
         items.append(control.element)

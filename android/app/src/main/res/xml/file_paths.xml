@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Where the camera app may write a photo for the document (Capacitor's file chooser, capture). -->
+<paths>
+    <external-files-path name="resimler" path="Pictures/" />
+    <cache-path name="gecici" path="." />
+</paths>

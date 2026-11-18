@@ -63,6 +63,17 @@
 
         </activity>
 
+        <!-- The camera app writes the photo here (Kameradan çek: the WebView's capture); no permission needed. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
     </application>
 
     <!-- İzin yok: uygulama ağa çıkmaz. Sayfa WebView'e Capacitor'ın yerel sunucusundan gelir, dış
