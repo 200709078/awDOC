@@ -104,7 +104,7 @@ const changeAttributes = () => ({
 
 export const InsertionMark = Mark.create({
   name: 'insertion',
-  excludes: 'deletion',
+  excludes: 'insertion deletion',
   addAttributes: changeAttributes,
   parseHTML() {
     return [{ tag: 'ins[data-author]' }]
@@ -116,7 +116,7 @@ export const InsertionMark = Mark.create({
 
 export const DeletionMark = Mark.create({
   name: 'deletion',
-  excludes: 'insertion',
+  excludes: 'deletion insertion',
   addAttributes: changeAttributes,
   parseHTML() {
     return [{ tag: 'del[data-author]' }]
