@@ -522,3 +522,30 @@ sistem kamera uygulamasıyla, yeni izin istemeden) → sürüm (GitHub, web, Pla
   sardığı `mc:AlternateContent` da okunur). Bilinen fark: Word gibi, iki yana yaslı paragrafta satır sonundan
   önceki satır yayılır.
 
+## 6. aşama: ileri genel özellikler (2026-11-18, uygulandı)
+
+Araç çubuğunda Word'deki gibi iki yeni grup: **Başvurular ▾** (İçindekiler, Dipnot, Adres-Mektup) ve **Gözden Geçir ▾**
+(Yorum Ekle, Yorumlar, Değişiklikleri İzle, Kabul Et / Reddet, Tümünü Kabul Et / Reddet).
+
+- **İçindekiler:** başlıklar (Başlık 1–3) sayfa numaralarıyla, noktalı çizgiyle; başlık eklenip değiştikçe ve sayfalar
+  kaydıkça kendiliğinden yenilenir; bir satıra tıklayınca o başlığa gidilir. Word'e gerçek TOC alanı olarak yazılır
+  (Word açılışta sayfa numaralarını güncellemeyi önerir), LibreOffice'e kendi dizini olarak.
+- **Dipnot:** metinde üst simge numara; yazısı sayfa görünümünde ve kâğıtta o sayfanın altında (kısa çizginin altında).
+  Sayfalama dipnotlara yer ayırır: dipnotun satırı notuyla birlikte sığmazsa ikisi birlikte sonraki sayfaya geçer.
+  Sürekli görünümde ve telefonda "Dipnotlar" belgenin sonunda listelenir. Numaraya dokununca düzenlenir / silinir.
+  Word'de `footnotes.xml`, LibreOffice'te `text:note`.
+- **Yorumlar:** seçili yazıya yorum; yazan adı bir kez sorulur ve hatırlanır (`awDOC.yazar`). Yorumlar paneli sağda:
+  yorumlanan yazı, Çözüldü / Yeniden aç, Sil; yorumlu yazıya dokununca panel o yorumda açılır. Kâğıda basılmaz.
+  Word'ün ve LibreOffice'in kendi yorumları olarak yazılır ve okunur (yazar, tarih, metin, kapsadığı yazı).
+- **Değişiklikleri İzle:** açıkken yazılan yeşil altı çizili (eklendi), silinen kırmızı üstü çizili (silindi) kalır;
+  Backspace silinenin önüne geçer, seçilenin üstüne yazınca eski silinmiş, yeni eklenmiş görünür; Geri Al ikisini
+  birden geri alır. Kabul Et / Reddet imleçteki ya da seçimdeki değişikliğe, Tümü bütün belgeye. Paragraf bölme/birleştirme
+  izlenmez. Word'de `w:ins` / `w:del` (ve "izle" ayarı), LibreOffice'te `text:tracked-changes`.
+- **Adres-Mektup:** veri dosyası `.csv` (Türkçe Excel'in `;`'si dahil), sekmeli `.txt` ya da awCELL `.awc`; ilk satır sütun
+  adları. Sütuna dokununca imlece «Ad» gibi bir alan girer; Birleştir her satır için belgenin bir kopyasını yeni bir
+  belgede açar, kopyalar ayrı sayfalarda. Kopyalar arasındaki sayfa sonu "yeni kopya"dır: soru, şekil ve dipnot
+  numaraları orada yeniden başlar, her kopyanın cevap anahtarı kendi sorularını listeler (öğrenciye özel sınav kâğıdı).
+  Word'de MERGEFIELD, LibreOffice'te «Ad» yazısı olarak saklanır.
+- **Denendi:** hepsi Word / LibreOffice dosyasına yazılıp geri okundu; LibreOffice 25.2 yazdığımız dosyaları açtı ve
+  kendi yazdığı dosyalardan yorum, değişiklik ve dipnotlar geri geldi.
+
