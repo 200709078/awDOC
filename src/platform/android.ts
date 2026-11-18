@@ -3,6 +3,7 @@ import { withImageExtension } from '../app/images'
 import { fromBase64, toBase64 } from '../core/base64'
 import { browserPlatform } from './browser'
 import type { FileType, OpenedFile, Platform } from './platform'
+import { showToast } from '../ui/messages'
 
 /** A file from the picker or the system's "open with". Size -1 means it could not be opened. */
 interface NativeFile {
@@ -72,7 +73,11 @@ export function androidPlatform(): Platform {
     pickFile: () => { void native.pickFile().catch(console.error) },
     onFile: listener => {
       void native.addListener('fileOpened', file => {
-        readNative(file).then(listener).catch(console.error)
+        // A file that cannot be read (no permission, gone) is said, not dropped silently.
+        readNative(file).then(listener).catch((error: unknown) => {
+          console.error(error)
+          showToast(`${withImageExtension(file.name, file.type)} açılamadı: dosyayı okuma izni yok ya da dosya bulunamadı.`)
+        })
       })
     },
     storableRef: ref => (typeof ref === 'string' ? ref : undefined),
