@@ -565,3 +565,13 @@ Araç çubuğunda Word'deki gibi iki yeni grup: **Başvurular ▾** (İçindekil
 
 Bütün aşamalar (1–6) bitti; sürüm ve yayın kullanıcı isteğiyle aynı gün.
 
+## Yayın 0.1.0 (2026-11-18, kullanıcı isteği: "bütün aşamaları bitir ve yayınla")
+
+- GitHub sürümü v0.1.0 (apk, deb, AppImage, exe; iş akışı elle başlatıldı, etiketi iş akışı açtı; ilk koşuda Linux
+  testlerinde kırpma testi bir kez kırıldı, yerelde 40/40 geçiyordu, ikinci koşu geçti).
+- Web: madematik.com/awDOC (0.1.0), gizlilik sayfası güncel (kamera, yazar adı, veri dosyaları, .doc).
+- Google Play: uygulama henüz Play'de yok. Hazır olanlar: imzalı AAB (`play-Android`, imza 84:F7:8D:F0… denetlendi),
+  mağaza metinleri ve görseller `docs/play/` (kopyası `~/Belgeler/Play/awDOC/`), sürüm notu. Play Console'da uygulamayı
+  oluşturmak, imzayı "awPDF ile aynı anahtar" yapmak ve kapalı teste yüklemek kullanıcıda (`docs/play/magaza.md`).
+- madematik.com Projelerim'de awDOC sayfası yok; eklenmesi kullanıcıya soruldu.
+
