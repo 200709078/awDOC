@@ -4,7 +4,7 @@ import { readFile, rename, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 /** What the page may open and save (src/formats/index.ts); anything else is refused. */
-export const DOCUMENT_EXTENSIONS: ReadonlySet<string> = new Set(['awd', 'txt'])
+export const DOCUMENT_EXTENSIONS: ReadonlySet<string> = new Set(['awd', 'docx', 'odt', 'doc', 'txt'])
 /** A document this large is not a text document; reading it whole would only freeze the app. */
 const MAX_BYTES = 200 * 1024 * 1024
 /** Lasting names for paths, for the recent list; the oldest go first. */

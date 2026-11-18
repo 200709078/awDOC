@@ -21,7 +21,7 @@ interface Counter {
 const LETTERS = 'ABCDEF'
 
 /** "Cevap Anahtarı: 1. B, 2. —, 3. ?", as the answer key block shows it. */
-function answerKeyLine(document: JSONContent): string {
+export function answerKeyLine(document: JSONContent): string {
   const answers: string[] = []
   const walk = (node: JSONContent) => {
     if (node.type !== 'question') {

@@ -487,3 +487,38 @@ Kullanıcı: "kaydedilmemiş değişiklikler var ekranı hepsinde farklı farkl�
 - Pencere awCELL'deki gibi küçük ve sade: başlık "Kaydedilmemiş değişiklikler", ileti `"<ad>" içinde kaydedilmemiş değişiklikler var.`, tek satırda **Vazgeç · Kaydetme · Kaydet** (Kaydet uygulamanın ana rengiyle, Kaydetme açık kırmızı; telefonda da tek satır).
 - Masaüstünde (Electron) pencere kapatılırken artık sistemin kendi soru kutusu değil, uygulamanın bu penceresi çıkar (`will-prevent-unload` → `window:close-requested`; sayfa sorar, sonra `window:close-now`). awPDF'te kapanışta Kaydet seçeneği de böylece geldi; birden çok kaydedilmemiş sekme varsa her biri sırayla gösterilip sorulur.
 - Tarayıcıda sekme/pencere kapatılırken tarayıcının kendi uyarısı çıkar; o değiştirilemez.
+
+## Bütün aşamalar bitecek ve yayınlanacak (2026-11-18, kullanıcı kararı)
+
+Kullanıcı: "bütün aşamaları bitir ve yayınla." Sorulan iki karar:
+
+- **Gerçek iki sütun:** kendi sayfalamamızla (b). Ekranda, kâğıtta ve PDF'te birebir iki sütun; sorular bir
+  sütundan öbürüne akar; başlık ve öğrenci tablosu tam genişlikte.
+- **`.doc`:** masaüstünde LibreOffice kuruluysa `.docx`'e çevrilip açılır (awPDF'teki Word → PDF gibi); web ve
+  Android'de ne yapılacağı söylenir. Kaydetme `.docx` olarak.
+
+Sıra: 5. aşama (`.docx`, `.odt`, `.doc`) → 6. aşama (içindekiler, dipnot, yorumlar, izlenen değişiklikler,
+adres-mektup birleştirme) → 4. aşamanın kalanları (gerçek iki sütun, Android'de uygulama içinden kamera; kamera
+sistem kamera uygulamasıyla, yeni izin istemeden) → sürüm (GitHub, web, Play dosyaları).
+
+## 5. aşama: dosya dönüştürme (2026-11-18, uygulandı)
+
+- **`.docx` (Word) ve `.odt` (LibreOffice):** her yerde (web, masaüstü, Android) açılır ve kaydedilir; kütüphane
+  yok, dosyalar elle yazılıp okunur (`src/formats/docx.ts`, `odt.ts`, ortak parçalar `office.ts`; zip için `fflate`).
+  Taşınanlar: başlıklar, kalın/eğik/altı çizili/üstü çizili, yazı tipi, boyut, renk, vurgu, hizalama, satır aralığı,
+  girinti, iç içe madde ve numaralı listeler (başlangıç numarası), birleştirilmiş hücreli tablolar ve başlık
+  satırı, resimler (satır içi, ortada, sağda/solda yazıyla), bağlantılar, satır sonu, sekme, sayfa sonu, sayfa
+  (A4 dikey/yatay, kenar boşlukları, üst/alt bilgi, sayfa numarası yeri ve biçimi).
+- **Formüller:** Word'e Word'ün kendi formülü (OMML), LibreOffice'e formül nesnesi (MathML, yanında LaTeX)
+  olarak yazılır; ikisi de LaTeX olarak geri okunur (`src/math/convert.ts`).
+- **Sorular:** Word ve LibreOffice'te soru yoktur: "1. … (10 puan)", "A) …" satırları, yan yana şıklar sekmeyle,
+  eşli sorular çizgisiz tablo, cevap anahtarı ve şekil yazıları düz yazı olur. Böyle bir belgede Kaydet `.docx`'in
+  üstüne yazmaz, awDOC dosyası olarak sorar; "Word Olarak Kaydet" / "LibreOffice Olarak Kaydet" bir kopya yazar.
+  Soru içermeyen `.docx` / `.odt` Kaydet ile kendi biçiminde kaydedilir. Otomatik Kaydet yalnız awDOC dosyalarında.
+- **`.doc`:** masaüstünde LibreOffice ile `.docx`'e çevrilip açılır (`electron/office.ts`, awPDF'ten); web ve
+  Android'de ne yapılacağı söylenir; Android'de "Birlikte aç" listesinde yok.
+- **Denendi:** yazılan dosyalar LibreOffice 25.2'de açılıp PDF'e çevrildi (her şey yerinde); LibreOffice'in kendi
+  yazdığı `.docx` / `.odt` / `.doc` dosyaları awDOC'ta açıldı (`tests/office.spec.ts`; LibreOffice'in resimleri
+  sardığı `mc:AlternateContent` da okunur). Bilinen fark: Word gibi, iki yana yaslı paragrafta satır sonundan
+  önceki satır yayılır.
+

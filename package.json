@@ -101,6 +101,7 @@
     "@tiptap/extension-text-style": "3.32.2",
     "@tiptap/pm": "3.32.2",
     "@tiptap/starter-kit": "3.32.2",
+    "fflate": "0.8.2",
     "mathlive": "0.111.4"
   },
   "devDependencies": {

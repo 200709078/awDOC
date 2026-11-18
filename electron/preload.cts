@@ -7,6 +7,11 @@ contextBridge.exposeInMainWorld('awDOCDesktop', {
     show: (requestId: string): Promise<unknown> => ipcRenderer.invoke('screen-keyboard:show', requestId),
     hide: (requestId: string): void => ipcRenderer.send('screen-keyboard:hide', requestId),
   } : undefined,
+  // LibreOffice, where it is installed, turns old Word documents (.doc) into .docx.
+  office: {
+    available: (): Promise<boolean> => ipcRenderer.invoke('office:available'),
+    toDocx: (extension: string, data: Uint8Array): Promise<Uint8Array | null> => ipcRenderer.invoke('office:to-docx', extension, data),
+  },
   files: {
     onOpened: (callback: (file: unknown) => void): void => {
       ipcRenderer.on('files:opened', (_event, file: unknown) => callback(file))

@@ -314,7 +314,8 @@ body {
 
 .toolbar__status {
 	flex: 0 1 auto;
-	min-width: 0;
+	/* Room for a short name: tools move into ☰ before the name shrinks to a letter. */
+	min-width: min(9em, 20vw);
 	margin-left: auto;
 	padding: 0 8px;
 	overflow: hidden;
@@ -799,6 +800,8 @@ body {
 /* A page break (Ctrl+Enter): a dashed line with its name; on paper, the next page. */
 .document .page-break {
 	position: relative;
+	/* The new page starts below a picture floated beside the text before it. */
+	clear: both;
 	height: 1.5em;
 	margin: 0 0 8pt;
 	cursor: default;

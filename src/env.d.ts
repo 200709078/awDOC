@@ -59,5 +59,10 @@ interface Window {
     windowControls?: DesktopWindowControls
     files?: DesktopFiles
     screenKeyboard?: DesktopScreenKeyboard
+    /** LibreOffice, where it is installed: old Word documents (.doc) as .docx; null without it. */
+    office?: {
+      available(): Promise<boolean>
+      toDocx(extension: string, data: Uint8Array): Promise<Uint8Array | null>
+    }
   }
 }

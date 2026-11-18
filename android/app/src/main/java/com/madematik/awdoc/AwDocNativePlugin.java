@@ -357,9 +357,14 @@ public class AwDocNativePlugin extends Plugin {
     }
 
     /** Only the kinds the app saves (src/formats/index.ts). */
+    private static final java.util.Set<String> SAVED_TYPES = new java.util.HashSet<>(java.util.Arrays.asList(
+        "text/plain",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.oasis.opendocument.text"));
+
     private String fileType(PluginCall call) {
         String type = call.getString("type", "application/x-awdoc");
-        return "text/plain".equals(type) ? type : "application/x-awdoc";
+        return SAVED_TYPES.contains(type) ? type : "application/x-awdoc";
     }
 
     private File cacheFolder(String name) {

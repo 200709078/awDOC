@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Menu, net, protocol, shell, type IpcMainEv
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { DesktopFiles, DOCUMENT_EXTENSIONS, type OpenedFile } from './files.js'
+import { OfficeService } from './office.js'
 import { ScreenKeyboardService } from './screen-keyboard.js'
 
 const distPath = fileURLToPath(new URL('../dist/', import.meta.url))
@@ -171,6 +172,7 @@ if (isFirstInstance) void app.whenReady().then(async () => {
   registerAppProtocol()
   registerWindowControls()
   screenKeyboard.register(ipcMain)
+  new OfficeService().register(ipcMain)
   const files = new DesktopFiles()
   files.register()
   const deliver = fileDelivery(files)

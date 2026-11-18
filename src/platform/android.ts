@@ -1,6 +1,7 @@
 import { registerPlugin, type PluginListenerHandle } from '@capacitor/core'
 import { withImageExtension } from '../app/images'
 import { fromBase64, toBase64 } from '../core/base64'
+import { FORMATS, formatOfName } from '../formats/index'
 import { browserPlatform } from './browser'
 import type { FileType, OpenedFile, Platform } from './platform'
 import { showToast } from '../ui/messages'
@@ -49,8 +50,15 @@ function sixDigitHex(color: string): string {
 }
 
 /** The bridge carries text, so a file comes over piece by piece. */
+/** A shared Word / LibreOffice file whose name came without its extension gets it from its type. */
+function withDocumentExtension(name: string, type: string | undefined): string {
+  if (formatOfName(name)) return name
+  const format = FORMATS.find(candidate => candidate.mime === type && candidate.read)
+  return format ? `${name}.${format.extensions[0]}` : name
+}
+
 async function readNative({ id, name: sentName, size, source, type }: NativeFile): Promise<OpenedFile> {
-  const name = withImageExtension(sentName, type)
+  const name = withDocumentExtension(withImageExtension(sentName, type), type)
   if (size < 0) throw new Error(`${name} açılamadı.`)
   const data = new Uint8Array(size)
   for (let begin = 0; begin < size; begin += CHUNK_BYTES) {

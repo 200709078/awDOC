@@ -1,12 +1,14 @@
 import { awdFormat } from './awd'
+import { docFormat } from './doc'
+import { docxFormat } from './docx'
 import type { DocumentFormat } from './format'
+import { odtFormat } from './odt'
 import { txtFormat } from './txt'
 
-/**
- * Every format, awDOC's own first. Planned (docs/yol-haritasi.md, aşama 5): `.docx`, `.odt`, and
- * `.doc` through LibreOffice on the desktop.
- */
-export const FORMATS: readonly DocumentFormat[] = [awdFormat, txtFormat]
+/** Every format, awDOC's own first; `.doc` only opens (through LibreOffice on the desktop). */
+export const FORMATS: readonly DocumentFormat[] = [awdFormat, docxFormat, odtFormat, docFormat, txtFormat]
+
+export { docxFormat, odtFormat }
 
 export const NATIVE_FORMAT = awdFormat
 

@@ -51,11 +51,13 @@ test('.txt: satırlar paragraf olur; kaydederken listeler işaretiyle yazılır'
 test('dosya adından biçim bulunur; uzantı değiştirilir', () => {
   expect(formatOfName('ÖDEV.AWD')?.id).toBe('awd');
   expect(formatOfName('not.txt')?.id).toBe('txt');
-  expect(formatOfName('rapor.docx')).toBeUndefined();
+  expect(formatOfName('rapor.docx')?.id).toBe('docx');
+  expect(formatOfName('Eski.DOC')?.id).toBe('doc');
+  expect(formatOfName('rapor.pdf')).toBeUndefined();
   expect(formatOfName('uzantısız')).toBeUndefined();
   expect(nameWithExtension('notlar.txt', awdFormat)).toBe('notlar.awd');
   expect(nameWithExtension('Belge', awdFormat)).toBe('Belge.awd');
-  expect(acceptList()).toBe('.awd,.txt');
+  expect(acceptList()).toBe('.awd,.docx,.odt,.doc,.txt');
 });
 
 test('bağlantı adresleri: yalnız web ve e-posta; eksik başlık tamamlanır', async () => {

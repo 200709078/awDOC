@@ -41,6 +41,18 @@
                 <data android:pathPattern=".*\\..*\\..*\\.AWD" />
             </intent-filter>
 
+            <!-- "Open with" for Word and LibreOffice documents, which have registered types. (.doc is
+                 left out: only the desktop app reads it, through LibreOffice.) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                <data android:mimeType="application/vnd.oasis.opendocument.text" />
+            </intent-filter>
+
             <!-- "Share" a picture to awDOC (awPDF's captured region, a photo): it goes into the document.
                  No permission: Android lends the picture for this visit. -->
             <intent-filter>

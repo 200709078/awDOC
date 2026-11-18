@@ -20,10 +20,16 @@ export interface DocumentFormat {
   write?(document: JSONContent): Promise<Uint8Array> | Uint8Array
   /**
    * False when saving to it loses something the editor has (plain text drops all styling), so
-   * the app keeps asking where to save instead of writing over the file it came from.
+   * the app keeps asking where to save instead of writing over the file it came from. A function
+   * when it depends on the document (Word keeps everything but the teacher's blocks).
    */
-  readonly keepsEverything: boolean
+  readonly keepsEverything: boolean | ((document: JSONContent) => boolean)
 }
 
 /** The file could not be read as the format it claims to be. */
 export class FormatError extends Error {}
+
+/** Whether `format` keeps all of `document`. */
+export function keepsAll(format: DocumentFormat, document: JSONContent): boolean {
+  return typeof format.keepsEverything === 'function' ? format.keepsEverything(document) : format.keepsEverything
+}

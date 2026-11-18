@@ -1,6 +1,6 @@
 import type { Editor, JSONContent } from '@tiptap/core'
 import { documentNode, EMPTY_DOCUMENT, replaceDocument } from '../editor/editor'
-import { FormatError, type DocumentFormat } from '../formats/format'
+import { FormatError, keepsAll, type DocumentFormat } from '../formats/format'
 import { formatOfName, NATIVE_FORMAT, nameWithExtension, openableFormats } from '../formats/index'
 import { fileTypeOf, type FileRef, type OpenedFile, type Platform } from '../platform/platform'
 import { askUnsavedChanges, showToast } from '../ui/messages'
@@ -49,7 +49,7 @@ export class DocumentSession {
       clearTimeout(this.recoveryTimer)
       this.recoveryTimer = setTimeout(() => this.keepRecoveryCopy(), RECOVERY_DELAY_MS)
       clearTimeout(this.autoSaveTimer)
-      if (this.autoSave && this.canWriteBack) this.autoSaveTimer = setTimeout(() => { void this.saveQuietly() }, AUTO_SAVE_DELAY_MS)
+      if (this.autoSave && this.canAutoSave) this.autoSaveTimer = setTimeout(() => { void this.saveQuietly() }, AUTO_SAVE_DELAY_MS)
     })
   }
 
@@ -86,7 +86,7 @@ export class DocumentSession {
     } catch {
       // Private windows may refuse; the choice still holds for this visit.
     }
-    if (this.autoSave && this.dirty && this.canWriteBack) void this.saveQuietly()
+    if (this.autoSave && this.dirty && this.canAutoSave) void this.saveQuietly()
     this.notify()
   }
 
@@ -168,13 +168,30 @@ export class DocumentSession {
     return this.saveAs()
   }
 
-  async saveAs(): Promise<boolean> {
-    const format = NATIVE_FORMAT
-    const data = await format.write!(this.editor.getJSON())
+  /**
+   * Farklı Kaydet, as an awDOC file or (Word / LibreOffice) another format. A file that keeps the
+   * whole document becomes the open one; one that turns the questions into plain text is a copy
+   * (the document stays as it was, still to be saved as awDOC).
+   */
+  async saveAs(format: DocumentFormat = NATIVE_FORMAT): Promise<boolean> {
+    const document = this.editor.getJSON()
+    const keeps = keepsAll(format, document)
+    let data: Uint8Array
+    try {
+      data = await format.write!(document)
+    } catch (error) {
+      console.error(error)
+      showToast(`Belge ${format.description.toLowerCase()} olarak hazırlanamadı.`)
+      return false
+    }
     const name = nameWithExtension(this.fileName === UNTITLED ? 'Belge' : this.fileName, format)
     try {
       const saved = await this.platform.saveAs(name, data, fileTypeOf(format), this.ref)
       if (!saved) return false
+      if (!keeps) {
+        showToast(`${saved.name} kaydedildi; sorular, şıklar ve cevap anahtarı orada düz yazı.`)
+        return true
+      }
       this.set(saved.name, format, saved.ref)
       this.remember()
       showToast(`${saved.name} kaydedildi.`)
@@ -203,9 +220,17 @@ export class DocumentSession {
     }
   }
 
-  /** Only awDOC's own files are written over: another format would lose what it cannot hold. */
+  /**
+   * A file is written over only in a format that keeps all of this document (awDOC's own; Word and
+   * LibreOffice while it has no questions): another would lose what it cannot hold.
+   */
   private get canWriteBack(): boolean {
-    return Boolean(this.format?.keepsEverything && this.format.write && this.ref !== undefined)
+    return Boolean(this.format?.write && this.ref !== undefined && keepsAll(this.format, this.editor.getJSON()))
+  }
+
+  /** Otomatik Kaydet writes only awDOC's own files; Word and LibreOffice files are saved with Kaydet. */
+  private get canAutoSave(): boolean {
+    return this.format === NATIVE_FORMAT && this.ref !== undefined
   }
 
   /** One write at a time; the changes typed meanwhile stay unsaved until the next one. */
@@ -225,7 +250,7 @@ export class DocumentSession {
   }
 
   private async saveQuietly(): Promise<void> {
-    if (!this.autoSave || this.autoSaveFailed || !this.dirty || !this.canWriteBack) return
+    if (!this.autoSave || this.autoSaveFailed || !this.dirty || !this.canAutoSave) return
     try {
       if (await this.writeBack()) return
     } catch (error) {

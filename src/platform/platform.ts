@@ -80,9 +80,12 @@ export interface Platform {
   onBack?(listener: () => boolean): void
 }
 
+import { setOldWordConverter } from '../formats/doc'
+
 export function currentPlatform(): Platform {
   if (Capacitor.getPlatform() === 'android') return androidPlatform()
-  const { windowControls, files, screenKeyboard } = window.awDOCDesktop ?? {}
+  const { windowControls, files, screenKeyboard, office } = window.awDOCDesktop ?? {}
   if (!windowControls || !files) return browserPlatform()
+  if (office) setOldWordConverter(data => office.toDocx('doc', data))
   return desktopPlatform(windowControls, files, isSmartBoard() ? screenKeyboard : undefined)
 }

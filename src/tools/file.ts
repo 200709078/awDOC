@@ -1,3 +1,4 @@
+import { docxFormat, odtFormat } from '../formats/index'
 import { showRecentDocuments } from '../ui/dialogs'
 import { ICONS } from './icons'
 import type { Tool } from './tool'
@@ -51,6 +52,21 @@ export const pdfTool: Tool = {
   label: 'PDF Olarak Kaydet',
   icon: ICONS.pdf,
   run: ({ session }) => { void session.exportPdf() },
+}
+
+/** A Word copy (questions become plain text; a document without them becomes the Word file). */
+export const docxTool: Tool = {
+  id: 'saveDocx',
+  label: 'Word Olarak Kaydet',
+  icon: ICONS.word,
+  run: ({ session }) => { void session.saveAs(docxFormat) },
+}
+
+export const odtTool: Tool = {
+  id: 'saveOdt',
+  label: 'LibreOffice Olarak Kaydet',
+  icon: ICONS.writer,
+  run: ({ session }) => { void session.saveAs(odtFormat) },
 }
 
 export const recentTool: Tool = {
