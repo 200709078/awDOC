@@ -2,7 +2,7 @@
   "name": "awdoc",
   "productName": "awDOC",
   "desktopName": "awdoc",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "awDOC — kelime işlemci uygulaması",

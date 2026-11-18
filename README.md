@@ -1,30 +1,34 @@
 # awDOC
 
 Web, masaüstü ve Android için **kelime işlemci**. Genel kullanım için tam bir kelime işlemci; öne çıkan
-yanı öğretmenler için sınav ve çalışma kâğıdı araçları olacak (formül, soru bloğu, sınav şablonu).
+yanı öğretmenler için sınav ve çalışma kâğıdı araçları (formül, soru bloğu, sınav şablonu, iki sütun, B kitapçığı).
 
 **mADEMatik Solutions** — [madematik.com](https://madematik.com)
 
-> Durum: 3. aşama (A4 sayfa görünümü) bitti; web sürümü madematik.com/awDOC/'da. Paket sürümü henüz yok.
-> Plan ve kararlar: [docs/yol-haritasi.md](docs/yol-haritasi.md).
+> Durum: planlanan altı aşamanın hepsi bitti (2026-11-18). Web sürümü madematik.com/awDOC/'da; paketler GitHub
+> Releases'te. Plan ve kararlar: [docs/yol-haritasi.md](docs/yol-haritasi.md).
 
-## Şu an olanlar
+## Neler var
 
 - **Sayfa görünümü:** A4 kâğıtlar, sayfa sınırında satır satır bölünme; sürekli görünüm de var. Dikey / yatay
   sayfa, kenar boşlukları, üst bilgi, alt bilgi, sayfa numarası, sayfa sonu (Ctrl+Enter). Yazdırma ve PDF
   ekrandaki sayfaları aynen basar
-- **Yazı:** kalın, italik, altı çizili, üstü çizili; yazı tipi, boyut, yazı rengi, vurgu; normal metin ve üç
-  başlık düzeyi
-- **Paragraf:** hizalama, girinti, satır aralığı; madde işaretli ve numaralı liste
-- **Ekle:** tablo (satır / sütun ekleme ve silme, hücre birleştirme), resim (seçerek, yapıştırarak, sürükleyerek;
-  köşeden boyutlandırma), bağlantı
-- Bul ve değiştir (Türkçe I/ı/İ/i uyumlu), kelime sayısı, geri al, yinele
-- Yeni, Aç, Kaydet, Farklı Kaydet, Yazdır, PDF Olarak Kaydet, Son Belgeler, Otomatik Kaydet; kaydedilmemiş iş
-  uygulama kapanırsa bir sonraki açılışta geri istenir
-- Dosyalar: awDOC'un kendi biçimi `.awd` (açma ve kaydetme), düz metin `.txt` (açma)
+- **Yazı ve paragraf:** kalın, italik, altı çizili, üstü çizili; yazı tipi, boyut, renk, vurgu; üç başlık düzeyi;
+  hizalama, girinti, satır aralığı; madde işaretli ve numaralı liste
+- **Ekle:** tablo (hücre birleştirme), resim (seçerek, yapıştırarak, sürükleyerek; yazıyla yerleşim, kırpma,
+  şekil yazısı; Android'de kameradan), bağlantı, formül (görsel formül düzenleyici)
+- **Öğretmen araçları:** soru bloğu (numara, puan, A–F şıklar alt alta / yan yana / iki sütun), doğru şık ve cevap
+  anahtarı, sınav kâğıdı şablonu, yan yana iki soru, **gerçek iki sütunlu kâğıt**, B kitapçığı, soru bankası
+- **Başvurular:** içindekiler (sayfa numaralı), dipnot (sayfanın altında), adres-mektup (CSV ya da awCELL
+  listesiyle kişiye özel kopyalar)
+- **Gözden geçir:** yorumlar, değişiklikleri izleme (kabul / ret)
+- **Dosyalar:** awDOC'un kendi `.awd` biçimi; Word `.docx` ve LibreOffice `.odt` açma ve kaydetme; eski Word
+  `.doc` bilgisayarda (LibreOffice kuruluysa); düz metin `.txt`; PDF olarak kaydetme
+- Bul ve değiştir (Türkçe I/ı/İ/i uyumlu), kelime sayısı, geri al, yinele; Son Belgeler, Otomatik Kaydet;
+  kaydedilmemiş iş uygulama kapanırsa bir sonraki açılışta geri istenir; giriş ekranı
 - Ortak araç çubuğu stili: açılır gruplar (▾), sığmayanlar ☰ menüsüne; koyu tema, tam ekran, Hakkında
 - Akıllı tahtada ekran klavyesi (ETA Klavye ya da Onboard)
-- Tamamen yerel çalışır: belge hiçbir sunucuya gönderilmez, internet gerekmez
+- Tamamen yerel çalışır: belge hiçbir sunucuya gönderilmez, internet gerekmez; Android uygulaması izin istemez
 
 ## Geliştirme
 
