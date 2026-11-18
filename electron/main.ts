@@ -146,8 +146,8 @@ async function createWindow(): Promise<void> {
       type: 'warning',
       title: 'awDOC',
       message: 'Kaydedilmemiş değişiklikler var.',
-      detail: 'Kaydetmeden kapatırsanız değişiklikler kaybolur.',
-      buttons: ['Kaydet', 'Kaydetmeden kapat', 'Vazgeç'],
+      detail: 'Kaydetmezseniz değişiklikler kaybolur.',
+      buttons: ['Kaydet', 'Kaydetme', 'Vazgeç'],
       defaultId: 0,
       cancelId: 2,
     })

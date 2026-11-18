@@ -121,7 +121,7 @@ try {
   // AWDOC_TEST_PDF=<yol>: the PDF is kept there, to look at it.
   if (process.env.AWDOC_TEST_PDF) copyFileSync(pdfPath, process.env.AWDOC_TEST_PDF)
 
-  // Closing with unsaved changes: the shell asks Kaydet / Kaydetmeden kapat / Vazgeç (answered here).
+  // Closing with unsaved changes: the shell asks Kaydet / Kaydetme / Vazgeç (answered here).
   await page.locator('#document').click()
   await page.keyboard.press('Control+End')
   await page.keyboard.type(' kapanırken')

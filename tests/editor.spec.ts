@@ -87,7 +87,7 @@ test('Değişiklik olunca adın önünde nokta çıkar; Yeni boş belge açmadan
   await expect(page.locator('#document')).toHaveText('taslak');
 
   await page.locator('#tool-newDocument').click();
-  await dialog.getByRole('button', { name: 'Kaydetmeden devam et' }).click();
+  await dialog.getByRole('button', { name: 'Kaydetme', exact: true }).click();
   await expect(page.locator('#document')).toHaveText('');
   await expect(status).not.toHaveClass(/is-dirty/);
   // Yeni belgede geri al eski belgeye dönmez.

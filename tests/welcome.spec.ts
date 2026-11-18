@@ -94,7 +94,7 @@ test('Son Belgeler ekranda; Belgeye Dön açık belgeye döner; Listeyi Temizle'
 
   await openTool(page, 'welcome');
   await page.locator('#welcomeRecentList .recent-item').click();
-  await page.getByRole('button', { name: 'Kaydetmeden devam et' }).click();
+  await page.getByRole('button', { name: 'Kaydetme', exact: true }).click();
   await expect(page.locator('#document')).toHaveText('Saklanan');
   await expect(welcome(page)).toBeHidden();
 
@@ -175,7 +175,7 @@ test.describe('Android geri düğmesi (awPDF\'teki gibi)', () => {
     await expect(page.locator('#unsavedDialog')).toBeHidden();
     await expect(page.locator('#document')).toHaveText('Yarım iş');
     await back(page);
-    await page.locator('#unsavedDialog').getByRole('button', { name: 'Kaydetmeden devam et' }).click();
+    await page.locator('#unsavedDialog').getByRole('button', { name: 'Kaydetme', exact: true }).click();
     await expect(welcome(page)).toBeVisible();
     expect(await calls(page)).not.toContain('leaveApp');
 

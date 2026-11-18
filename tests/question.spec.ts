@@ -228,7 +228,7 @@ test('yan yana iki soru: soldan sağa numaralanır; eşle, taşı, ayır; çiftt
   expect(boxes[0].left).toBeLessThan(boxes[1].left);
 
   await openFile(page, 'S.awd', awdFile(['Bir', 'İki', 'Üç'].map(text => ({ type: 'question', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] }))));
-  await page.getByRole('button', { name: 'Kaydetmeden devam et' }).click();
+  await page.getByRole('button', { name: 'Kaydetme', exact: true }).click();
   await expect(page.locator('#document .question')).toHaveCount(3);
   await page.locator('#document .question p', { hasText: 'Bir' }).click();
   await examTool(page, 'pairQuestions');
