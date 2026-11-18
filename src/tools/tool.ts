@@ -3,6 +3,7 @@ import type { DocumentSession } from '../app/session'
 import type { Platform } from '../platform/platform'
 import type { PageView } from '../ui/page-view'
 import type { Welcome } from '../ui/welcome'
+import type { CommentsPanel } from '../ui/comments-panel'
 import type { SearchBar } from '../ui/search-bar'
 import type { Theme } from '../ui/theme'
 
@@ -15,6 +16,7 @@ export interface ToolContext {
   readonly searchBar: SearchBar
   readonly pageView: PageView
   readonly welcome: Welcome
+  readonly comments: CommentsPanel
 }
 
 /**
@@ -57,7 +59,7 @@ export interface Tool {
   readonly inToolbar?: boolean
   /** Always in the ☰ menu, at its end (Hakkında); the menu button then shows on wide screens too. */
   readonly inMenu?: boolean
-  run(context: ToolContext): void
+  run(context: ToolContext): void | Promise<void>
 }
 
 /**

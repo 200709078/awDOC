@@ -4,7 +4,7 @@ import { DEFAULT_PAGE_SETUP, normalizePageSetup, pageSize, type PageNumberFormat
 import { escapeXml, MATHML_NS, mathMlToLatex } from '../math/convert'
 import { FormatError, type DocumentFormat } from './format'
 import {
-  BORDERLESS, bytesToDataUrl, dataUrlBytes, extensionOfMime, fontCss, fontName, formulasIn, hasTeacherBlocks, hexColor,
+  BORDERLESS, bytesToDataUrl, changeOf, commentIdsOf, dataUrlBytes, lastCommentPieces, storedComments, type StoredComment, extensionOfMime, fontCss, fontName, formulasIn, hasTeacherBlocks, hexColor,
   imageMime, lineHeightOf, officeBlocks, pointsOf, shownSize, tidy, type Marks,
 } from './office'
 
@@ -127,24 +127,76 @@ class Writer {
     return `<draw:frame draw:style-name="${graphic}" draw:name="Formül ${number}" text:anchor-type="as-char" svg:width="${cm(width)}" svg:height="${cm(/\\frac|\\sqrt|\^|_/.test(latex) ? 1.0 : 0.55)}"><draw:object xlink:href="./${folder}" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/></draw:frame>`
   }
 
-  private inline(nodes: JSONContent[] = []): string {
-    return nodes.map(node => {
-      switch (node.type) {
-        case 'text': {
-          const style = this.textStyle(node.marks)
-          let xml = textXml(node.text ?? '')
-          if (style) xml = `<text:span text:style-name="${style}">${xml}</text:span>`
-          const link = node.marks?.find(mark => mark.type === 'link')?.attrs?.href
-          return link ? `<text:a xlink:type="simple" xlink:href="${escapeXml(String(link))}">${xml}</text:a>` : xml
-        }
-        case 'hardBreak': return '<text:line-break/>'
-        case 'image': return this.picture(node.attrs ?? {})
-        case 'formula': return this.formula(String(node.attrs?.latex ?? ''))
-        // LibreOffice's fields need a database; the field is written as «Ad» and read back as a field.
-        case 'mergeField': return this.inline([{ type: 'text', text: `«${String(node.attrs?.name ?? '')}»`, marks: node.marks }])
-        default: return this.inline(node.content)
+  private textNode(value: string, marks?: Marks): string {
+    const style = this.textStyle(marks)
+    let xml = textXml(value)
+    if (style) xml = `<text:span text:style-name="${style}">${xml}</text:span>`
+    const link = marks?.find(mark => mark.type === 'link')?.attrs?.href
+    return link ? `<text:a xlink:type="simple" xlink:href="${escapeXml(String(link))}">${xml}</text:a>` : xml
+  }
+
+  private leaf(node: JSONContent): string {
+    switch (node.type) {
+      case 'text': return this.textNode(node.text ?? '', node.marks)
+      case 'hardBreak': return '<text:line-break/>'
+      case 'image': return this.picture(node.attrs ?? {})
+      case 'formula': return this.formula(String(node.attrs?.latex ?? ''))
+      // LibreOffice's fields need a database; the field is written as «Ad» and read back as a field.
+      case 'mergeField': return this.textNode(`«${String(node.attrs?.name ?? '')}»`, node.marks)
+      default: return ''
+    }
+  }
+
+  /* ---- comments and tracked changes ---- */
+
+  private lastPieces = new Map<string, number>()
+  private commentEntries = new Map<string, StoredComment>()
+  private readonly startedComments = new Set<string>()
+  private pieceIndex = 0
+  /** text:changed-region elements, written at the start of the text. */
+  readonly regions: string[] = []
+
+  prepare(blocks: JSONContent[], comments: readonly StoredComment[]): void {
+    this.lastPieces = lastCommentPieces(blocks)
+    this.commentEntries = new Map(comments.map(comment => [comment.id, comment]))
+  }
+
+  private changeInfo(change: { author: string; date: string }): string {
+    return `<office:change-info><dc:creator>${escapeXml(change.author || 'Yazar')}</dc:creator><dc:date>${escapeXml((change.date || new Date().toISOString()).replace(/Z$/, ''))}</dc:date></office:change-info>`
+  }
+
+  /** One inline piece with its comment's start and end around it and its tracked change. */
+  private wrapPiece(node: JSONContent, xml: string): string {
+    const index = this.pieceIndex++
+    let before = ''
+    let after = ''
+    for (const id of commentIdsOf(node.marks)) {
+      const comment = this.commentEntries.get(id)
+      if (!comment) continue
+      if (!this.startedComments.has(id)) {
+        this.startedComments.add(id)
+        const paragraphs = comment.text.split('\n').map(line => `<text:p>${textXml(line)}</text:p>`).join('')
+        before += `<office:annotation office:name="${escapeXml(id)}"><dc:creator>${escapeXml(comment.author || 'Yazar')}</dc:creator><dc:date>${escapeXml(comment.date.replace(/Z$/, ''))}</dc:date>${paragraphs}</office:annotation>`
       }
-    }).join('')
+      if (this.lastPieces.get(id) === index) after += `<office:annotation-end office:name="${escapeXml(id)}"/>`
+    }
+    const change = changeOf(node.marks)
+    if (change && xml) {
+      const id = `ct${this.regions.length + 1}`
+      if (change.kind === 'insertion') {
+        this.regions.push(`<text:changed-region xml:id="${id}" text:id="${id}"><text:insertion>${this.changeInfo(change)}</text:insertion></text:changed-region>`)
+        xml = `<text:change-start text:change-id="${id}"/>${xml}<text:change-end text:change-id="${id}"/>`
+      } else {
+        // A deletion keeps what was deleted in its region; the text only marks the place.
+        this.regions.push(`<text:changed-region xml:id="${id}" text:id="${id}"><text:deletion>${this.changeInfo(change)}<text:p>${xml}</text:p></text:deletion></text:changed-region>`)
+        xml = `<text:change text:change-id="${id}"/>`
+      }
+    }
+    return before + xml + after
+  }
+
+  private inline(nodes: JSONContent[] = []): string {
+    return nodes.map(node => (['text', 'hardBreak', 'image', 'formula', 'mergeField', 'footnote'].includes(node.type ?? '') ? this.wrapPiece(node, this.leaf(node)) : this.inline(node.content))).join('')
   }
 
   private paragraph(node: JSONContent, extraIndent = 0, inList = false): string {
@@ -329,9 +381,14 @@ async function writeOdt(document: JSONContent): Promise<Uint8Array> {
   const setup = normalizePageSetup(document.attrs?.page)
   const size = pageSize(setup)
   const writer = new Writer(await mathsOf(document), (size.width - setup.margins.left - setup.margins.right) / 10)
-  const body = tidy(officeBlocks(document)).map(block => writer.block(block)).join('') + writer.finish()
+  const blocks = tidy(officeBlocks(document))
+  writer.prepare(blocks, storedComments(document))
+  const body = blocks.map(block => writer.block(block)).join('') + writer.finish()
+  const tracked = writer.regions.length || document.attrs?.track
+    ? `<text:tracked-changes text:track-changes="${document.attrs?.track ? 'true' : 'false'}">${writer.regions.join('')}</text:tracked-changes>`
+    : ''
   const fonts = [...writer.fonts].map(font => `<style:font-face style:name="${escapeXml(font)}" svg:font-family="${escapeXml(/\s/.test(font) ? `'${font}'` : font)}"/>`).join('')
-  const content = `${XML}<office:document-content ${DECLARE} office:version="1.3"><office:font-face-decls>${fonts}</office:font-face-decls><office:automatic-styles>${listStyles()}${writer.styles.join('')}</office:automatic-styles><office:body><office:text>${body}</office:text></office:body></office:document-content>`
+  const content = `${XML}<office:document-content ${DECLARE} office:version="1.3"><office:font-face-decls>${fonts}</office:font-face-decls><office:automatic-styles>${listStyles()}${writer.styles.join('')}</office:automatic-styles><office:body><office:text>${tracked}${body}</office:text></office:body></office:document-content>`
   const files: Zippable = {
     // The type first and not compressed, as ODF requires.
     mimetype: [strToU8(MIME), { level: 0 }],
@@ -375,6 +432,13 @@ function parseXml(text: string): Document {
 }
 
 class Reader {
+  /** Tracked changes by region id, comments open where the reading is, and the comments found. */
+  private readonly regions = new Map<string, { kind: 'insertion' | 'deletion'; author: string; date: string; element: Element }>()
+  private change: { type: 'insertion' | 'deletion'; author: string; date: string } | null = null
+  private readonly commentNames = new Map<string, string>()
+  private readonly openComments = new Set<string>()
+  readonly comments: StoredComment[] = []
+  tracking = false
   private readonly styles = new Map<string, StyleInfo>()
   /** List style name → which levels are numbered. */
   private readonly lists = new Map<string, boolean[]>()
@@ -407,6 +471,32 @@ class Reader {
       const levels: boolean[] = []
       for (const level of kids(list)) levels[(Number(get(level, 'text', 'level')) || 1) - 1] = level.localName === 'list-level-style-number' && (get(level, 'style', 'num-format') ?? '1') !== ''
       this.lists.set(get(list, 'style', 'name') ?? '', levels)
+    }
+  }
+
+  /** The comment and change marks of what is being read now. */
+  private reviewMarks(): Marks {
+    const marks: Marks = [...this.openComments].map(id => ({ type: 'comment', attrs: { id } }))
+    if (this.change) marks.push({ type: this.change.type, attrs: { author: this.change.author, date: this.change.date ? `${this.change.date.replace(/Z$/, '')}Z` : '' } })
+    return marks
+  }
+
+  /** The tracked changes of the text (`text:tracked-changes`). */
+  collectChanges(text: Element): void {
+    const list = kids(text).find(kid => kid.localName === 'tracked-changes')
+    if (!list) return
+    this.tracking = get(list, 'text', 'track-changes') === 'true'
+    for (const region of kids(list).filter(kid => kid.localName === 'changed-region')) {
+      const change = kids(region)[0]
+      if (!change || (change.localName !== 'insertion' && change.localName !== 'deletion')) continue
+      const info = kids(change).find(kid => kid.localName === 'change-info')
+      const id = get(region, 'text', 'id') ?? region.getAttribute('xml:id') ?? ''
+      this.regions.set(id, {
+        kind: change.localName,
+        author: info ? kids(info).find(kid => kid.localName === 'creator')?.textContent ?? '' : '',
+        date: info ? kids(info).find(kid => kid.localName === 'date')?.textContent ?? '' : '',
+        element: change,
+      })
     }
   }
 
@@ -486,7 +576,8 @@ class Reader {
         if (!piece) return
         const field = piece.match(/^«([^«»\n]{1,60})»$/)
         const node: JSONContent = field ? { type: 'mergeField', attrs: { name: field[1] } } : { type: 'text', text: piece }
-        out.push(marks.length ? { ...node, marks: field ? marks.filter(mark => mark.type !== 'link') : marks } : node)
+        const all = [...(field ? marks.filter(mark => mark.type !== 'link') : marks), ...this.reviewMarks()]
+        out.push(all.length ? { ...node, marks: all } : node)
       })
     }
     for (const node of Array.from(element.childNodes)) {
@@ -508,10 +599,46 @@ class Reader {
         }
         case 'frame': {
           const found = this.frame(child)
-          if (found) out.push(found)
+          if (found) out.push(this.reviewMarks().length ? { ...found, marks: this.reviewMarks() } : found)
           break
         }
-        case 'note': case 'bookmark': case 'bookmark-start': case 'bookmark-end': case 'soft-page-break': case 'annotation': case 'annotation-end': case 'sequence-decls':
+        case 'change-start': {
+          const region = this.regions.get(get(child, 'text', 'change-id') ?? '')
+          if (region?.kind === 'insertion') this.change = { type: 'insertion', author: region.author, date: region.date }
+          break
+        }
+        case 'change-end':
+          this.change = null
+          break
+        case 'change': {
+          // What was deleted is kept in its region: it comes back here, struck through.
+          const region = this.regions.get(get(child, 'text', 'change-id') ?? '')
+          if (region?.kind === 'deletion') {
+            const outer = this.change
+            this.change = { type: 'deletion', author: region.author, date: region.date }
+            for (const paragraph of kids(region.element).filter(kid => kid.localName === 'p' || kid.localName === 'h')) this.inline(paragraph, out, marks)
+            this.change = outer
+          }
+          break
+        }
+        case 'annotation': {
+          const name = get(child, 'office', 'name')
+          if (!name) break
+          const id = `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+          this.commentNames.set(name, id)
+          this.openComments.add(id)
+          const text = kids(child).filter(kid => kid.localName === 'p').map(paragraph => paragraph.textContent ?? '').join('\n').trim()
+          const author = kids(child).find(kid => kid.localName === 'creator')?.textContent ?? ''
+          const date = kids(child).find(kid => kid.localName === 'date')?.textContent ?? ''
+          this.comments.push({ id, author, date: date ? `${date.replace(/Z$/, '')}Z` : new Date().toISOString(), text })
+          break
+        }
+        case 'annotation-end': {
+          const id = this.commentNames.get(get(child, 'office', 'name') ?? '')
+          if (id) this.openComments.delete(id)
+          break
+        }
+        case 'note': case 'bookmark': case 'bookmark-start': case 'bookmark-end': case 'soft-page-break': case 'sequence-decls': case 'tracked-changes':
           break
         default: this.inline(child, out, marks)
       }
@@ -696,9 +823,17 @@ export function readOdt(bytes: Uint8Array): JSONContent {
   reader.collect(document)
   const text = document.getElementsByTagNameNS(NS.office, 'text')[0]
   if (!text) throw new FormatError('Bu LibreOffice dosyası bir yazı belgesi değil.')
+  reader.collectChanges(text)
   const blocks = reader.blocks(text)
   while (blocks[0]?.type === 'pageBreak') blocks.shift()
-  return { type: 'doc', attrs: { page: reader.pageSetup(styles) }, content: tidy(blocks) }
+  const used = new Set<string>()
+  const walk = (node: JSONContent) => {
+    node.marks?.forEach(mark => { if (mark.type === 'comment') used.add(String(mark.attrs?.id)) })
+    node.content?.forEach(walk)
+  }
+  blocks.forEach(walk)
+  const comments = reader.comments.filter(comment => used.has(comment.id))
+  return { type: 'doc', attrs: { page: reader.pageSetup(styles), comments: comments.length ? comments : null, track: reader.tracking ? true : null }, content: tidy(blocks) }
 }
 
 export const odtFormat: DocumentFormat = {

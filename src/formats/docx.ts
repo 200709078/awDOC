@@ -4,7 +4,7 @@ import { DEFAULT_PAGE_SETUP, normalizePageSetup, pageSize, type PageNumberFormat
 import { escapeXml, mathMlToOmml, ommlToLatex } from '../math/convert'
 import { FormatError, type DocumentFormat } from './format'
 import {
-  BORDERLESS, bytesToDataUrl, dataUrlBytes, EMU_PER_PX, extensionOfMime, fontCss, fontName, formulasIn, hasTeacherBlocks, hexColor,
+  BORDERLESS, bytesToDataUrl, changeOf, commentIdsOf, dataUrlBytes, lastCommentPieces, storedComments, type StoredComment, EMU_PER_PX, extensionOfMime, fontCss, fontName, formulasIn, hasTeacherBlocks, hexColor,
   imageMime, lineHeightOf, officeBlocks, pointsOf, shownSize, tidy, TWIPS_PER_MM, type Marks,
 } from './office'
 
@@ -45,7 +45,29 @@ class Writer {
   /** num id → [abstract id, start] for numbering.xml. */
   readonly nums: [number, number][] = []
 
+  /** Comments: their numbers in the file, where each one's range ends, which have started. */
+  private readonly commentNumbers = new Map<string, number>()
+  private lastPieces = new Map<string, number>()
+  private readonly started = new Set<string>()
+  private pieceIndex = 0
+  private changes = 0
+
   constructor(private readonly maths: ReadonlyMap<string, string>, private readonly textWidth: number) {}
+
+  /** Before writing: which comments the blocks have and where each ends. */
+  prepare(blocks: JSONContent[], comments: readonly StoredComment[]): void {
+    this.lastPieces = lastCommentPieces(blocks)
+    for (const comment of comments) if (this.lastPieces.has(comment.id)) this.commentNumbers.set(comment.id, this.commentNumbers.size)
+  }
+
+  /** The comments written, in their numbers' order. */
+  get writtenComments(): string[] {
+    return [...this.commentNumbers.keys()].filter(id => this.started.has(id))
+  }
+
+  commentNumber(id: string): number {
+    return this.commentNumbers.get(id) ?? -1
+  }
 
   private rel(type: string, target: string, external = false): string {
     const id = `rId${this.rels.length + 10}`
@@ -77,7 +99,30 @@ class Writer {
 
   private textRuns(value: string, marks?: Marks): string {
     const props = this.runProps(marks)
-    return value.split('\t').map((piece, index) => `<w:r>${props}${index ? '<w:tab/>' : ''}${piece ? `<w:t xml:space="preserve">${escapeXml(piece)}</w:t>` : ''}</w:r>`).join('')
+    const tag = marks?.some(mark => mark.type === 'deletion') ? 'w:delText' : 'w:t'
+    return value.split('\t').map((piece, index) => `<w:r>${props}${index ? '<w:tab/>' : ''}${piece ? `<${tag} xml:space="preserve">${escapeXml(piece)}</${tag}>` : ''}</w:r>`).join('')
+  }
+
+  /** One inline piece with its comment ranges around it and its tracked change (w:ins / w:del). */
+  private wrapPiece(node: JSONContent, xml: string): string {
+    const index = this.pieceIndex++
+    let before = ''
+    let after = ''
+    for (const id of commentIdsOf(node.marks)) {
+      const number = this.commentNumbers.get(id)
+      if (number === undefined) continue
+      if (!this.started.has(id)) {
+        this.started.add(id)
+        before += `<w:commentRangeStart w:id="${number}"/>`
+      }
+      if (this.lastPieces.get(id) === index) after += `<w:commentRangeEnd w:id="${number}"/><w:r><w:rPr><w:rStyle w:val="CommentReference"/></w:rPr><w:commentReference w:id="${number}"/></w:r>`
+    }
+    const change = changeOf(node.marks)
+    if (change && xml) {
+      const tag = change.kind === 'insertion' ? 'w:ins' : 'w:del'
+      xml = `<${tag} w:id="${1000 + ++this.changes}" w:author="${escapeXml(change.author || 'Yazar')}" w:date="${escapeXml(change.date || new Date().toISOString().replace(/\.\d+Z$/, 'Z'))}">${xml}</${tag}>`
+    }
+    return before + xml + after
   }
 
   private picture(attrs: Record<string, unknown>): string {
@@ -100,7 +145,10 @@ class Writer {
   }
 
   private inline(nodes: JSONContent[] = []): string {
-    return nodes.map(node => {
+    return nodes.map(node => (node.type && node.type !== 'text' && !['hardBreak', 'image', 'formula', 'mergeField', 'footnote'].includes(node.type) ? this.inline(node.content) : this.wrapPiece(node, this.leaf(node)))).join('')
+  }
+
+  private leaf(node: JSONContent): string {
       switch (node.type) {
         case 'text': {
           const link = node.marks?.find(mark => mark.type === 'link')
@@ -123,7 +171,6 @@ class Writer {
         default:
           return this.inline(node.content)
       }
-    }).join('')
   }
 
   /* ---- blocks ---- */
@@ -311,7 +358,10 @@ async function writeDocx(document: JSONContent): Promise<Uint8Array> {
   const size = pageSize(setup)
   const twips = (mm: number) => Math.round(mm * TWIPS_PER_MM)
   const writer = new Writer(await mathsOf(document), twips(size.width - setup.margins.left - setup.margins.right))
-  const body = tidy(officeBlocks(document)).map(block => writer.block(block)).join('')
+  const blocks = tidy(officeBlocks(document))
+  const comments = storedComments(document)
+  writer.prepare(blocks, comments)
+  const body = blocks.map(block => writer.block(block)).join('')
 
   const files: Zippable = {}
   const contentTypes = [
@@ -344,7 +394,6 @@ async function writeDocx(document: JSONContent): Promise<Uint8Array> {
   const { top, right, bottom, left } = setup.margins
   const section = `<w:sectPr>${references}<w:pgSz w:w="${twips(size.width)}" w:h="${twips(size.height)}"${landscape ? ' w:orient="landscape"' : ''}/><w:pgMar w:top="${twips(top)}" w:right="${twips(right)}" w:bottom="${twips(bottom)}" w:left="${twips(left)}" w:header="${twips(Math.min(12.5, top / 2))}" w:footer="${twips(Math.min(12.5, bottom / 2))}" w:gutter="0"/></w:sectPr>`
 
-  files['[Content_Types].xml'] = strToU8(`${XML}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">${contentTypes.join('')}</Types>`)
   files['_rels/.rels'] = strToU8(`${XML}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`)
   const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z')
   files['docProps/core.xml'] = strToU8(`${XML}<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`)
@@ -352,8 +401,22 @@ async function writeDocx(document: JSONContent): Promise<Uint8Array> {
   files['word/document.xml'] = strToU8(`${XML}<w:document ${NAMESPACES}><w:body>${body}${section}</w:body></w:document>`)
   files['word/styles.xml'] = strToU8(STYLES_XML)
   files['word/numbering.xml'] = strToU8(numberingXml(writer.nums))
-  files['word/settings.xml'] = strToU8(SETTINGS_XML)
+  files['word/settings.xml'] = strToU8(document.attrs?.track ? SETTINGS_XML.replace('<w:updateFields', '<w:trackRevisions/><w:updateFields') : SETTINGS_XML)
+  const written = writer.writtenComments
+  if (written.length) {
+    const byId = new Map(comments.map(comment => [comment.id, comment]))
+    const xml = written.map(id => {
+      const comment = byId.get(id)!
+      const paragraphs = comment.text.split('\n').map(line => `<w:p><w:r><w:t xml:space="preserve">${escapeXml(line)}</w:t></w:r></w:p>`).join('')
+      const initials = (comment.author || 'Y').split(/\s+/).map(word => word[0] ?? '').join('').slice(0, 3)
+      return `<w:comment w:id="${writer.commentNumber(id)}" w:author="${escapeXml(comment.author || 'Yazar')}" w:date="${escapeXml(comment.date.replace(/\.\d+Z$/, 'Z'))}" w:initials="${escapeXml(initials)}">${paragraphs}</w:comment>`
+    }).join('')
+    files['word/comments.xml'] = strToU8(`${XML}<w:comments ${NAMESPACES}>${xml}</w:comments>`)
+    writer.addRel('http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments', 'comments.xml')
+    contentTypes.push('<Override PartName="/word/comments.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml"/>')
+  }
   files['word/_rels/document.xml.rels'] = strToU8(writer.relsXml())
+  files['[Content_Types].xml'] = strToU8(`${XML}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">${contentTypes.join('')}</Types>`)
   for (const [path, bytes] of Object.entries(writer.media)) files[path] = [bytes, { level: 0 }]
   return zipSync(files, { level: 6 })
 }
@@ -380,6 +443,8 @@ function mergeFieldName(instruction: string): string | null {
   return match ? (match[1] ?? match[2]).trim() : null
 }
 
+const newCommentId = () => `c${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+
 const withMarks = (node: JSONContent, marks: Marks): JSONContent => (marks.length ? { ...node, marks: marks.filter(mark => mark.type !== 'link') } : node)
 
 /**
@@ -393,6 +458,13 @@ function alternative(element: Element): Element[] {
 }
 
 class Reader {
+  /** Comments: the file's numbers to awDOC's ids, those open where the reading is, their entries. */
+  private readonly commentIds = new Map<string, string>()
+  private readonly openComments = new Set<string>()
+  readonly comments: StoredComment[] = []
+  /** The tracked change being read (inside w:ins / w:del). */
+  private change: { type: 'insertion' | 'deletion'; author: string; date: string } | null = null
+  tracking = false
   private readonly rels = new Map<string, { target: string; external: boolean }>()
   private readonly styles = new Map<string, { name: string; heading: number | null }>()
   private readonly numbering = new Map<string, ListKind[]>()
@@ -444,6 +516,17 @@ class Reader {
         this.numbering.set(attr(num, 'numId') ?? '', levels)
       }
     }
+    const commentsXml = this.text('word/comments.xml')
+    if (commentsXml) {
+      for (const comment of Array.from(parseXml(commentsXml).getElementsByTagNameNS(W, 'comment'))) {
+        const id = newCommentId()
+        this.commentIds.set(attr(comment, 'id') ?? '', id)
+        const text = Array.from(comment.getElementsByTagNameNS(W, 'p')).map(paragraph => Array.from(paragraph.getElementsByTagNameNS(W, 't')).map(t => t.textContent ?? '').join('')).join('\n').trim()
+        this.comments.push({ id, author: attr(comment, 'author') ?? '', date: attr(comment, 'date') ?? new Date().toISOString(), text })
+      }
+    }
+    const settings = this.text('word/settings.xml')
+    if (settings) this.tracking = parseXml(settings).getElementsByTagNameNS(W, 'trackRevisions').length > 0
     const body = parseXml(main).getElementsByTagNameNS(W, 'body')[0]
     if (!body) throw new FormatError('Word belgesinde gövde yok.')
     return body
@@ -474,6 +557,8 @@ class Reader {
       if (back) marks.push({ type: 'highlight', attrs: { color: back } })
     }
     if (link) marks.push({ type: 'link', attrs: { href: link } })
+    for (const id of this.openComments) marks.push({ type: 'comment', attrs: { id } })
+    if (this.change) marks.push({ type: this.change.type, attrs: { author: this.change.author, date: this.change.date } })
     return marks
   }
 
@@ -526,6 +611,7 @@ class Reader {
             const push = (value: string) => out.push(marks.length ? { type: 'text', text: value, marks } : { type: 'text', text: value })
             switch (part.localName) {
               case 't': if (part.textContent) push(part.textContent); break
+              case 'delText': if (part.textContent && this.change?.type === 'deletion') push(part.textContent); break
               case 'tab': push('\t'); break
               case 'noBreakHyphen': push('-'); break
               case 'br': out.push(attr(part, 'type') === 'page' ? 'page' : { type: 'hardBreak' }); break
@@ -559,7 +645,24 @@ class Reader {
           else this.inline(node, out, link)
           break
         }
-        case 'pPr': case 'del': case 'moveFrom': case 'proofErr': case 'bookmarkStart': case 'bookmarkEnd': case 'commentRangeStart': case 'commentRangeEnd':
+        case 'commentRangeStart': {
+          const id = this.commentIds.get(attr(node, 'id') ?? '')
+          if (id) this.openComments.add(id)
+          break
+        }
+        case 'commentRangeEnd': {
+          const id = this.commentIds.get(attr(node, 'id') ?? '')
+          if (id) this.openComments.delete(id)
+          break
+        }
+        case 'ins': case 'del': {
+          const outer = this.change
+          this.change = { type: node.localName === 'ins' ? 'insertion' : 'deletion', author: attr(node, 'author') ?? '', date: attr(node, 'date') ?? '' }
+          this.inline(node, out, link)
+          this.change = outer
+          break
+        }
+        case 'pPr': case 'moveFrom': case 'proofErr': case 'bookmarkStart': case 'bookmarkEnd':
           break
         default:
           // ins, smartTag, fldSimple, sdt/sdtContent, customXml…: what they hold.
@@ -773,7 +876,15 @@ export function readDocx(bytes: Uint8Array): JSONContent {
   const reader = new Reader(files)
   const body = reader.load()
   const blocks = tidy(reader.blocks(body))
-  return { type: 'doc', attrs: { page: reader.pageSetup(body) }, content: blocks }
+  // Only the comments whose text came along (a comment on a deleted part has nothing to show).
+  const used = new Set<string>()
+  const walk = (node: JSONContent) => {
+    node.marks?.forEach(mark => { if (mark.type === 'comment') used.add(String(mark.attrs?.id)) })
+    node.content?.forEach(walk)
+  }
+  blocks.forEach(walk)
+  const comments = reader.comments.filter(comment => used.has(comment.id))
+  return { type: 'doc', attrs: { page: reader.pageSetup(body), comments: comments.length ? comments : null, track: reader.tracking ? true : null }, content: blocks }
 }
 
 export const docxFormat: DocumentFormat = {

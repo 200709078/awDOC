@@ -224,3 +224,41 @@ function sectionBlocks(document: JSONContent, contents: { level: number; text: s
 export function tidy(blocks: JSONContent[]): JSONContent[] {
   return blocks.length ? blocks : [{ type: 'paragraph' }]
 }
+
+/** Inline pieces written one by one (text, breaks, pictures, formulas, fields, notes). */
+const INLINE_LEAVES = new Set(['text', 'hardBreak', 'image', 'formula', 'mergeField', 'footnote'])
+
+/** The comment ids of a piece of text. */
+export const commentIdsOf = (marks: Marks | undefined): string[] => (marks ?? []).filter(mark => mark.type === 'comment' && mark.attrs?.id).map(mark => String(mark.attrs!.id))
+
+/**
+ * For each comment, the index of the last inline piece it covers, counting pieces in the order the
+ * writers write them: the comment's range closes after that piece.
+ */
+export function lastCommentPieces(blocks: JSONContent[]): Map<string, number> {
+  const last = new Map<string, number>()
+  let index = 0
+  const walk = (node: JSONContent) => {
+    if (INLINE_LEAVES.has(node.type ?? '')) {
+      for (const id of commentIdsOf(node.marks)) last.set(id, index)
+      index++
+      return
+    }
+    node.content?.forEach(walk)
+  }
+  blocks.forEach(walk)
+  return last
+}
+
+export interface StoredComment { id: string; author: string; date: string; text: string; done?: boolean }
+
+export function storedComments(document: JSONContent): StoredComment[] {
+  const value = document.attrs?.comments
+  return Array.isArray(value) ? value.filter(entry => entry && typeof entry.id === 'string') : []
+}
+
+/** The change a piece belongs to (tracked changes), if any. */
+export function changeOf(marks: Marks | undefined): { kind: 'insertion' | 'deletion'; author: string; date: string } | null {
+  const mark = (marks ?? []).find(candidate => candidate.type === 'insertion' || candidate.type === 'deletion')
+  return mark ? { kind: mark.type as 'insertion' | 'deletion', author: String(mark.attrs?.author ?? ''), date: String(mark.attrs?.date ?? '') } : null
+}

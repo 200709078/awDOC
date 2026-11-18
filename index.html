@@ -54,6 +54,13 @@
 			<label class="dialog__check welcome__startup"><input id="welcomeAtStart" type="checkbox"> Açılışta bu ekranı göster</label>
 		</section>
 		<div id="editorHost" class="editor-host"></div>
+		<aside id="commentsPanel" class="comments-panel" aria-labelledby="commentsTitle" hidden>
+			<div class="comments-panel__header">
+				<h2 id="commentsTitle">Yorumlar</h2>
+				<button id="commentsClose" type="button" class="comments-panel__close" aria-label="Kapat">✕</button>
+			</div>
+			<div id="commentsList" class="comments-panel__list"></div>
+		</aside>
 	</main>
 	<input id="fileInput" type="file" hidden>
 	<dialog id="unsavedDialog" class="dialog dialog--unsaved">
@@ -247,6 +254,35 @@
 			<div class="dialog__actions">
 				<button id="mergeRun" value="merge" class="primary-button">Birleştir</button>
 				<button value="cancel" class="secondary-button" formnovalidate>Kapat</button>
+			</div>
+		</form>
+	</dialog>
+	<dialog id="commentDialog" class="dialog" aria-labelledby="commentTitle">
+		<h2 id="commentTitle">Yorum</h2>
+		<p id="commentQuote" class="comment-dialog__quote"></p>
+		<form method="dialog">
+			<label class="dialog__field">Yorum
+				<textarea id="commentText" rows="4" required></textarea>
+			</label>
+			<label class="dialog__field">Adınız
+				<input id="commentAuthor" type="text" autocomplete="name" maxlength="60" required>
+			</label>
+			<div class="dialog__actions">
+				<button value="save" class="primary-button">Ekle</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
+	<dialog id="authorDialog" class="dialog" aria-labelledby="authorTitle">
+		<h2 id="authorTitle">Değişiklikleri izle</h2>
+		<p>Eklediğiniz ve sildiğiniz yerler adınızla işaretlenir.</p>
+		<form method="dialog">
+			<label class="dialog__field">Adınız
+				<input id="authorName" type="text" autocomplete="name" maxlength="60" required>
+			</label>
+			<div class="dialog__actions">
+				<button value="save" class="primary-button">Başlat</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
 			</div>
 		</form>
 	</dialog>

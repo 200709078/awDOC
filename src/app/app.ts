@@ -14,6 +14,7 @@ import { Welcome, welcomeAtStart } from '../ui/welcome'
 import { askRestore } from '../ui/dialogs'
 import { showFormulaDialog } from '../ui/formula-dialog'
 import { restoreAnswersShown } from '../ui/answers'
+import { CommentsPanel } from '../ui/comments-panel'
 import { imageTypeOfName } from './images'
 import { dropRecovery, readRecovery } from './recovery'
 import { DocumentSession } from './session'
@@ -37,8 +38,10 @@ export function startApp(): void {
   pageView.onChange(() => redrawContents(editor.storage.tableOfContents))
   restoreAnswersShown()
   const welcome = new Welcome(editor, session, pageView)
-  const context: ToolContext = { editor, session, platform, theme, searchBar, pageView, welcome }
+  const comments = new CommentsPanel(editor)
+  const context: ToolContext = { editor, session, platform, theme, searchBar, pageView, welcome, comments }
   const toolbar = mountToolbar(document.querySelector<HTMLElement>('#toolbar')!, TOOLBAR, context)
+  comments.onChange(() => toolbar.update())
 
   document.querySelector<HTMLInputElement>('#fileInput')!.accept = acceptList()
   // A picture dropped on the window or opened with the app goes into the document; anything else opens.
@@ -102,6 +105,7 @@ export function startApp(): void {
       if (dialog.dispatchEvent(new Event('cancel', { cancelable: true }))) dialog.close()
     } else if (toolbar.close()) return true
     else if (searchBar.isOpen) searchBar.close()
+    else if (comments.isOpen) comments.setOpen(false)
     else if (platform.isFullscreen) platform.toggleFullscreen()
     else if (welcome.closeOnBack()) return true
     else if (welcome.isOpen) return false

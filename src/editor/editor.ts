@@ -7,6 +7,7 @@ import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { EditorState, TextSelection } from '@tiptap/pm/state'
 import type { EditorView } from '@tiptap/pm/view'
 import StarterKit from '@tiptap/starter-kit'
+import { authorName } from '../app/author'
 import { AnswerKey } from './answer-key'
 import { TableOfContents } from './contents'
 import { MergeField } from './merge-field'
@@ -16,6 +17,7 @@ import { PageBreak, PageSetupExtension } from './page-setup'
 import { PaginationExtension } from './pagination'
 import { Choice, Choices, Question, QuestionRow } from './question'
 import { ParagraphFormat } from './paragraph-format'
+import { CommentMark, DeletionMark, InsertionMark, Review } from './review'
 import { Search } from './search'
 
 export const HEADING_LEVELS = [1, 2, 3] as const
@@ -62,6 +64,10 @@ export function createEditor(element: HTMLElement): Editor {
       AnswerKey,
       TableOfContents,
       MergeField,
+      CommentMark,
+      InsertionMark,
+      DeletionMark,
+      Review.configure({ author: authorName }),
       PageSetupExtension,
       PageBreak,
       PaginationExtension,

@@ -19,6 +19,7 @@ export function sampleDocument(): Record<string, unknown> {
         pageNumbers: 'bottom-right',
         numberFormat: 'number-of-total',
       },
+      comments: [{ id: 'yorum1', author: 'Ayşe Öğretmen', date: '2026-11-18T09:00:00Z', text: 'Bu cümleyi kontrol et.' }],
     },
     content: [
       { type: 'heading', attrs: { level: 1, textAlign: 'center' }, content: [text('Birinci Başlık')] },
@@ -86,6 +87,11 @@ export function sampleDocument(): Record<string, unknown> {
           ] },
         ],
       },
+      { type: 'paragraph', content: [
+        text('Yorumlu ', [{ type: 'comment', attrs: { id: 'yorum1' } }]), text('cümle', [{ type: 'comment', attrs: { id: 'yorum1' } }]),
+        text(' eklenen', [{ type: 'insertion', attrs: { author: 'Ali', date: '2026-11-18T10:00:00Z' } }]),
+        text(' silinen', [{ type: 'deletion', attrs: { author: 'Ali', date: '2026-11-18T10:00:00Z' } }]),
+      ] },
       { type: 'paragraph', content: [text('Son paragraf.')] },
     ],
   };

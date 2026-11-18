@@ -4,6 +4,7 @@ import { examGroup } from './exam'
 import { findTool, formulaTool, imageGroup, linkTool, replaceTool, wordCountTool } from './insert'
 import { pageGroup } from './page'
 import { referencesGroup } from './references'
+import { reviewGroup } from './review'
 import { tableGroup } from './table'
 import { fontGroup, textGroup } from './text'
 import type { ToolbarItem } from './tool'
@@ -33,6 +34,7 @@ export const TOOLBAR: readonly ToolbarItem[] = [
   tableGroup,
   pageGroup,
   referencesGroup,
+  reviewGroup,
   printTool,
   pdfTool,
   saveAsTool,
