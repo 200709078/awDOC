@@ -1231,6 +1231,12 @@ body {
 	margin: 0;
 }
 
+/* On the pages the marker shows only when selected: its label would cover the first question. */
+.editor-host.is-paged .document .columns-start:not(.ProseMirror-selectednode)::before,
+.editor-host.is-paged .document .columns-start:not(.ProseMirror-selectednode)::after {
+	display: none;
+}
+
 @media screen {
 	.editor-host.is-paged.has-columns .document {
 		/* The blocks are laid out twice as long as they are shown: the sheets give the height. */
