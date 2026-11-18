@@ -48,11 +48,29 @@ test('Belge Aç dosyayı açar; Sınav Kâğıdı şablonu açar; bir araçla ek
   await expect(welcome(page)).toBeHidden();
   await expect(page.locator('#document .question')).toHaveCount(1);
 
+  // Over a document, what needs it rests as well (awPDF's rule): a question cannot be added from here.
   await openTool(page, 'welcome');
   await page.locator('#group-exam').click();
-  await page.locator('#tool-openQuestion').click();
+  await expect(page.locator('#tool-openQuestion')).toBeDisabled();
+  await expect(page.locator('#tool-examPaper')).toBeEnabled();
+});
+
+test('giriş ekranında araç çubuğu görünür; belge gerektirenler pasif, kısayolları da (awPDF gibi)', async ({ page }) => {
+  await page.setViewportSize({ width: 1920, height: 1000 });
+  await page.goto('/');
+  await expect(welcome(page)).toBeVisible();
+  await expect(page.locator('#toolbar')).toBeVisible();
+  for (const id of ['tool-newDocument', 'tool-open', 'group-exam']) await expect(page.locator(`#${id}`)).toBeEnabled();
+  for (const id of ['tool-save', 'tool-undo', 'group-text', 'group-paragraph', 'tool-find', 'tool-formula', 'group-table', 'group-page', 'tool-print']) {
+    await expect(page.locator(`#${id}`)).toBeDisabled();
+  }
+  // Ctrl+F (Bul) does nothing here; Ctrl+N works.
+  await page.keyboard.press('Control+f');
+  await expect(page.locator('#searchBar')).toBeHidden();
+  await page.keyboard.press('Control+n');
   await expect(welcome(page)).toBeHidden();
-  await expect(page.locator('#document .question')).toHaveCount(2);
+  await expect(page.locator('#tool-save')).toBeEnabled();
+  await expect(page.locator('#group-text')).toBeEnabled();
 });
 
 test('Son Belgeler ekranda; Belgeye Dön açık belgeye döner; Listeyi Temizle', async ({ page }) => {

@@ -466,3 +466,16 @@ Artık **Kaydet** / **Kaydetmeden kapat** / **Vazgeç**.
 - Sayfa `session.save()` ile kaydeder, sonra pencereyi kapatır. Kayıt yeri sorusunda vazgeçilirse pencere açık
   kalır.
 - Electron denemesine eklendi: Vazgeç pencereyi tutar; Kaydet dosyaya yazar ve kapatır. awCELL'de de aynısı.
+
+## Giriş ekranında belge gerektiren araçlar pasif (2026-11-18, kullanıcı isteği: giriş ekranları eşitlensin; uygulandı)
+
+Kullanıcı awPDF'te giriş ekranında araç çubuğunun görünüp belge gerektiren araçların pasif olduğunu, awDOC'ta
+ise etkin olduğunu fark etti; awPDF'in kuralına geçildi.
+- **Etkin kalanlar:** Yeni, Aç, Son Belgeler, Tam Ekran, Koyu Tema, Otomatik Kaydet, Giriş Ekranı, Hakkında;
+  Sınav ▾ grubunda yalnız "Sınav kâğıdı…".
+- **Pasif olanlar:** Öbür bütün araçlar ve onların kısayolları (Ctrl+S, Ctrl+P, Ctrl+F, Alt+=…). Ctrl+N ve
+  Ctrl+O çalışır.
+- **Kural:** Bir araç ancak `onWelcome` işaretliyse giriş ekranında çalışır. Bir grup, içinde böyle bir araç
+  yoksa pasiftir.
+- **Testler:** `tests/welcome.spec.ts` (127 test geçti); Electron denemesi geçti.
+- **awCELL'de de aynısı:** Yazılı menüler ve logo kalktı, son dosyalar geldi (bkz. awCELL yol haritası).

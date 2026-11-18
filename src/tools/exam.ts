@@ -124,6 +124,7 @@ const answerKeyTool: Tool = {
 
 const examPaperTool: Tool = {
   id: 'examPaper',
+  onWelcome: true,
   label: 'Sınav kâğıdı…',
   icon: ICONS.examPaper,
   run: ({ editor, session }) => showExamDialog(editor, session),

@@ -4,6 +4,7 @@ import type { Tool } from './tool'
 
 export const fullscreenTool: Tool = {
   id: 'fullscreen',
+  onWelcome: true,
   label: 'Tam Ekran',
   icon: ICONS.fullscreen,
   shortcuts: ['f11'],
@@ -14,6 +15,7 @@ export const fullscreenTool: Tool = {
 /** The interface only; the page stays white, as it will be on paper. */
 export const themeTool: Tool = {
   id: 'theme',
+  onWelcome: true,
   label: 'Koyu Tema',
   icon: ICONS.theme,
   isActive: ({ theme }) => theme.isDark,
@@ -23,6 +25,7 @@ export const themeTool: Tool = {
 /** Giriş Ekranı: the first screen again, over the document (Belgeye Dön leads back). */
 export const welcomeTool: Tool = {
   id: 'welcome',
+  onWelcome: true,
   label: 'Giriş Ekranı',
   icon: ICONS.home,
   isActive: ({ welcome }) => welcome.isOpen,
@@ -38,6 +41,7 @@ export const welcomeTool: Tool = {
  */
 export const aboutTool: Tool = {
   id: 'about',
+  onWelcome: true,
   label: 'Hakkında',
   icon: ICONS.about,
   inMenu: true,

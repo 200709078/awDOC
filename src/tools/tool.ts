@@ -46,6 +46,11 @@ export interface Tool {
   isActive?(context: ToolContext): boolean
   /** A dot on the button while this is true, such as unsaved changes on Kaydet. */
   isMarked?(context: ToolContext): boolean
+  /**
+   * Usable on the welcome screen too (Yeni, Aç, the view, Hakkında…). As in awPDF, everything else
+   * needs the document and rests there.
+   */
+  readonly onWelcome?: boolean
   /** Left out altogether where the platform cannot do it. */
   isSupported?(context: ToolContext): boolean
   /** False when only its shortcut reaches it (Ctrl+H opens the find bar's replace row). */

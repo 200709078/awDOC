@@ -57,6 +57,8 @@ interface GroupControl extends Control {
  * names there, and a group opens in place instead of as a window.
  */
 export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], context: ToolContext): { close(): boolean; update(): void } {
+  /** Enabled: on the welcome screen only what works without the document (awPDF's rule). */
+  const usable = (tool: Tool) => (!context.welcome.isOpen || Boolean(tool.onWelcome)) && (tool.isAvailable?.(context) ?? true)
   const supported = items.filter(item => isGroup(item) || (item.isSupported?.(context) ?? true))
   const groups: GroupControl[] = []
   let menuOpen = false
@@ -108,7 +110,7 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
     return {
       element,
       update: () => {
-        element.disabled = !(tool.isAvailable?.(context) ?? true)
+        element.disabled = !usable(tool)
         if (tool.isActive) element.setAttribute('aria-pressed', String(tool.isActive(context)))
         if (tool.isMarked) element.classList.toggle('is-marked', tool.isMarked(context))
       },
@@ -173,6 +175,8 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
       },
       update: () => {
         for (const tool of tools) tool.update()
+        // A group rests on the welcome screen unless one of its tools works there (Sınav kâğıdı…).
+        header.disabled = context.welcome.isOpen && !group.tools.some(tool => tool.onWelcome)
         for (const title of titles) title()
         const icon = group.iconOf?.(context) ?? group.icon
         const current = header.querySelector('.toolbar__icon')!
@@ -257,7 +261,7 @@ export function mountToolbar(root: HTMLElement, items: readonly ToolbarItem[], c
     if (document.querySelector('dialog[open]')) return
     const shortcut = shortcutOf(event)
     const tool = supported.find((item): item is Tool => !isGroup(item) && Boolean(item.shortcuts?.includes(shortcut)))
-    if (!tool || !(tool.isAvailable?.(context) ?? true)) return
+    if (!tool || !usable(tool)) return
     event.preventDefault()
     event.stopPropagation()
     // A shortcut pressed right after Shift+Home must already see that selection.
