@@ -12,6 +12,8 @@ interface DesktopWindowControls {
   isFullscreen(): Promise<boolean>
   onMaximizeChanged(callback: (maximized: boolean) => void): void
   onFullscreenChanged(callback: (fullscreen: boolean) => void): void
+  /** "Kaydet" in the shell's close question: the page saves, then closes the window. */
+  onSaveAndClose?(callback: () => void): void
 }
 
 /** A file on disk, read whole by the Electron shell; `id` lets the page write it again. */

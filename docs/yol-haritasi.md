@@ -456,3 +456,13 @@ awPDF'te bu ekran şöyle: ortada yalnız logo (ad yazısı yok), altında ana i
   - **Testler:** Öbür testler giriş ekranı kapalı başlar (Playwright `storageState`); ekranın ve geri
     düğmesinin kendi testleri (`tests/welcome.spec.ts`, Android köprüsü taklidi `tests/helpers/android-bridge.ts`)
     açık başlar. Telefonda henüz denenmedi (APK derlendi; telefon bağlantısı kesildi).
+
+## Kapatma sorusunda Kaydet (2026-11-18, kullanıcı bildirdi: "seçenekler arasında kaydet yok")
+
+Masaüstünde kaydedilmemiş değişiklikle kapatırken sorulan soru yalnız "Kaydetmeden kapat / Vazgeç" idi.
+Artık **Kaydet** / **Kaydetmeden kapat** / **Vazgeç**.
+- Kaydet seçilince kabuk sayfaya "kaydet ve kapat" der (`window:save-and-close`, preload
+  `windowControls.onSaveAndClose`).
+- Sayfa `session.save()` ile kaydeder, sonra pencereyi kapatır. Kayıt yeri sorusunda vazgeçilirse pencere açık
+  kalır.
+- Electron denemesine eklendi: Vazgeç pencereyi tutar; Kaydet dosyaya yazar ve kapatır. awCELL'de de aynısı.

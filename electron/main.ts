@@ -146,12 +146,14 @@ async function createWindow(): Promise<void> {
       type: 'warning',
       title: 'awDOC',
       message: 'Kaydedilmemiş değişiklikler var.',
-      detail: 'Kapatırsanız değişiklikler kaybolur.',
-      buttons: ['Kaydetmeden kapat', 'Vazgeç'],
-      defaultId: 1,
-      cancelId: 1,
+      detail: 'Kaydetmeden kapatırsanız değişiklikler kaybolur.',
+      buttons: ['Kaydet', 'Kaydetmeden kapat', 'Vazgeç'],
+      defaultId: 0,
+      cancelId: 2,
     })
-    if (choice === 0) event.preventDefault()
+    // Kaydet: the page saves, then closes the window itself (a cancelled save keeps it open).
+    if (choice === 0) window.webContents.send('window:save-and-close')
+    if (choice === 1) event.preventDefault()
   })
 
   await window.loadURL(devServerUrl || `${SCHEME}://${APP_HOST}/index.html`)

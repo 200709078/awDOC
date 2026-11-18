@@ -62,6 +62,13 @@ export function startApp(): void {
   window.addEventListener('beforeprint', () => { document.title = session.name.replace(/\.[^.]+$/, '') })
   window.addEventListener('afterprint', showTitle)
 
+  // The desktop's close question has "Kaydet": the document is saved, then the window closes
+  // (a save given up, at the "where" question, keeps it open).
+  const windowControls = window.awDOCDesktop?.windowControls
+  windowControls?.onSaveAndClose?.(() => {
+    void session.save().then(saved => { if (saved) windowControls.close() })
+  })
+
   // The browser holds the page back while there are unsaved changes; Electron asks the user.
   window.addEventListener('beforeunload', event => {
     if (session.isDirty) event.preventDefault()

@@ -121,8 +121,23 @@ try {
   // AWDOC_TEST_PDF=<yol>: the PDF is kept there, to look at it.
   if (process.env.AWDOC_TEST_PDF) copyFileSync(pdfPath, process.env.AWDOC_TEST_PDF)
 
+  // Closing with unsaved changes: the shell asks Kaydet / Kaydetmeden kapat / Vazgeç (answered here).
+  await page.locator('#document').click()
+  await page.keyboard.press('Control+End')
+  await page.keyboard.type(' kapanırken')
+  await page.waitForFunction(() => document.querySelector('#documentStatus').classList.contains('is-dirty'))
+  await application.evaluate(({ dialog }) => { globalThis.closeAsked = 0; dialog.showMessageBoxSync = () => { globalThis.closeAsked++; return 2 } })
+  await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].close())
+  await page.waitForTimeout(1000)
+  assert.equal(await application.evaluate(() => globalThis.closeAsked), 1, 'Kapatırken sorulmalı')
+  assert.equal(await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length), 1, 'Vazgeç pencereyi açık tutmalı')
   assert.deepEqual(errors, [])
-  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler, sayfa düzeni, formül, soru ve PDF aktarımı çalışıyor.')
+  await application.evaluate(({ dialog }) => { dialog.showMessageBoxSync = () => 0 })
+  const closed = application.waitForEvent('close')
+  await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].close())
+  await closed
+  assert.match(readFileSync(file, 'utf8'), /kapanırken/, 'Kaydet dosyaya yazmalı, sonra pencere kapanmalı')
+  console.log('✓ Electron: güvenlik ayarları, başlık çubuğu, komut satırından açma, aynı dosyaya kaydetme, son belgeler, sayfa düzeni, formül, soru, PDF aktarımı ve kapatırken Kaydet çalışıyor.')
 } finally {
   await application.close()
   rmSync(folder, { recursive: true, force: true })

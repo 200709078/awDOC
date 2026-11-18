@@ -36,5 +36,9 @@ contextBridge.exposeInMainWorld('awDOCDesktop', {
     onFullscreenChanged: (callback: (fullscreen: boolean) => void): void => {
       ipcRenderer.on('window:fullscreen-changed', (_event, fullscreen: boolean) => callback(fullscreen === true))
     },
+    /** "Kaydet" in the window's close question: save, then close. */
+    onSaveAndClose: (callback: () => void): void => {
+      ipcRenderer.on('window:save-and-close', () => callback())
+    },
   },
 })
