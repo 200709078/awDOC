@@ -9,6 +9,7 @@ import type { EditorView } from '@tiptap/pm/view'
 import StarterKit from '@tiptap/starter-kit'
 import { authorName } from '../app/author'
 import { AnswerKey } from './answer-key'
+import { ColumnsStart } from './columns'
 import { TableOfContents } from './contents'
 import { FootnoteNode } from './footnote'
 import { MergeField } from './merge-field'
@@ -64,6 +65,7 @@ export function createEditor(element: HTMLElement): Editor {
       Choice,
       AnswerKey,
       TableOfContents,
+      ColumnsStart,
       MergeField,
       FootnoteNode,
       CommentMark,

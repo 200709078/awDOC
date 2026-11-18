@@ -1,3 +1,4 @@
+import { columnsStartOf } from '../editor/columns'
 import { currentPageSetup, type Orientation } from '../editor/page-setup'
 import { showPageDialog } from '../ui/page-dialog'
 import type { ViewMode } from '../ui/page-view'
@@ -31,6 +32,15 @@ const pageBreakTool: Tool = {
   run: ({ editor }) => { editor.chain().focus().setPageBreak().run() },
 }
 
+/** İki Sütun: from the cursor's block on (an exam paper's questions); on again: one column. */
+const columnsTool: Tool = {
+  id: 'twoColumns',
+  label: 'İki sütun (buradan sonra)',
+  icon: ICONS.columns,
+  isActive: ({ editor }) => columnsStartOf(editor.state.doc) !== null,
+  run: ({ editor }) => { editor.chain().focus().toggleTwoColumns().run() },
+}
+
 const pageSetupTool: Tool = {
   id: 'pageSetup',
   label: 'Sayfa Düzeni…',
@@ -39,7 +49,7 @@ const pageSetupTool: Tool = {
 }
 
 const viewTools = [viewTool('page', 'Sayfa görünümü', ICONS.pageView), viewTool('continuous', 'Sürekli görünüm', ICONS.continuousView)]
-const sheetTools = [orientationTool('portrait', 'Dikey', ICONS.portrait), orientationTool('landscape', 'Yatay', ICONS.landscape), pageBreakTool, pageSetupTool]
+const sheetTools = [orientationTool('portrait', 'Dikey', ICONS.portrait), orientationTool('landscape', 'Yatay', ICONS.landscape), pageBreakTool, columnsTool, pageSetupTool]
 
 /** Sayfa ▾: the view, the paper's orientation, page breaks and the rest of the page's setup. */
 export const pageGroup: ToolGroup = {

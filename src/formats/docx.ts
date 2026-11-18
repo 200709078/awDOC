@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/core'
 import { strToU8, unzipSync, zipSync, type Zippable } from 'fflate'
 import { DEFAULT_PAGE_SETUP, normalizePageSetup, pageSize, type PageNumberFormat, type PageNumberPlace, type PageSetup } from '../editor/page-setup'
+import { COLUMN_GAP, hasColumns } from '../editor/columns'
 import { escapeXml, mathMlToOmml, ommlToLatex } from '../math/convert'
 import { FormatError, type DocumentFormat } from './format'
 import {
@@ -53,6 +54,8 @@ class Writer {
   private changes = 0
   /** The footnotes' texts, numbered from 1 in footnotes.xml. */
   readonly footnotes: string[] = []
+  /** The paragraph that ends the one-column part (a section break), where the columns begin. */
+  columnsBreak = ''
 
   constructor(private readonly maths: ReadonlyMap<string, string>, private readonly textWidth: number) {}
 
@@ -270,6 +273,8 @@ class Writer {
         return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
       case 'tableOfContents':
         return this.contents((node.attrs?.entries ?? []) as { level: number; text: string }[])
+      case 'columnsStart':
+        return this.columnsBreak
       case 'horizontalRule':
         return '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/></w:pBdr></w:pPr></w:p>'
       default:
@@ -372,7 +377,6 @@ async function writeDocx(document: JSONContent): Promise<Uint8Array> {
   const blocks = tidy(officeBlocks(document))
   const comments = storedComments(document)
   writer.prepare(blocks, comments)
-  const body = blocks.map(block => writer.block(block)).join('')
 
   const files: Zippable = {}
   const contentTypes = [
@@ -403,7 +407,13 @@ async function writeDocx(document: JSONContent): Promise<Uint8Array> {
   }
   const landscape = setup.orientation === 'landscape'
   const { top, right, bottom, left } = setup.margins
-  const section = `<w:sectPr>${references}<w:pgSz w:w="${twips(size.width)}" w:h="${twips(size.height)}"${landscape ? ' w:orient="landscape"' : ''}/><w:pgMar w:top="${twips(top)}" w:right="${twips(right)}" w:bottom="${twips(bottom)}" w:left="${twips(left)}" w:header="${twips(Math.min(12.5, top / 2))}" w:footer="${twips(Math.min(12.5, bottom / 2))}" w:gutter="0"/></w:sectPr>`
+  const sectionOf = (columns: 1 | 2, continuous: boolean) => `<w:sectPr>${references}${continuous ? '<w:type w:val="continuous"/>' : ''}<w:pgSz w:w="${twips(size.width)}" w:h="${twips(size.height)}"${landscape ? ' w:orient="landscape"' : ''}/><w:pgMar w:top="${twips(top)}" w:right="${twips(right)}" w:bottom="${twips(bottom)}" w:left="${twips(left)}" w:header="${twips(Math.min(12.5, top / 2))}" w:footer="${twips(Math.min(12.5, bottom / 2))}" w:gutter="0"/><w:cols${columns === 2 ? ` w:num="2" w:space="${Math.round(COLUMN_GAP * 15)}"` : ' w:space="708"'}/></w:sectPr>`
+  // Two columns: what comes before the marker is a section of its own (one column), ended by a
+  // continuous section break where the marker was; the last section has the two columns.
+  const twoColumns = hasColumns(document)
+  writer.columnsBreak = `<w:p><w:pPr>${sectionOf(1, false)}</w:pPr></w:p>`
+  const section = sectionOf(twoColumns ? 2 : 1, twoColumns)
+  const body = blocks.map(block => writer.block(block)).join('')
 
   files['_rels/.rels'] = strToU8(`${XML}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`)
   const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z')
@@ -483,6 +493,8 @@ class Reader {
   /** The tracked change being read (inside w:ins / w:del). */
   private change: { type: 'insertion' | 'deletion'; author: string; date: string } | null = null
   tracking = false
+  /** Where sections end in the body's blocks (after which index). */
+  readonly sectionEnds: number[] = []
   private readonly footnoteTexts = new Map<string, string>()
   private readonly rels = new Map<string, { target: string; external: boolean }>()
   private readonly styles = new Map<string, { name: string; heading: number | null }>()
@@ -821,7 +833,16 @@ class Reader {
       for (const node of kids(element)) {
         switch (node.localName) {
           case 'p': {
+            const sectionEnd = Boolean(first(first(node, 'pPr'), 'sectPr'))
             const { blocks, list } = this.paragraph(node)
+            if (sectionEnd && container.localName === 'body') {
+              // A section ends here: the place the columns may begin (an empty paragraph only carries it).
+              closeLists()
+              const empty = blocks.length === 1 && blocks[0].type === 'paragraph' && !blocks[0].content?.length
+              if (!empty) out.push(...blocks)
+              this.sectionEnds.push(out.length)
+              break
+            }
             if (list) addToList(list, blocks)
             else {
               closeLists()
@@ -907,6 +928,10 @@ export function readDocx(bytes: Uint8Array): JSONContent {
   const reader = new Reader(files)
   const body = reader.load()
   const blocks = tidy(reader.blocks(body))
+  // The last section in two (or more) columns: the columns begin where the section before it ended.
+  const lastSection = kids(body).filter(kid => kid.localName === 'sectPr').at(-1)
+  const columns = Number(attr(first(lastSection, 'cols'), 'num')) || 1
+  if (columns >= 2 && reader.sectionEnds.length) blocks.splice(reader.sectionEnds.at(-1)!, 0, { type: 'columnsStart' })
   // Only the comments whose text came along (a comment on a deleted part has nothing to show).
   const used = new Set<string>()
   const walk = (node: JSONContent) => {

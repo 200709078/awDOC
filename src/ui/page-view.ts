@@ -2,6 +2,7 @@ import type { Editor } from '@tiptap/core'
 import type { Transaction } from '@tiptap/pm/state'
 import { DOCUMENT_REPLACED, readPendingSelection } from '../editor/editor'
 import { currentPageSetup, pageNumberText, pageSize, type PageSetup } from '../editor/page-setup'
+import { columnsStartOf } from '../editor/columns'
 import { footnotesOf } from '../editor/footnote'
 import { applyPagination, noteItem, paginate, paginationKey, type NoteSource, type Pagination } from '../editor/pagination'
 
@@ -229,17 +230,21 @@ export class PageView {
       const continuous = this.viewMode === 'continuous'
       const hidden = continuous ? [] : this.suspectGaps()
       if (continuous) this.host.classList.add('is-measuring')
+      // Blocks in two columns are measured where they are laid out, not where they are shown.
+      this.host.classList.add('is-measuring-columns')
       for (const gap of hidden) gap.style.display = 'none'
       const notes = this.measureNotes(pageTextWidth)
       result = paginate(view, geometry, notes)
       for (const gap of hidden) gap.style.display = ''
       if (continuous) this.host.classList.remove('is-measuring')
+      this.host.classList.remove('is-measuring-columns')
     }
     this.full = false
     this.dirty = null
     applyPagination(view, result)
     this.result = paginationKey.getState(view.state)?.result ?? null
     this.host.classList.toggle('is-paginated', this.result !== null)
+    this.host.classList.toggle('has-columns', columnsStartOf(view.state.doc) !== null)
     this.drawSheets(setup, geometry.height)
     this.measuredHeight = Math.round(view.dom.getBoundingClientRect().height)
     for (const listener of this.listeners) listener()

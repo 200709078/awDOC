@@ -1,6 +1,7 @@
 import type { JSONContent } from '@tiptap/core'
 import { strToU8, unzipSync, zipSync, type Zippable } from 'fflate'
 import { DEFAULT_PAGE_SETUP, normalizePageSetup, pageSize, type PageNumberFormat, type PageNumberPlace, type PageSetup } from '../editor/page-setup'
+import { COLUMN_GAP } from '../editor/columns'
 import { escapeXml, MATHML_NS, mathMlToLatex } from '../math/convert'
 import { FormatError, type DocumentFormat } from './format'
 import {
@@ -304,6 +305,12 @@ class Writer {
         return ''
       case 'tableOfContents':
         return this.contents((node.attrs?.entries ?? []) as { level: number; text: string }[])
+      case 'columnsStart': {
+        // The rest is a section in two columns, filled one after the other (not balanced), as on screen.
+        const style = this.style('section', 'Sutunlar', `<style:section-properties text:dont-balance-text-columns="true"><style:columns fo:column-count="2" fo:column-gap="${cm(COLUMN_GAP / PX_PER_CM)}"/></style:section-properties>`)
+        this.sectionOpen = true
+        return `<text:section text:style-name="${style}" text:name="İki sütun">`
+      }
       case 'horizontalRule':
         return `<text:p text:style-name="${this.style('paragraph', 'P', '<style:paragraph-properties fo:border-bottom="0.5pt solid #000000" fo:padding="0.05cm"/>', 'Standard')}"/>`
       default: return (node.content ?? []).map(child => this.block(child, extraIndent)).join('')
@@ -317,9 +324,12 @@ class Writer {
     return `<text:table-of-content text:name="İçindekiler1" text:protected="true"><text:table-of-content-source text:outline-level="3"><text:index-title-template text:style-name="Contents_20_Heading">İçindekiler</text:index-title-template>${templates}</text:table-of-content-source><text:index-body><text:index-title text:name="İçindekiler1_Head"><text:p text:style-name="Contents_20_Heading">İçindekiler</text:p></text:index-title>${lines}</text:index-body></text:table-of-content>`
   }
 
-  /** A paragraph that only carries a page break left at the very end. */
+  /** The section of two columns, open until the end. */
+  sectionOpen = false
+
+  /** A paragraph that only carries a page break left at the very end, and the columns' section closed. */
   finish(): string {
-    return this.breakBefore ? this.paragraph({ type: 'paragraph' }) : ''
+    return (this.breakBefore ? this.paragraph({ type: 'paragraph' }) : '') + (this.sectionOpen ? '</text:section>' : '')
   }
 }
 
@@ -446,6 +456,7 @@ class Reader {
   readonly comments: StoredComment[] = []
   tracking = false
   private readonly styles = new Map<string, StyleInfo>()
+  private readonly sectionColumns = new Map<string, number>()
   /** List style name → which levels are numbered. */
   private readonly lists = new Map<string, boolean[]>()
 
@@ -472,12 +483,19 @@ class Reader {
         column: properties('table-column-properties'),
         listStyle: get(style, 'style', 'list-style-name'),
       })
+      const columns = style.getElementsByTagNameNS(NS.style, 'columns')[0]
+      if (columns) this.sectionColumns.set(get(style, 'style', 'name') ?? '', Number(get(columns, 'fo', 'column-count')) || 1)
     }
     for (const list of Array.from(document.getElementsByTagNameNS(NS.text, 'list-style'))) {
       const levels: boolean[] = []
       for (const level of kids(list)) levels[(Number(get(level, 'text', 'level')) || 1) - 1] = level.localName === 'list-level-style-number' && (get(level, 'style', 'num-format') ?? '1') !== ''
       this.lists.set(get(list, 'style', 'name') ?? '', levels)
     }
+  }
+
+  /** Columns of a section style. */
+  columnCount(name: string | null): number {
+    return name ? this.sectionColumns.get(name) ?? 1 : 1
   }
 
   /** The comment and change marks of what is being read now. */
@@ -757,7 +775,14 @@ class Reader {
         case 'table-of-content':
           out.push({ type: 'tableOfContents' })
           break
-        case 'section': case 'text': case 'index-body': case 'illustration-index': case 'soft-page-break':
+        case 'section': {
+          // A section in two columns (awDOC's, Word's through LibreOffice): the columns begin here.
+          const columns = this.columnCount(get(node, 'text', 'style-name'))
+          if (columns >= 2 && container.localName === 'text') out.push({ type: 'columnsStart' })
+          out.push(...this.blocks(node))
+          break
+        }
+        case 'text': case 'index-body': case 'illustration-index': case 'soft-page-break':
           out.push(...this.blocks(node))
           break
       }

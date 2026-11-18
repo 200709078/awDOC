@@ -1176,6 +1176,100 @@ body {
 	border-top: 2px solid var(--accent);
 }
 
+/* İki sütun: the marker (no room on the pages) and the blocks after it, half as wide. */
+.document .columns-start {
+	position: relative;
+	height: 1.5em;
+	margin: 0 0 8pt;
+	cursor: default;
+}
+
+.document .columns-start::before {
+	position: absolute;
+	top: 50%;
+	right: 0;
+	left: 0;
+	border-top: 1px dashed #93c5fd;
+	content: "";
+}
+
+.document .columns-start::after {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	padding: 0 8px;
+	background: var(--paper);
+	color: #2563eb;
+	font-size: 9pt;
+	line-height: 1.2;
+	content: "İki sütun buradan başlar";
+	transform: translate(-50%, -50%);
+}
+
+.document .columns-start.ProseMirror-selectednode::before {
+	border-top: 2px solid var(--accent);
+}
+
+.editor-host.is-paginated .document > .in-columns {
+	width: calc((100% - 24px) / 2);
+	box-sizing: border-box;
+}
+
+.editor-host.is-paginated .document > .in-columns.page-break::after {
+	content: "Sütun sonu";
+}
+
+/* Shown in their columns only on the pages; measured, and in the continuous view, where they are laid out. */
+.editor-host:not(.is-paged) .document > .in-columns,
+.editor-host.is-measuring-columns .document > .in-columns {
+	transform: none !important;
+}
+
+.editor-host.is-paged .document .columns-start,
+.editor-host.is-measuring .document .columns-start {
+	height: 0;
+	margin: 0;
+}
+
+@media screen {
+	.editor-host.is-paged.has-columns .document {
+		/* The blocks are laid out twice as long as they are shown: the sheets give the height. */
+		box-sizing: border-box;
+		height: var(--pages-height);
+		min-height: 0;
+	}
+}
+
+@media print {
+	.document .columns-start {
+		display: none;
+	}
+
+	/* Paper: the browser's two columns, broken where the screen breaks them. */
+	.editor-host.is-paginated.has-columns .document {
+		column-count: 2;
+		column-gap: 24px;
+		column-fill: auto;
+	}
+
+	.editor-host.is-paginated.has-columns .document > .before-columns {
+		column-span: all;
+	}
+
+	.editor-host.is-paginated.has-columns .document > .in-columns {
+		width: auto;
+		transform: none !important;
+	}
+
+	.editor-host.is-paginated.has-columns .document > .column-start {
+		break-before: column;
+	}
+
+	.editor-host.is-paginated.has-columns .document > .in-columns.page-break {
+		break-after: auto;
+	}
+}
+
 /* ---- Sayfa görünümü: kâğıtlar arkada, metin sayfaların kenar boşluklarına göre itilir ---- */
 
 .page-sheets {

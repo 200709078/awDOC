@@ -57,6 +57,7 @@ export const ICONS = {
   accept: '<path d="M5 12l4.5 4.5L19 7"/>',
   reject: '<path d="M6 6l12 12"/><path d="M18 6L6 18"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>',
+  columns: '<rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M12 4v16"/><path d="M6 8h3"/><path d="M6 11h3"/><path d="M15 8h3"/><path d="M15 11h3"/>',
   pdf: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 17v-4h1.5a1.25 1.25 0 0 1 0 2.5H8"/><path d="M12.5 13v4h.5a2 2 0 0 0 0-4z"/>',
   print: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
   fullscreen: '<path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/>',

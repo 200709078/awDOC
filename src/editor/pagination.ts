@@ -2,6 +2,7 @@ import { Extension } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
+import { COLUMN_GAP, columnsStartOf } from './columns'
 
 /** The page in CSS pixels, as the editor is laid out on screen. */
 export interface PageGeometry {
@@ -40,9 +41,21 @@ export interface PageNotes {
   readonly kind?: 'line' | 'row' | 'block' | 'after'
 }
 
+/** A block in the two columns: moved from where it is laid out to its column and page. */
+export interface ColumnPlace {
+  readonly pos: number
+  readonly end: number
+  readonly dx: number
+  readonly dy: number
+  /** It begins a column (paper breaks the column before it). */
+  readonly columnStart: boolean
+}
+
 export interface Pagination {
   readonly breaks: readonly PageBreakPoint[]
   readonly pages: number
+  /** The blocks after the two-column marker, each with its place (none without the marker). */
+  readonly columns?: readonly ColumnPlace[]
   /** The last page's footnotes, at the end of the document. */
   readonly endNotes?: PageNotes
 }
@@ -143,7 +156,11 @@ function gapsAbove(view: EditorView, origin: number): (y: number) => number {
 /** Where a notes block goes, as the key its correction is kept under (the end of the document is -1). */
 export const notesPlace = (notes: PageNotes, breakPos: number | null) => notes.at ?? breakPos ?? -1
 
-export function paginate(view: EditorView, page: PageGeometry, notes: readonly NoteSource[] = [], corrections: ReadonlyMap<number, number> = new Map()): Pagination {
+export function paginate(view: EditorView, page: PageGeometry, allNotes: readonly NoteSource[] = [], corrections: ReadonlyMap<number, number> = new Map()): Pagination {
+  // Two columns from a marker on: the part before it is laid out as usual, the rest in columns
+  // below. Footnotes are then listed at the end (a page's foot is not worked out across columns).
+  const columnsAt = columnsStartOf(view.state.doc)
+  const notes = columnsAt === null ? allNotes : []
   const box = view.dom.getBoundingClientRect()
   const measuredOrigin = box.top + view.dom.clientTop
   const pushedBy = gapsAbove(view, measuredOrigin)
@@ -236,6 +253,7 @@ export function paginate(view: EditorView, page: PageGeometry, notes: readonly N
   let skipUntil = -1
   for (const unit of unitsOf(view.state.doc)) {
     if (unit.pos < skipUntil) continue
+    if (columnsAt !== null && unit.pos >= columnsAt) break
     if (unit.kind === 'pageBreak') {
       // Two page breaks in a row leave an empty page between them.
       if (forced) {
@@ -355,10 +373,76 @@ export function paginate(view: EditorView, page: PageGeometry, notes: readonly N
     const topLevel = view.state.doc.resolve(unit.pos).depth === 0
     lastPlace = topLevel && floatBottom === Number.NEGATIVE_INFINITY ? { pos: unit.pos + unit.node.nodeSize, top: bottom + shift, kind: 'after' } : null
   }
+  if (columnsAt !== null) {
+    const columns = layColumns(columnsAt)
+    return { breaks, pages: columns.pages, columns: columns.places }
+  }
   // A page break at the very end: the notes go before it, the page after it is empty.
   const endNotes = carried ?? closeNotes(lowest, null)
   if (forced) index++
   return { breaks, pages: index + 1, ...(endNotes ? { endNotes } : {}) }
+
+  /**
+   * The blocks after the marker, laid out half as wide one under another, go into columns: each
+   * whole (a question is never split), the next column when it would cross the page's foot, the
+   * next page after the second column. A page break there is a column break.
+   */
+  function layColumns(marker: number): { places: ColumnPlace[]; pages: number } {
+    const markerElement = view.nodeDOM(marker)
+    const style = getComputedStyle(view.dom)
+    const textWidth = view.dom.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+    const step = (textWidth - COLUMN_GAP) / 2 + COLUMN_GAP
+    const natural = (element: Element) => {
+      const rect = element.getBoundingClientRect()
+      return {
+        top: rect.top - measuredOrigin - pushedBy(rect.top - measuredOrigin + 0.5),
+        bottom: rect.bottom - measuredOrigin - pushedBy(rect.bottom - measuredOrigin - 0.5),
+      }
+    }
+    // A page break just before the marker starts the columns on the next page.
+    let columnPage = forced ? index + 1 : index
+    let columnTop = markerElement instanceof HTMLElement ? (forced ? contentStart(columnPage) : natural(markerElement).top + shift) : contentStart(columnPage)
+    let column = 0
+    let y = columnTop
+    let breakNext = false
+    const places: ColumnPlace[] = []
+    const blocks: { pos: number; node: ProseMirrorNode; element: HTMLElement }[] = []
+    view.state.doc.forEach((node, offset) => {
+      if (offset <= marker) return
+      const element = view.nodeDOM(offset)
+      if (element instanceof HTMLElement) blocks.push({ pos: offset, node, element })
+    })
+    const nextColumn = () => {
+      if (column === 0) column = 1
+      else {
+        column = 0
+        columnPage++
+        columnTop = contentStart(columnPage)
+      }
+      y = columnTop
+    }
+    blocks.forEach((block, i) => {
+      if (block.node.type.name === 'pageBreak') {
+        breakNext = true
+        places.push({ pos: block.pos, end: block.pos + block.node.nodeSize, dx: column * step, dy: y - (natural(block.element).top + shift), columnStart: false })
+        return
+      }
+      const box = natural(block.element)
+      const marginTop = parseFloat(getComputedStyle(block.element).marginTop) || 0
+      const following = blocks[i + 1] ? natural(blocks[i + 1].element).top : box.bottom
+      let columnStart = false
+      if (breakNext || (y > columnTop + SAFETY && y + marginTop + (box.bottom - box.top) > contentEnd(columnPage) - SAFETY)) {
+        nextColumn()
+        columnStart = true
+        breakNext = false
+      }
+      // At a column's top the block's own space above it stays (as on paper after a column break).
+      const top = y === columnTop ? y + marginTop : y
+      places.push({ pos: block.pos, end: block.pos + block.node.nodeSize, dx: column * step, dy: top - (box.top + shift), columnStart })
+      y = top + (following - box.top)
+    })
+    return { places, pages: columnPage + 1 }
+  }
 }
 
 function gapElement(point: PageBreakPoint): HTMLElement {
@@ -445,6 +529,12 @@ function decorationsOf(doc: ProseMirrorNode, result: Pagination): DecorationSet 
       key: `page-gap-${point.kind}-${Math.round(point.height * 10)}-${point.forced ? 1 : 0}-${point.columns ?? 0}-${point.notes ? Math.round((point.notes.fill + point.notes.height) * 10) : 0}`,
     }))
   }
+  for (const place of result.columns ?? []) {
+    decorations.push(Decoration.node(place.pos, place.end, {
+      style: `transform: translate(${Math.round(place.dx * 100) / 100}px, ${Math.round(place.dy * 100) / 100}px)`,
+      ...(place.columnStart ? { class: 'column-start' } : {}),
+    }))
+  }
   const end = result.endNotes
   if (end) {
     decorations.push(Decoration.widget(end.at ?? doc.content.size, () => withPlace(notesElement(end, end.kind ?? 'block'), notesPlace(end, null)), {
@@ -463,6 +553,8 @@ interface PaginationState {
 
 export const paginationKey = new PluginKey<PaginationState>('pagination')
 
+const columnsKey = (result: Pagination) => (result.columns ?? []).map(place => `${place.pos}:${Math.round(place.dx)}:${Math.round(place.dy * 2)}:${place.columnStart ? 1 : 0}`).join('|')
+
 /** Same breaks: nothing to redraw (heights within half a pixel). */
 export function sameBreaks(a: readonly PageBreakPoint[], b: readonly PageBreakPoint[]): boolean {
   return a.length === b.length && a.every((point, i) => {
@@ -480,7 +572,7 @@ export function paginationOf(state: EditorState): Pagination | null {
 export function applyPagination(view: EditorView, result: Pagination | null): void {
   const current = paginationOf(view.state)
   if (result === current) return
-  if (result && current && result.pages === current.pages && sameBreaks(result.breaks, current.breaks) && notesKey(result.endNotes) === notesKey(current.endNotes)) return
+  if (result && current && result.pages === current.pages && sameBreaks(result.breaks, current.breaks) && notesKey(result.endNotes) === notesKey(current.endNotes) && columnsKey(result) === columnsKey(current)) return
   view.dispatch(view.state.tr.setMeta(paginationKey, result).setMeta('addToHistory', false))
 }
 
@@ -507,6 +599,7 @@ export const PaginationExtension = Extension.create({
               ...value.result,
               breaks: value.result.breaks.map(point => ({ ...point, pos: tr.mapping.map(point.pos, -1), ...(point.notes ? { notes: mapNotes(point.notes) } : {}) })),
               ...(value.result.endNotes ? { endNotes: mapNotes(value.result.endNotes) } : {}),
+              ...(value.result.columns ? { columns: value.result.columns.map(place => ({ ...place, pos: tr.mapping.map(place.pos, 1), end: tr.mapping.map(place.end, -1) })) } : {}),
             }
             return { decorations: value.decorations.map(tr.mapping, tr.doc), result }
           },
