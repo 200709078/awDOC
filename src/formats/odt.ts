@@ -143,6 +143,10 @@ class Writer {
       case 'formula': return this.formula(String(node.attrs?.latex ?? ''))
       // LibreOffice's fields need a database; the field is written as «Ad» and read back as a field.
       case 'mergeField': return this.textNode(`«${String(node.attrs?.name ?? '')}»`, node.marks)
+      case 'footnote': {
+        const number = ++this.notes
+        return `<text:note text:id="ftn${number}" text:note-class="footnote"><text:note-citation>${number}</text:note-citation><text:note-body><text:p text:style-name="Footnote">${textXml(String(node.attrs?.text ?? ''))}</text:p></text:note-body></text:note>`
+      }
       default: return ''
     }
   }
@@ -153,6 +157,7 @@ class Writer {
   private commentEntries = new Map<string, StoredComment>()
   private readonly startedComments = new Set<string>()
   private pieceIndex = 0
+  private notes = 0
   /** text:changed-region elements, written at the start of the text. */
   readonly regions: string[] = []
 
@@ -355,6 +360,7 @@ function stylesXml(setup: PageSetup, fonts: string): string {
 ${headings}
 <style:style style:name="Contents_20_Heading" style:display-name="Contents Heading" style:family="paragraph" style:parent-style-name="Standard" style:class="index"><style:paragraph-properties fo:margin-top="0.4cm" fo:margin-bottom="0.3cm"/><style:text-properties fo:font-size="16pt" fo:font-weight="bold"/></style:style>
 ${[1, 2, 3].map(level => `<style:style style:name="Contents_20_${level}" style:display-name="Contents ${level}" style:family="paragraph" style:parent-style-name="Standard" style:class="index"><style:paragraph-properties fo:margin-left="${(level - 1) * 0.5}cm" fo:margin-bottom="0.1cm"><style:tab-stops><style:tab-stop style:position="${17 - (level - 1) * 0.5}cm" style:type="right" style:leader-style="dotted" style:leader-text="."/></style:tab-stops></style:paragraph-properties></style:style>`).join('')}
+<style:style style:name="Footnote" style:family="paragraph" style:parent-style-name="Standard" style:class="extra"><style:paragraph-properties fo:margin-left="0.6cm" fo:margin-bottom="0cm" fo:text-indent="-0.6cm" fo:line-height="100%"/><style:text-properties fo:font-size="10pt"/></style:style>
 <style:style style:name="Table_20_Contents" style:display-name="Table Contents" style:family="paragraph" style:parent-style-name="Standard" style:class="extra"><style:paragraph-properties fo:margin-bottom="0cm" fo:line-height="100%"/></style:style>
 <style:style style:name="Header" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:text-align="center" fo:margin-bottom="0cm"/><style:text-properties fo:font-size="10pt"/></style:style>
 <style:style style:name="HeaderRight" style:family="paragraph" style:parent-style-name="Header"><style:paragraph-properties fo:text-align="end"/></style:style>
@@ -638,7 +644,13 @@ class Reader {
           if (id) this.openComments.delete(id)
           break
         }
-        case 'note': case 'bookmark': case 'bookmark-start': case 'bookmark-end': case 'soft-page-break': case 'sequence-decls': case 'tracked-changes':
+        case 'note': {
+          const body = kids(child).find(kid => kid.localName === 'note-body')
+          const text = (body?.textContent ?? '').replace(/\s+/g, ' ').trim()
+          if (text) out.push({ type: 'footnote', attrs: { text } })
+          break
+        }
+        case 'bookmark': case 'bookmark-start': case 'bookmark-end': case 'soft-page-break': case 'sequence-decls': case 'tracked-changes':
           break
         default: this.inline(child, out, marks)
       }

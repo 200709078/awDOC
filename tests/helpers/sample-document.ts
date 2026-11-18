@@ -67,7 +67,7 @@ export function sampleDocument(): Record<string, unknown> {
         ],
       },
       { type: 'paragraph', attrs: { textAlign: 'center' }, content: [{ type: 'image', attrs: { src: png, alt: 'mavi', width: 120, wrap: 'center' } }] },
-      { type: 'paragraph', content: [{ type: 'image', attrs: { src: png, alt: null, width: 80, wrap: 'right' } }, text('Yanında yazı olan resim.')] },
+      { type: 'paragraph', content: [{ type: 'image', attrs: { src: png, alt: null, width: 80, wrap: 'right' } }, text('Yanında yazı olan resim.'), { type: 'footnote', attrs: { text: 'Kaynak: ders kitabı, s. 12.' } }] },
       { type: 'pageBreak' },
       {
         type: 'question', attrs: { points: 10 }, content: [

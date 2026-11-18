@@ -625,7 +625,7 @@ body {
 
 /* Questions: numbered by their place (1., 2.…), points at the top right, choices lettered A), B)… */
 .document {
-	counter-reset: question figure;
+	counter-reset: question figure footnote;
 }
 
 .document .question {
@@ -726,6 +726,118 @@ body {
 }
 
 /* Cevap Anahtarı: drawn from the questions; "?" where no right choice is marked. */
+/* Footnotes: a raised number in the text (counted by CSS, as the notes are by the layout). */
+.document .footnote-ref {
+	padding: 0 1px;
+	color: var(--accent);
+	font-size: 0.7em;
+	line-height: 0;
+	cursor: pointer;
+}
+
+.document .footnote-ref::after {
+	counter-increment: footnote;
+	content: counter(footnote);
+}
+
+@media print {
+	.document .footnote-ref {
+		color: inherit;
+	}
+}
+
+/* A page's notes at its foot; their heights are measured with these very rules (no margins). */
+.page-notes__list,
+.footnotes-list {
+	color: #000000;
+	font-family: Calibri, Carlito, "Liberation Sans", Arial, sans-serif;
+	font-size: 10pt;
+	font-style: normal;
+	font-weight: 400;
+	line-height: 1.25;
+	text-align: left;
+	text-indent: 0;
+	white-space: normal;
+}
+
+.page-notes__list {
+	overflow: hidden;
+}
+
+/* Right after a paragraph (8pt bottom margin, as headings): it starts at the last line's foot. */
+.document .page-notes--after {
+	margin: -8pt 0 8pt;
+}
+
+/* The short line above the notes: exactly NOTES_SEPARATOR (12 px) tall. */
+.page-notes__list::before {
+	content: "";
+	display: block;
+	width: 33%;
+	height: 8px;
+	margin-top: 3px;
+	border-top: 1px solid #000000;
+}
+
+.page-notes__item {
+	margin: 0;
+	padding: 0;
+	overflow-wrap: anywhere;
+}
+
+.page-notes__item sup {
+	font-size: 0.75em;
+}
+
+.page-notes-measure {
+	position: absolute;
+	top: 0;
+	left: -10000px;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.page-notes-measure::before {
+	display: none;
+}
+
+/* Without pages on screen the notes come at the end. */
+.footnotes-list {
+	margin-top: 18pt;
+	padding-top: 6pt;
+	border-top: 1px solid #000000;
+}
+
+.footnotes-list__title {
+	margin-bottom: 4pt;
+	font-weight: 700;
+}
+
+.editor-host.is-paged.is-paginated .footnotes-list {
+	display: none;
+}
+
+@media print {
+	.editor-host.is-paginated .footnotes-list {
+		display: none;
+	}
+
+	.editor-host.is-paginated .document .page-gap.page-notes {
+		display: block !important;
+		height: auto !important;
+		break-before: auto !important;
+		break-inside: avoid;
+	}
+
+	.editor-host.is-paginated .document tr.page-gap.page-notes {
+		display: table-row !important;
+	}
+
+	.editor-host.is-paginated .document tr.page-gap.page-notes td {
+		height: auto !important;
+	}
+}
+
 /* Comments: their text lightly marked; a solved one barely. Never printed. */
 .document .comment-mark {
 	background: rgb(250 204 21 / 35%);

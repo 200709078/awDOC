@@ -70,6 +70,7 @@ for (const format of ['docx', 'odt'] as const) {
     expect(images[0].attrs?.src).toMatch(/^data:image\/png;base64,/);
 
     expect(back.content!.filter(block => block.type === 'pageBreak')).toHaveLength(1);
+    expect(all(back, 'footnote').map(note => note.attrs?.text)).toEqual(['Kaynak: ders kitabı, s. 12.']);
     const lines = all(back, 'paragraph').map(textOf);
     expect(lines).toContain('1. Birinci soru? (10 puan)');
     expect(lines).toContain('A) bir');

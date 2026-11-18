@@ -15,6 +15,7 @@ import { askRestore } from '../ui/dialogs'
 import { showFormulaDialog } from '../ui/formula-dialog'
 import { restoreAnswersShown } from '../ui/answers'
 import { CommentsPanel } from '../ui/comments-panel'
+import { showFootnoteDialog } from '../ui/footnote-dialog'
 import { imageTypeOfName } from './images'
 import { dropRecovery, readRecovery } from './recovery'
 import { DocumentSession } from './session'
@@ -28,6 +29,8 @@ export function startApp(): void {
   const session = new DocumentSession(editor, platform)
   // A double click (or Enter) on a formula opens it in the formula window.
   editor.storage.formula.edit = pos => { void showFormulaDialog(editor, pos) }
+  // A tap on a footnote's number opens its text.
+  editor.storage.footnote.edit = pos => showFootnoteDialog(editor, pos)
   // At once, not through TipTap's `autofocus`, which comes a moment later and would move a cursor
   // the user has already placed.
   editor.commands.focus('start')
@@ -73,14 +76,27 @@ export function startApp(): void {
   // Kaydet saves first (a save given up, at the "where" question, keeps the window open).
   const windowControls = window.awDOCDesktop?.windowControls
   let askingToClose = false
-  windowControls?.onCloseRequested?.(() => {
-    // Already asked (by Yeni or Aç, or by a click on ✕ a moment ago): that answer decides.
-    if (askingToClose || document.querySelector<HTMLDialogElement>('#unsavedDialog')!.open) return
+  /** ✕ again just after an answer, before it was taken: asked again once that is done. */
+  let askAgain = false
+  const askToClose = () => {
+    // Being asked now (by Yeni or Aç, or by a click on ✕ a moment ago): that answer decides.
+    if (document.querySelector<HTMLDialogElement>('#unsavedDialog')!.open) return
+    if (askingToClose) {
+      askAgain = true
+      return
+    }
     askingToClose = true
     void session.confirmLeave()
-      .then(leave => { if (leave) windowControls.closeNow?.() })
-      .finally(() => { askingToClose = false })
-  })
+      .then(leave => { if (leave) windowControls?.closeNow?.() })
+      .finally(() => {
+        askingToClose = false
+        if (askAgain) {
+          askAgain = false
+          askToClose()
+        }
+      })
+  }
+  windowControls?.onCloseRequested?.(askToClose)
 
   // The browser holds the page back while there are unsaved changes; in Electron the page asks (above).
   window.addEventListener('beforeunload', event => {

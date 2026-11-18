@@ -2,7 +2,8 @@ import type { Editor } from '@tiptap/core'
 import type { Transaction } from '@tiptap/pm/state'
 import { DOCUMENT_REPLACED, readPendingSelection } from '../editor/editor'
 import { currentPageSetup, pageNumberText, pageSize, type PageSetup } from '../editor/page-setup'
-import { applyPagination, paginate, paginationKey, type Pagination } from '../editor/pagination'
+import { footnotesOf } from '../editor/footnote'
+import { applyPagination, noteItem, paginate, paginationKey, type NoteSource, type Pagination } from '../editor/pagination'
 
 export type ViewMode = 'page' | 'continuous'
 
@@ -78,6 +79,9 @@ export class PageView {
   private readonly sheets = document.createElement('div')
   private readonly style = document.createElement('style')
   private readonly listeners = new Set<() => void>()
+  /** Footnotes are measured once per text and width, off screen. */
+  private readonly noteHeights = new Map<string, number>()
+  private noteMeasure: HTMLElement | null = null
 
   constructor(private readonly editor: Editor, private readonly host: HTMLElement) {
     this.sheets.className = 'page-sheets'
@@ -226,7 +230,8 @@ export class PageView {
       const hidden = continuous ? [] : this.suspectGaps()
       if (continuous) this.host.classList.add('is-measuring')
       for (const gap of hidden) gap.style.display = 'none'
-      result = paginate(view, geometry)
+      const notes = this.measureNotes(pageTextWidth)
+      result = paginate(view, geometry, notes)
       for (const gap of hidden) gap.style.display = ''
       if (continuous) this.host.classList.remove('is-measuring')
     }
@@ -238,6 +243,47 @@ export class PageView {
     this.drawSheets(setup, geometry.height)
     this.measuredHeight = Math.round(view.dom.getBoundingClientRect().height)
     for (const listener of this.listeners) listener()
+  }
+
+  /** How far below its page's bottom margin each footnotes block ends (place → pixels). */
+  private notesOffsets(pageHeight: number, marginBottom: number): Map<number, number> {
+    const offsets = new Map<number, number>()
+    const origin = this.editor.view.dom.getBoundingClientRect().top + this.editor.view.dom.clientTop
+    for (const element of this.editor.view.dom.querySelectorAll<HTMLElement>('.page-notes[data-notes-place]')) {
+      const list = element.querySelector('.page-notes__list')
+      if (!list) continue
+      const bottom = list.getBoundingClientRect().bottom - origin
+      const sheet = Math.floor(bottom / (pageHeight + GAP))
+      const expected = sheet * (pageHeight + GAP) + pageHeight - marginBottom - 2
+      const off = bottom - expected
+      if (Math.abs(off) > 0.5) offsets.set(Number(element.dataset.notesPlace), off)
+    }
+    return offsets
+  }
+
+  /** The footnotes with the height their text takes at a page's foot. */
+  private measureNotes(width: number): NoteSource[] {
+    const notes = footnotesOf(this.editor.state.doc)
+    if (!notes.length) return []
+    if (!this.noteMeasure) {
+      this.noteMeasure = document.createElement('div')
+      this.noteMeasure.className = 'page-notes__list page-notes-measure'
+      this.noteMeasure.setAttribute('aria-hidden', 'true')
+      document.body.append(this.noteMeasure)
+    }
+    this.noteMeasure.style.width = `${width}px`
+    if (this.noteHeights.size > 500) this.noteHeights.clear()
+    return notes.map(note => {
+      const key = `${Math.round(width)}|${note.number}|${note.text}`
+      let height = this.noteHeights.get(key)
+      if (height === undefined) {
+        const item = noteItem(note.number, note.text)
+        this.noteMeasure!.replaceChildren(item)
+        height = Math.ceil(item.getBoundingClientRect().height)
+        this.noteHeights.set(key, height)
+      }
+      return { pos: note.pos, number: note.number, text: note.text, height }
+    })
   }
 
   private schedule(): void {

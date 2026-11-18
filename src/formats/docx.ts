@@ -51,6 +51,8 @@ class Writer {
   private readonly started = new Set<string>()
   private pieceIndex = 0
   private changes = 0
+  /** The footnotes' texts, numbered from 1 in footnotes.xml. */
+  readonly footnotes: string[] = []
 
   constructor(private readonly maths: ReadonlyMap<string, string>, private readonly textWidth: number) {}
 
@@ -163,6 +165,10 @@ class Writer {
         case 'formula': {
           const latex = String(node.attrs?.latex ?? '')
           return this.maths.get(latex) ?? this.textRuns(latex, [{ type: 'italic' }])
+        }
+        case 'footnote': {
+          this.footnotes.push(String(node.attrs?.text ?? ''))
+          return `<w:r><w:rPr><w:rStyle w:val="FootnoteReference"/></w:rPr><w:footnoteReference w:id="${this.footnotes.length}"/></w:r>`
         }
         case 'mergeField': {
           const name = String(node.attrs?.name ?? '')
@@ -333,12 +339,17 @@ const STYLES_XML = `${XML}<w:styles xmlns:w="${W}">
 ${[1, 2, 3].map(level => `<w:style w:type="paragraph" w:styleId="Heading${level}"><w:name w:val="heading ${level}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="320" w:after="160" w:line="300" w:lineRule="auto"/><w:outlineLvl w:val="${level - 1}"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val="${HEADING_SIZES[level] * 2}"/><w:szCs w:val="${HEADING_SIZES[level] * 2}"/></w:rPr></w:style>`).join('\n')}
 <w:style w:type="paragraph" w:styleId="TOCHeading"><w:name w:val="TOC Heading"/><w:basedOn w:val="Heading1"/><w:next w:val="Normal"/><w:pPr><w:outlineLvl w:val="9"/></w:pPr></w:style>
 ${[1, 2, 3].map(level => `<w:style w:type="paragraph" w:styleId="TOC${level}"><w:name w:val="toc ${level}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:pPr><w:tabs><w:tab w:val="right" w:leader="dot" w:pos="9350"/></w:tabs><w:spacing w:after="100"/><w:ind w:left="${(level - 1) * 220}"/></w:pPr></w:style>`).join('\n')}
+<w:style w:type="paragraph" w:styleId="FootnoteText"><w:name w:val="footnote text"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:rPr><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr></w:style>
+<w:style w:type="character" w:styleId="FootnoteReference"><w:name w:val="footnote reference"/><w:rPr><w:vertAlign w:val="superscript"/></w:rPr></w:style>
 <w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/><w:rPr><w:color w:val="0563C1"/><w:u w:val="single"/></w:rPr></w:style>
 <w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style>
 <w:style w:type="table" w:styleId="TableGrid"><w:name w:val="Table Grid"/><w:basedOn w:val="TableNormal"/><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:tblPr><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tblBorders></w:tblPr></w:style>
 </w:styles>`
 
-const SETTINGS_XML = `${XML}<w:settings xmlns:w="${W}"><w:updateFields w:val="true"/><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`
+/** settings.xml, its elements in the schema's order (Word is strict about it). */
+function settingsXml(track: boolean, footnotes: boolean): string {
+  return `${XML}<w:settings xmlns:w="${W}">${track ? '<w:trackRevisions/>' : ''}<w:defaultTabStop w:val="708"/><w:updateFields w:val="true"/>${footnotes ? '<w:footnotePr><w:footnote w:id="-1"/><w:footnote w:id="0"/></w:footnotePr>' : ''}<w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`
+}
 
 async function mathsOf(document: JSONContent): Promise<Map<string, string>> {
   const maths = new Map<string, string>()
@@ -401,7 +412,14 @@ async function writeDocx(document: JSONContent): Promise<Uint8Array> {
   files['word/document.xml'] = strToU8(`${XML}<w:document ${NAMESPACES}><w:body>${body}${section}</w:body></w:document>`)
   files['word/styles.xml'] = strToU8(STYLES_XML)
   files['word/numbering.xml'] = strToU8(numberingXml(writer.nums))
-  files['word/settings.xml'] = strToU8(document.attrs?.track ? SETTINGS_XML.replace('<w:updateFields', '<w:trackRevisions/><w:updateFields') : SETTINGS_XML)
+  files['word/settings.xml'] = strToU8(settingsXml(Boolean(document.attrs?.track), writer.footnotes.length > 0))
+  if (writer.footnotes.length) {
+    const separator = (type: string, id: number, mark: string) => `<w:footnote w:type="${type}" w:id="${id}"><w:p><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:r><w:${mark}/></w:r></w:p></w:footnote>`
+    const notes = writer.footnotes.map((text, index) => `<w:footnote w:id="${index + 1}"><w:p><w:pPr><w:pStyle w:val="FootnoteText"/></w:pPr><w:r><w:rPr><w:rStyle w:val="FootnoteReference"/></w:rPr><w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> ${escapeXml(text)}</w:t></w:r></w:p></w:footnote>`).join('')
+    files['word/footnotes.xml'] = strToU8(`${XML}<w:footnotes ${NAMESPACES}>${separator('separator', -1, 'separator')}${separator('continuationSeparator', 0, 'continuationSeparator')}${notes}</w:footnotes>`)
+    writer.addRel('http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes', 'footnotes.xml')
+    contentTypes.push('<Override PartName="/word/footnotes.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml"/>')
+  }
   const written = writer.writtenComments
   if (written.length) {
     const byId = new Map(comments.map(comment => [comment.id, comment]))
@@ -465,6 +483,7 @@ class Reader {
   /** The tracked change being read (inside w:ins / w:del). */
   private change: { type: 'insertion' | 'deletion'; author: string; date: string } | null = null
   tracking = false
+  private readonly footnoteTexts = new Map<string, string>()
   private readonly rels = new Map<string, { target: string; external: boolean }>()
   private readonly styles = new Map<string, { name: string; heading: number | null }>()
   private readonly numbering = new Map<string, ListKind[]>()
@@ -523,6 +542,13 @@ class Reader {
         this.commentIds.set(attr(comment, 'id') ?? '', id)
         const text = Array.from(comment.getElementsByTagNameNS(W, 'p')).map(paragraph => Array.from(paragraph.getElementsByTagNameNS(W, 't')).map(t => t.textContent ?? '').join('')).join('\n').trim()
         this.comments.push({ id, author: attr(comment, 'author') ?? '', date: attr(comment, 'date') ?? new Date().toISOString(), text })
+      }
+    }
+    const footnotesXml = this.text('word/footnotes.xml')
+    if (footnotesXml) {
+      for (const note of Array.from(parseXml(footnotesXml).getElementsByTagNameNS(W, 'footnote'))) {
+        if (attr(note, 'type')) continue
+        this.footnoteTexts.set(attr(note, 'id') ?? '', Array.from(note.getElementsByTagNameNS(W, 't')).map(t => t.textContent ?? '').join('').replace(/\s+/g, ' ').trim())
       }
     }
     const settings = this.text('word/settings.xml')
@@ -616,6 +642,11 @@ class Reader {
               case 'noBreakHyphen': push('-'); break
               case 'br': out.push(attr(part, 'type') === 'page' ? 'page' : { type: 'hardBreak' }); break
               case 'cr': out.push({ type: 'hardBreak' }); break
+              case 'footnoteReference': case 'endnoteReference': {
+                const text = this.footnoteTexts.get(attr(part, 'id') ?? '')
+                if (text) out.push({ type: 'footnote', attrs: { text } })
+                break
+              }
               case 'drawing': case 'pict': case 'object': {
                 const image = this.image(part)
                 if (image) out.push(image)

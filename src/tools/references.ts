@@ -1,3 +1,4 @@
+import { showFootnoteDialog } from '../ui/footnote-dialog'
 import { showMergeDialog } from '../ui/merge-dialog'
 import { ICONS } from './icons'
 import type { Tool, ToolGroup } from './tool'
@@ -9,6 +10,14 @@ export const contentsTool: Tool = {
   icon: ICONS.contents,
   isActive: ({ editor }) => editor.isActive('tableOfContents'),
   run: ({ editor }) => { editor.chain().focus().insertTableOfContents().run() },
+}
+
+/** Dipnot: a numbered note where the cursor is, written at the foot of its page. */
+export const footnoteTool: Tool = {
+  id: 'footnote',
+  label: 'Dipnot',
+  icon: ICONS.footnote,
+  run: ({ editor }) => showFootnoteDialog(editor),
 }
 
 /** Adres-Mektup: a copy of the document for each row of a list (students, parents…). */
@@ -25,5 +34,5 @@ export const referencesGroup: ToolGroup = {
   id: 'references',
   label: 'Başvurular',
   icon: ICONS.references,
-  tools: [contentsTool, mergeTool],
+  tools: [contentsTool, footnoteTool, mergeTool],
 }

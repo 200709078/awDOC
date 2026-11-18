@@ -286,6 +286,19 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="footnoteDialog" class="dialog" aria-labelledby="footnoteTitle">
+		<h2 id="footnoteTitle">Dipnot</h2>
+		<form method="dialog">
+			<label class="dialog__field">Sayfanın altına yazılacak not
+				<textarea id="footnoteText" rows="3" required></textarea>
+			</label>
+			<div class="dialog__actions">
+				<button value="save" class="primary-button">Tamam</button>
+				<button id="footnoteDelete" value="delete" class="secondary-button soft-danger-button" formnovalidate>Dipnotu sil</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Vazgeç</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="bankAddDialog" class="dialog" aria-labelledby="bankAddTitle">
 		<h2 id="bankAddTitle">Soru bankasına ekle</h2>
 		<form method="dialog">

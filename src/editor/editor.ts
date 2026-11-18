@@ -10,6 +10,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { authorName } from '../app/author'
 import { AnswerKey } from './answer-key'
 import { TableOfContents } from './contents'
+import { FootnoteNode } from './footnote'
 import { MergeField } from './merge-field'
 import { Formula } from './formula'
 import { DocumentImage, ImageCaption, ImageInput } from './image'
@@ -64,6 +65,7 @@ export function createEditor(element: HTMLElement): Editor {
       AnswerKey,
       TableOfContents,
       MergeField,
+      FootnoteNode,
       CommentMark,
       InsertionMark,
       DeletionMark,

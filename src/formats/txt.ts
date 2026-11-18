@@ -8,6 +8,7 @@ function textOf(node: JSONContent): string {
   // A formula as its LaTeX: the closest plain text has to it.
   if (node.type === 'formula') return String(node.attrs?.latex ?? '')
   if (node.type === 'mergeField') return `«${String(node.attrs?.name ?? '')}»`
+  if (node.type === 'footnote') return ` (${String(node.attrs?.text ?? '')})`
   return (node.content ?? []).map(textOf).join('')
 }
 
