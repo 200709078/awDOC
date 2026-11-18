@@ -74,7 +74,7 @@ export function examHeader(details: ExamDetails): JSONContent[] {
 }
 
 /** A whole new exam paper: the header, a line for directions, a first question and the wishes at the end. */
-export function examPaper(details: ExamDetails): JSONContent {
+export function examPaper(details: ExamDetails, twoColumns = false): JSONContent {
   const signature = details.teacher.trim()
     ? [paragraph([text(details.teacher.trim())], 'right'), ...(details.subject.trim() ? [paragraph([text(`${details.subject.trim()} Öğretmeni`)], 'right')] : [])]
     : []
@@ -89,6 +89,8 @@ export function examPaper(details: ExamDetails): JSONContent {
     content: [
       ...examHeader(details),
       paragraph([text('Açıklama: ', bold), text('Süre 40 dakikadır. Her sorunun puanı yanında yazılıdır.')]),
+      // The questions in two columns: the title, the student table and the directions span the page.
+      ...(twoColumns ? [{ type: 'columnsStart' }] : []),
       {
         type: 'question',
         content: [paragraph(), { type: 'choices', content: Array.from({ length: 5 }, () => ({ type: 'choice' })) }],

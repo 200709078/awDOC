@@ -549,3 +549,19 @@ Araç çubuğunda Word'deki gibi iki yeni grup: **Başvurular ▾** (İçindekil
 - **Denendi:** hepsi Word / LibreOffice dosyasına yazılıp geri okundu; LibreOffice 25.2 yazdığımız dosyaları açtı ve
   kendi yazdığı dosyalardan yorum, değişiklik ve dipnotlar geri geldi.
 
+## 4. aşamanın kalanları (2026-11-18, uygulandı)
+
+- **Gerçek iki sütun (kullanıcının seçimi: kendi sayfalamamız):** Sayfa ▾ → "İki sütun (buradan sonra)" imlecin olduğu
+  bloktan önce bir işaret koyar (yeniden basınca kalkar); Sınav Kâğıdı penceresinde "Sorular iki sütun" kutusu da var
+  (hatırlanır). İşaretten öncesi (başlık, öğrenci tablosu, açıklama) sayfa genişliğinde, sonrası iki sütunda: sorular
+  sol sütunu doldurur, sığmayan bütünüyle sağ sütuna, sonra sonraki sayfaya geçer (bölünmez). Ekranda bloklar yarım
+  genişlikte dizilip sütun ve sayfa yerlerine kaydırılır; kâğıtta tarayıcının sütunları aynı yerlerden kırılır (ekranla
+  aynı sayfa sayısı denendi). Sütunlarda Ctrl+Enter sütun sonudur. Word'e bölüm sonu + iki sütunlu bölüm, LibreOffice'e
+  iki sütunlu bölüm olarak yazılır ve geri okunur (LibreOffice'te iki sütun olarak açıldı). Sınır: sütunlu bölümde
+  dipnotlar sayfanın altına değil belgenin sonuna yazılır; telefonda (sayfasız) tek sütun gösterilir.
+- **Telefonda kamera:** Resim ▾ → "Kameradan çek…" (yalnız Android): sistemin kamera uygulaması açılır, çekilen fotoğraf
+  belgeye girer. İzin istemez (CAMERA izni tanımlanmadı; fotoğrafı kamera uygulaması çeker), yalnız bir FileProvider
+  eklendi.
+
+Bütün aşamalar (1–6) bitti; sürüm ve yayın kullanıcı isteğiyle aynı gün.
+

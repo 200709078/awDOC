@@ -21,6 +21,11 @@ export function showExamDialog(editor: Editor, session: DocumentSession): void {
   const inputs = Object.fromEntries(Object.entries(FIELDS).map(([key, selector]) => [key, document.querySelector<HTMLInputElement>(selector)!])) as Record<keyof ExamDetails, HTMLInputElement>
   const stored = storedExamDetails()
   for (const key of Object.keys(FIELDS) as (keyof ExamDetails)[]) inputs[key].value = stored[key]
+  try {
+    document.querySelector<HTMLInputElement>('#examColumns')!.checked = localStorage.getItem('awDOC.sinavIkiSutun') === 'evet'
+  } catch {
+    // The box stays as it is.
+  }
   dialog.onclose = async () => {
     const choice = dialog.returnValue
     if (choice !== 'new' && choice !== 'header') {
@@ -33,7 +38,13 @@ export function showExamDialog(editor: Editor, session: DocumentSession): void {
       editor.chain().focus().insertContentAt(0, examHeader(details)).run()
       return
     }
-    if (!await session.newDocument(examPaper(details))) return
+    const twoColumns = document.querySelector<HTMLInputElement>('#examColumns')!.checked
+    try {
+      localStorage.setItem('awDOC.sinavIkiSutun', twoColumns ? 'evet' : 'hayir')
+    } catch {
+      // Only not remembered.
+    }
+    if (!await session.newDocument(examPaper(details, twoColumns))) return
     // The cursor in the first question, ready for its text.
     let stem = -1
     editor.state.doc.descendants((node, pos) => {
