@@ -155,12 +155,24 @@ export const PageBreak = Node.create({
   selectable: true,
   draggable: false,
 
+  addAttributes() {
+    return {
+      // Set by a mail merge between its copies: numbers (questions, figures, notes) start again and
+      // each copy's answer key lists its own questions.
+      restart: {
+        default: false,
+        parseHTML: element => element.hasAttribute('data-restart'),
+        renderHTML: attributes => (attributes.restart ? { 'data-restart': '' } : {}),
+      },
+    }
+  },
+
   parseHTML() {
     return [{ tag: 'div[data-page-break]' }]
   },
 
-  renderHTML() {
-    return ['div', { 'data-page-break': '', class: 'page-break', contenteditable: 'false', title: 'Sayfa sonu' }]
+  renderHTML({ HTMLAttributes }) {
+    return ['div', { ...HTMLAttributes, 'data-page-break': '', class: 'page-break', contenteditable: 'false', title: HTMLAttributes['data-restart'] !== undefined ? 'Sayfa sonu (yeni kopya)' : 'Sayfa sonu' }]
   },
 
   addCommands() {

@@ -81,9 +81,23 @@ export function currentQuestion(state: EditorState): ProseMirrorNode | null {
 const LETTERS = 'ABCDEF'
 
 /** Each question's right answer in order: its letter, "?" when none is marked, null for an open-ended question. */
-export function answersOf(doc: ProseMirrorNode): (string | null)[] {
+/**
+ * The right letter of every question in order ("?" when none is marked, null for an open-ended
+ * one). With `around`, only the questions of the copy holding that position: a mail merge's
+ * copies are apart by page breaks that restart the numbering.
+ */
+export function answersOf(doc: ProseMirrorNode, around?: number): (string | null)[] {
   const answers: (string | null)[] = []
-  doc.descendants(node => {
+  let from = 0
+  let to = doc.content.size
+  if (around !== undefined) {
+    doc.forEach((child, offset) => {
+      if (child.type.name !== 'pageBreak' || !child.attrs.restart) return
+      if (offset < around) from = offset
+      else if (to === doc.content.size) to = offset
+    })
+  }
+  doc.nodesBetween(from, to, node => {
     if (node.type.name !== 'question') return true
     const choices = node.lastChild?.type.name === 'choices' ? node.lastChild : null
     if (!choices) answers.push(null)

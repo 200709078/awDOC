@@ -233,6 +233,23 @@
 			</div>
 		</form>
 	</dialog>
+	<dialog id="mergeDialog" class="dialog" aria-labelledby="mergeTitle">
+		<h2 id="mergeTitle">Adres-mektup</h2>
+		<p id="mergeSource">Belgenin her satır için bir kopyası açılır: öğrenci listesiyle kişiye özel kâğıt ya da veli mektubu. Önce verinin olduğu dosyayı seçin (ilk satır sütunların adları).</p>
+		<button id="mergeChoose" type="button" class="secondary-button merge-dialog__choose">Veri dosyası seç (.csv, .awc)</button>
+		<input id="mergeFile" type="file" accept=".csv,.txt,.awc" hidden>
+		<div id="mergeFieldsBox" hidden>
+			<p class="booklet-dialog__note">Bir sütuna dokunun: imlecin olduğu yere o sütunun alanı («Ad» gibi) girer.</p>
+			<div id="mergeFields" class="merge-dialog__fields"></div>
+		</div>
+		<p id="mergeUsed" class="booklet-dialog__note"></p>
+		<form method="dialog">
+			<div class="dialog__actions">
+				<button id="mergeRun" value="merge" class="primary-button">Birleştir</button>
+				<button value="cancel" class="secondary-button" formnovalidate>Kapat</button>
+			</div>
+		</form>
+	</dialog>
 	<dialog id="bankAddDialog" class="dialog" aria-labelledby="bankAddTitle">
 		<h2 id="bankAddTitle">Soru bankasına ekle</h2>
 		<form method="dialog">

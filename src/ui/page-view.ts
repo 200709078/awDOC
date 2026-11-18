@@ -118,6 +118,15 @@ export class PageView {
     return this.result?.pages ?? null
   }
 
+  /** The page (from 1) a position of the document is on; null where the screen has no pages. */
+  pageOf(pos: number): number | null {
+    if (!this.result) return null
+    let page = 1
+    // A block moved to the next page has its gap at its own start, a paragraph just inside it.
+    for (const point of this.result.breaks) if (point.pos <= pos + 1) page++
+    return page
+  }
+
   onChange(listener: () => void): void {
     this.listeners.add(listener)
   }

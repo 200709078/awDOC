@@ -13,8 +13,8 @@ declare module '@tiptap/core' {
 }
 
 /** The key's text: "1. B", one per question; "—" for an open-ended question, "?" for one with no right choice marked. */
-export function answerKeyEntries(doc: ProseMirrorNode): string[] {
-  return answersOf(doc).map((answer, index) => `${index + 1}. ${answer ?? '—'}`)
+export function answerKeyEntries(doc: ProseMirrorNode, around?: number): string[] {
+  return answersOf(doc, around).map((answer, index) => `${index + 1}. ${answer ?? '—'}`)
 }
 
 /**
@@ -63,7 +63,7 @@ export const AnswerKey = Node.create({
   },
 
   addNodeView() {
-    return ({ editor }) => {
+    return ({ editor, getPos }) => {
       const dom = document.createElement('div')
       dom.className = 'answer-key'
       dom.dataset.answerKey = ''
@@ -76,7 +76,8 @@ export const AnswerKey = Node.create({
       dom.append(title, list)
       let shown = ''
       const draw = () => {
-        const entries = answerKeyEntries(editor.state.doc)
+        const pos = typeof getPos === 'function' ? getPos() : undefined
+        const entries = answerKeyEntries(editor.state.doc, pos)
         const key = entries.join('|')
         if (key === shown) return
         shown = key

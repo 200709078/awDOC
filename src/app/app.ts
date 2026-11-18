@@ -1,3 +1,4 @@
+import { redrawContents } from '../editor/contents'
 import { createEditor } from '../editor/editor'
 import { insertImages } from '../editor/image'
 import { acceptList } from '../formats/index'
@@ -31,6 +32,9 @@ export function startApp(): void {
   editor.commands.focus('start')
   const searchBar = new SearchBar(editor)
   const pageView = new PageView(editor, editorHost)
+  // İçindekiler takes its page numbers from the layout and is redrawn when the pages move.
+  editor.storage.tableOfContents.pageOf = pos => pageView.pageOf(pos)
+  pageView.onChange(() => redrawContents(editor.storage.tableOfContents))
   restoreAnswersShown()
   const welcome = new Welcome(editor, session, pageView)
   const context: ToolContext = { editor, session, platform, theme, searchBar, pageView, welcome }

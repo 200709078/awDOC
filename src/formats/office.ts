@@ -1,4 +1,5 @@
 import type { JSONContent } from '@tiptap/core'
+import { headingsOfJson } from '../editor/contents'
 import { FONTS } from '../editor/fonts'
 import { LINE_HEIGHTS } from '../editor/paragraph-format'
 import { answerKeyLine } from './txt'
@@ -143,6 +144,17 @@ export const BORDERLESS = 'awdocBorderless'
  * answer key its line; a caption "Şekil 1: …".
  */
 export function officeBlocks(document: JSONContent): JSONContent[] {
+  // A mail merge's copies (apart by page breaks that restart the numbers) are numbered on their own.
+  const sections: JSONContent[][] = [[]]
+  for (const block of document.content ?? []) {
+    if (block.type === 'pageBreak' && block.attrs?.restart) sections.push([])
+    sections.at(-1)!.push(block)
+  }
+  const contents = headingsOfJson(document)
+  return sections.flatMap(section => sectionBlocks({ ...document, content: section }, contents))
+}
+
+function sectionBlocks(document: JSONContent, contents: { level: number; text: string }[]): JSONContent[] {
   let questions = 0
   let figures = 0
   const answerKey = answerKeyLine(document)
@@ -187,6 +199,8 @@ export function officeBlocks(document: JSONContent): JSONContent[] {
         }]
       case 'answerKey':
         return [{ type: 'paragraph', content: [text(answerKey, BOLD)] }]
+      case 'tableOfContents':
+        return [{ type: 'tableOfContents', attrs: { entries: contents } }]
       case 'paragraph':
         if (node.attrs?.caption) return [{ ...node, content: [text(`Şekil ${++figures}: `, BOLD), ...(node.content ?? [])] }]
         return [node]

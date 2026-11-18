@@ -140,6 +140,8 @@ class Writer {
         case 'hardBreak': return '<text:line-break/>'
         case 'image': return this.picture(node.attrs ?? {})
         case 'formula': return this.formula(String(node.attrs?.latex ?? ''))
+        // LibreOffice's fields need a database; the field is written as «Ad» and read back as a field.
+        case 'mergeField': return this.inline([{ type: 'text', text: `«${String(node.attrs?.name ?? '')}»`, marks: node.marks }])
         default: return this.inline(node.content)
       }
     }).join('')
@@ -243,10 +245,19 @@ class Writer {
       case 'pageBreak':
         this.breakBefore = true
         return ''
+      case 'tableOfContents':
+        return this.contents((node.attrs?.entries ?? []) as { level: number; text: string }[])
       case 'horizontalRule':
         return `<text:p text:style-name="${this.style('paragraph', 'P', '<style:paragraph-properties fo:border-bottom="0.5pt solid #000000" fo:padding="0.05cm"/>', 'Standard')}"/>`
       default: return (node.content ?? []).map(child => this.block(child, extraIndent)).join('')
     }
+  }
+
+  /** İçindekiler as LibreOffice's own index over the outline (Araçlar → Güncelle fills in the pages). */
+  private contents(entries: { level: number; text: string }[]): string {
+    const templates = [1, 2, 3].map(level => `<text:table-of-content-entry-template text:outline-level="${level}" text:style-name="Contents_20_${level}"><text:index-entry-link-start/><text:index-entry-chapter/><text:index-entry-text/><text:index-entry-tab-stop style:type="right" style:leader-char="."/><text:index-entry-page-number/><text:index-entry-link-end/></text:table-of-content-entry-template>`).join('')
+    const lines = entries.map(entry => `<text:p text:style-name="Contents_20_${Math.min(3, entry.level)}">${textXml(entry.text)}</text:p>`).join('')
+    return `<text:table-of-content text:name="İçindekiler1" text:protected="true"><text:table-of-content-source text:outline-level="3"><text:index-title-template text:style-name="Contents_20_Heading">İçindekiler</text:index-title-template>${templates}</text:table-of-content-source><text:index-body><text:index-title text:name="İçindekiler1_Head"><text:p text:style-name="Contents_20_Heading">İçindekiler</text:p></text:index-title>${lines}</text:index-body></text:table-of-content>`
   }
 
   /** A paragraph that only carries a page break left at the very end. */
@@ -290,6 +301,8 @@ function stylesXml(setup: PageSetup, fonts: string): string {
 <style:default-style style:family="paragraph"><style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.282cm" fo:line-height="115%"/><style:text-properties style:font-name="Calibri" fo:font-size="12pt" fo:language="tr" fo:country="TR"/></style:default-style>
 <style:style style:name="Standard" style:family="paragraph" style:class="text"/>
 ${headings}
+<style:style style:name="Contents_20_Heading" style:display-name="Contents Heading" style:family="paragraph" style:parent-style-name="Standard" style:class="index"><style:paragraph-properties fo:margin-top="0.4cm" fo:margin-bottom="0.3cm"/><style:text-properties fo:font-size="16pt" fo:font-weight="bold"/></style:style>
+${[1, 2, 3].map(level => `<style:style style:name="Contents_20_${level}" style:display-name="Contents ${level}" style:family="paragraph" style:parent-style-name="Standard" style:class="index"><style:paragraph-properties fo:margin-left="${(level - 1) * 0.5}cm" fo:margin-bottom="0.1cm"><style:tab-stops><style:tab-stop style:position="${17 - (level - 1) * 0.5}cm" style:type="right" style:leader-style="dotted" style:leader-text="."/></style:tab-stops></style:paragraph-properties></style:style>`).join('')}
 <style:style style:name="Table_20_Contents" style:display-name="Table Contents" style:family="paragraph" style:parent-style-name="Standard" style:class="extra"><style:paragraph-properties fo:margin-bottom="0cm" fo:line-height="100%"/></style:style>
 <style:style style:name="Header" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:text-align="center" fo:margin-bottom="0cm"/><style:text-properties fo:font-size="10pt"/></style:style>
 <style:style style:name="HeaderRight" style:family="paragraph" style:parent-style-name="Header"><style:paragraph-properties fo:text-align="end"/></style:style>
@@ -468,7 +481,13 @@ class Reader {
 
   private inline(element: Element, out: JSONContent[], marks: Marks): void {
     const push = (value: string) => {
-      if (value) out.push(marks.length ? { type: 'text', text: value, marks } : { type: 'text', text: value })
+      // «Ad» is a mail-merge field (awDOC writes its fields so).
+      value.split(/(«[^«»\n]{1,60}»)/).forEach(piece => {
+        if (!piece) return
+        const field = piece.match(/^«([^«»\n]{1,60})»$/)
+        const node: JSONContent = field ? { type: 'mergeField', attrs: { name: field[1] } } : { type: 'text', text: piece }
+        out.push(marks.length ? { ...node, marks: field ? marks.filter(mark => mark.type !== 'link') : marks } : node)
+      })
     }
     for (const node of Array.from(element.childNodes)) {
       if (node.nodeType === 3) {
@@ -596,7 +615,10 @@ class Reader {
         case 'p': case 'h': out.push(...this.paragraph(node, false)); break
         case 'list': out.push(this.list(node, null, 0)); break
         case 'table': out.push(this.table(node)); break
-        case 'section': case 'text': case 'index-body': case 'table-of-content': case 'illustration-index': case 'soft-page-break':
+        case 'table-of-content':
+          out.push({ type: 'tableOfContents' })
+          break
+        case 'section': case 'text': case 'index-body': case 'illustration-index': case 'soft-page-break':
           out.push(...this.blocks(node))
           break
       }

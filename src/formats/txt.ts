@@ -7,6 +7,7 @@ function textOf(node: JSONContent): string {
   if (node.type === 'hardBreak') return '\n'
   // A formula as its LaTeX: the closest plain text has to it.
   if (node.type === 'formula') return String(node.attrs?.latex ?? '')
+  if (node.type === 'mergeField') return `«${String(node.attrs?.name ?? '')}»`
   return (node.content ?? []).map(textOf).join('')
 }
 
@@ -49,6 +50,8 @@ function linesOf(node: JSONContent, counter: Counter, prefix = ''): string[] {
     }
     case 'answerKey':
       return [prefix + counter.answerKey]
+    case 'tableOfContents':
+      return [prefix + 'İçindekiler']
     case 'choices':
       return (node.content ?? []).map((choice, index) => `${prefix}${LETTERS[index] ?? '?'}) ${textOf(choice)}`)
     case 'paragraph':

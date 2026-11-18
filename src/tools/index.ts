@@ -3,6 +3,7 @@ import { autoSaveTool, docxTool, newDocumentTool, odtTool, openTool, pdfTool, pr
 import { examGroup } from './exam'
 import { findTool, formulaTool, imageGroup, linkTool, replaceTool, wordCountTool } from './insert'
 import { pageGroup } from './page'
+import { referencesGroup } from './references'
 import { tableGroup } from './table'
 import { fontGroup, textGroup } from './text'
 import type { ToolbarItem } from './tool'
@@ -31,6 +32,7 @@ export const TOOLBAR: readonly ToolbarItem[] = [
   examGroup,
   tableGroup,
   pageGroup,
+  referencesGroup,
   printTool,
   pdfTool,
   saveAsTool,

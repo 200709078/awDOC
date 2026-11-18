@@ -8,6 +8,8 @@ import { EditorState, TextSelection } from '@tiptap/pm/state'
 import type { EditorView } from '@tiptap/pm/view'
 import StarterKit from '@tiptap/starter-kit'
 import { AnswerKey } from './answer-key'
+import { TableOfContents } from './contents'
+import { MergeField } from './merge-field'
 import { Formula } from './formula'
 import { DocumentImage, ImageCaption, ImageInput } from './image'
 import { PageBreak, PageSetupExtension } from './page-setup'
@@ -58,6 +60,8 @@ export function createEditor(element: HTMLElement): Editor {
       Choices,
       Choice,
       AnswerKey,
+      TableOfContents,
+      MergeField,
       PageSetupExtension,
       PageBreak,
       PaginationExtension,

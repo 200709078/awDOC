@@ -116,6 +116,10 @@ class Writer {
           const latex = String(node.attrs?.latex ?? '')
           return this.maths.get(latex) ?? this.textRuns(latex, [{ type: 'italic' }])
         }
+        case 'mergeField': {
+          const name = String(node.attrs?.name ?? '')
+          return `<w:fldSimple w:instr=" MERGEFIELD ${escapeXml(/\s/.test(name) ? `"${name}"` : name)} ">${this.textRuns(`«${name}»`, node.marks)}</w:fldSimple>`
+        }
         default:
           return this.inline(node.content)
       }
@@ -211,11 +215,26 @@ class Writer {
         return this.table(node)
       case 'pageBreak':
         return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
+      case 'tableOfContents':
+        return this.contents((node.attrs?.entries ?? []) as { level: number; text: string }[])
       case 'horizontalRule':
         return '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/></w:pBdr></w:pPr></w:p>'
       default:
         return (node.content ?? []).map(child => this.block(child, indent)).join('')
     }
+  }
+
+  /**
+   * İçindekiler as Word's own: a TOC field over the headings (Heading 1–3), marked to be updated,
+   * so Word fills in the page numbers when it opens the file (it asks first).
+   */
+  private contents(entries: { level: number; text: string }[]): string {
+    const begin = '<w:r><w:fldChar w:fldCharType="begin" w:dirty="true"/></w:r><w:r><w:instrText xml:space="preserve"> TOC \\o "1-3" \\h \\z \\u </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r>'
+    const end = '<w:r><w:fldChar w:fldCharType="end"/></w:r>'
+    const lines = entries.length ? entries : [{ level: 1, text: 'İçindekiler güncellenecek' }]
+    const body = lines.map((entry, index) =>
+      `<w:p><w:pPr><w:pStyle w:val="TOC${Math.min(3, entry.level)}"/></w:pPr>${index === 0 ? begin : ''}<w:r><w:t xml:space="preserve">${escapeXml(entry.text)}</w:t></w:r>${index === lines.length - 1 ? end : ''}</w:p>`).join('')
+    return `<w:sdt><w:sdtPr><w:docPartObj><w:docPartGallery w:val="Table of Contents"/><w:docPartUnique/></w:docPartObj></w:sdtPr><w:sdtContent><w:p><w:pPr><w:pStyle w:val="TOCHeading"/></w:pPr><w:r><w:t>İçindekiler</w:t></w:r></w:p>${body}</w:sdtContent></w:sdt>`
   }
 
   /** A header or footer part with the line and/or the page number. */
@@ -265,12 +284,14 @@ const STYLES_XML = `${XML}<w:styles xmlns:w="${W}">
 <w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="tr-TR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="160" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
 <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
 ${[1, 2, 3].map(level => `<w:style w:type="paragraph" w:styleId="Heading${level}"><w:name w:val="heading ${level}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="320" w:after="160" w:line="300" w:lineRule="auto"/><w:outlineLvl w:val="${level - 1}"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val="${HEADING_SIZES[level] * 2}"/><w:szCs w:val="${HEADING_SIZES[level] * 2}"/></w:rPr></w:style>`).join('\n')}
+<w:style w:type="paragraph" w:styleId="TOCHeading"><w:name w:val="TOC Heading"/><w:basedOn w:val="Heading1"/><w:next w:val="Normal"/><w:pPr><w:outlineLvl w:val="9"/></w:pPr></w:style>
+${[1, 2, 3].map(level => `<w:style w:type="paragraph" w:styleId="TOC${level}"><w:name w:val="toc ${level}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:pPr><w:tabs><w:tab w:val="right" w:leader="dot" w:pos="9350"/></w:tabs><w:spacing w:after="100"/><w:ind w:left="${(level - 1) * 220}"/></w:pPr></w:style>`).join('\n')}
 <w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/><w:rPr><w:color w:val="0563C1"/><w:u w:val="single"/></w:rPr></w:style>
 <w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style>
 <w:style w:type="table" w:styleId="TableGrid"><w:name w:val="Table Grid"/><w:basedOn w:val="TableNormal"/><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:tblPr><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tblBorders></w:tblPr></w:style>
 </w:styles>`
 
-const SETTINGS_XML = `${XML}<w:settings xmlns:w="${W}"><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`
+const SETTINGS_XML = `${XML}<w:settings xmlns:w="${W}"><w:updateFields w:val="true"/><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`
 
 async function mathsOf(document: JSONContent): Promise<Map<string, string>> {
   const maths = new Map<string, string>()
@@ -352,6 +373,14 @@ function parseXml(text: string): Document {
 }
 
 interface ListKind { ordered: boolean; start: number }
+
+/** The column of a MERGEFIELD instruction (` MERGEFIELD "Ad Soyad" \\* MERGEFORMAT `); null for other fields. */
+function mergeFieldName(instruction: string): string | null {
+  const match = instruction.match(/^\s*MERGEFIELD\s+(?:"([^"]+)"|(\S+))/i)
+  return match ? (match[1] ?? match[2]).trim() : null
+}
+
+const withMarks = (node: JSONContent, marks: Marks): JSONContent => (marks.length ? { ...node, marks: marks.filter(mark => mark.type !== 'link') } : node)
 
 /**
  * What a markup-compatibility block (`mc:AlternateContent`, LibreOffice and Word wrap drawings in
@@ -467,12 +496,32 @@ class Reader {
     return { type: 'image', attrs: { src: bytesToDataUrl(bytes, mime), alt: alt || null, width: width && width > 0 ? width : null, wrap } }
   }
 
+  /** A complex field being read (`w:fldChar`): its instruction, and whether its shown result is skipped. */
+  private field: { instruction: string; skipping: boolean; marks: Marks } | null = null
+
   /** Inline content of a paragraph; a page break inside it splits the paragraph (`'page'`). */
   private inline(element: Element, out: (JSONContent | 'page')[], link: string | null = null): void {
     for (const node of kids(element)) {
       switch (node.localName) {
         case 'r': {
           const marks = this.marks(first(node, 'rPr'), link)
+          const fieldChar = first(node, 'fldChar')
+          if (fieldChar) {
+            const kind = attr(fieldChar, 'fldCharType')
+            if (kind === 'begin') this.field = { instruction: '', skipping: false, marks }
+            else if (kind === 'separate' && this.field) this.field.skipping = Boolean(mergeFieldName(this.field.instruction))
+            else if (kind === 'end' && this.field) {
+              const name = mergeFieldName(this.field.instruction)
+              if (name) out.push(withMarks({ type: 'mergeField', attrs: { name } }, this.field.marks))
+              this.field = null
+            }
+            break
+          }
+          if (this.field) {
+            const instruction = first(node, 'instrText')
+            if (instruction) this.field.instruction += instruction.textContent ?? ''
+            if (instruction || this.field.skipping) break
+          }
           for (const part of kids(node).flatMap(alternative)) {
             const push = (value: string) => out.push(marks.length ? { type: 'text', text: value, marks } : { type: 'text', text: value })
             switch (part.localName) {
@@ -504,6 +553,12 @@ class Reader {
         case 'AlternateContent':
           for (const choice of alternative(node)) this.inline(choice, out, link)
           break
+        case 'fldSimple': {
+          const name = mergeFieldName(attr(node, 'instr') ?? '')
+          if (name) out.push(withMarks({ type: 'mergeField', attrs: { name } }, this.marks(first(first(node, 'r'), 'rPr'), link)))
+          else this.inline(node, out, link)
+          break
+        }
         case 'pPr': case 'del': case 'moveFrom': case 'proofErr': case 'bookmarkStart': case 'bookmarkEnd': case 'commentRangeStart': case 'commentRangeEnd':
           break
         default:
@@ -644,7 +699,17 @@ class Reader {
             closeLists()
             out.push(this.table(node))
             break
-          case 'sdt': case 'sdtContent': case 'customXml': case 'ins': case 'smartTag':
+          case 'sdt': {
+            const gallery = attr(first(first(first(node, 'sdtPr'), 'docPartObj'), 'docPartGallery'), 'val')
+            if (gallery && /table of contents/i.test(gallery)) {
+              closeLists()
+              out.push({ type: 'tableOfContents' })
+            } else {
+              visit(node)
+            }
+            break
+          }
+          case 'sdtContent': case 'customXml': case 'ins': case 'smartTag':
             visit(node)
             break
         }
